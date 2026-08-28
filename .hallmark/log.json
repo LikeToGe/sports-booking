@@ -1,0 +1,30 @@
+[
+  {
+    "date": "2026-08-17",
+    "macrostructure": "Workbench",
+    "theme": "Cobalt",
+    "enrichment": "Tier-A CSS track lines",
+    "brief": "Sports Booking customer, operations, and prototype UI refresh"
+  },
+  {
+    "date": "2026-08-20",
+    "macrostructure": "Index-first operations console",
+    "theme": "Light neutral with emerald controls",
+    "enrichment": "Responsive labelled data tables",
+    "brief": "Full sports booking admin and table-system redesign"
+  },
+  {
+    "date": "2026-08-20",
+    "macrostructure": "Photographic utility login",
+    "theme": "Venue neutral with emerald operations panel",
+    "enrichment": "Full-bleed indoor court photography",
+    "brief": "Compact authentication entry for sports operations"
+  },
+  {
+    "date": "2026-08-22",
+    "macrostructure": "Catalogue",
+    "theme": "Light emerald operations console and cobalt booking client",
+    "enrichment": "Single-list menus, detail routes, native dialogs and recovery states",
+    "brief": "End-to-end sports booking workflow and responsive system audit"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "date": "2026-08-17",
+  "framework": "vanilla HTML and JavaScript",
+  "entries": ["miniapp", "admin-web", "prototype"],
+  "fonts": "conflicting Noto Sans SC and Fira families",
+  "motion": "CSS-only, no motion library",
+  "preserved": ["application routes", "API contracts", "Lucide icons"],
+  "introduced": ["shared tokens", "sports technology visual system", "responsive interaction states"]
+}

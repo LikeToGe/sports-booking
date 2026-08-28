@@ -1,0 +1,7 @@
+#!/bin/zsh
+set -eu
+
+export JAVA_HOME=/Users/gjm/Library/Java/project-jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+
+exec mvn "$@"
