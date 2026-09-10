@@ -1,0 +1,34 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/venue/index",
+    "pages/confirm/index",
+    "pages/payment/index",
+    "pages/bookings/index",
+    "pages/booking/index",
+    "pages/mine/index",
+    "pages/staff-bind/index",
+    "pages/staff-verify/index",
+    "pages/staff-records/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "约场",
+    "navigationBarBackgroundColor": "#f7f8fa",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f2f4f7",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#68726d",
+    "selectedColor": "#147a43",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "找场馆" },
+      { "pagePath": "pages/bookings/index", "text": "我的预约" },
+      { "pagePath": "pages/mine/index", "text": "我的" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

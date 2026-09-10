@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.CourtMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.Court">
+        SELECT * FROM s_court WHERE id = #{courtId} FOR UPDATE
+    </select>
+
+    <select id="selectSportIds" resultType="long">
+        SELECT sport_type_id FROM s_court_sport WHERE court_id = #{courtId} ORDER BY sport_type_id
+    </select>
+    <delete id="deleteSports">
+        DELETE FROM s_court_sport WHERE court_id = #{courtId}
+    </delete>
+    <insert id="replaceSports">
+        INSERT INTO s_court_sport (court_id, sport_type_id)
+        VALUES
+        <foreach collection="sportIds" item="sportId" separator=",">
+            (#{courtId}, #{sportId})
+        </foreach>
+    </insert>
+</mapper>

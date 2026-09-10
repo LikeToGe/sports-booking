@@ -1,0 +1,8 @@
+<view class="page verify-page">
+  <view class="screen-head"><text class="screen-title">场馆核销</text><text class="muted">核销成功后预约立即完成。</text></view>
+  <button class="scan-button" bindtap="scan"><text class="scan-title">扫描预约二维码</text><text class="scan-hint">打开相机扫码</text></button>
+  <view class="code-panel surface"><text class="section-title">输入短码</text><view class="code-row"><input class="field-control code-input" type="number" maxlength="6" value="{{code}}" bindinput="onCode" /><button class="button-secondary" disabled="{{loading || code.length !== 6}}" bindtap="submitCode">核销</button></view></view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{result}}" class="verify-result surface"><text class="section-title">核销完成</text><text>{{result.courtName}} · {{result.sportName}}</text><text class="muted">{{result.contactName}}</text></view>
+  <button class="staff-link" bindtap="records">查看我的核销记录</button>
+</view>

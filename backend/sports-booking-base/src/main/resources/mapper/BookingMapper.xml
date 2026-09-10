@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.BookingMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.Booking">
+        SELECT * FROM s_booking WHERE id = #{id} FOR UPDATE
+    </select>
+
+    <select id="selectUserBookings" resultType="com.sportsbooking.admin.base.bo.UserBookingBO">
+        SELECT b.id,
+               b.booking_no AS bookingNo,
+               b.venue_name AS venueName,
+               b.court_name AS courtName,
+               b.sport_name AS sportName,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               b.amount_fen AS amountFen,
+               b.status,
+               DATE_FORMAT(CONVERT_TZ(b.payment_expires_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS paymentExpiresAt,
+               p.status AS paymentStatus,
+               r.status AS refundStatus
+        FROM s_booking b
+        LEFT JOIN s_payment p ON p.booking_id = b.id
+        LEFT JOIN s_refund r ON r.booking_id = b.id
+        WHERE b.user_id = #{userId}
+        ORDER BY b.created_at DESC
+    </select>
+
+    <select id="selectVenueBookings" resultType="com.sportsbooking.admin.base.bo.VenueBookingBO">
+        SELECT b.id,
+               b.booking_no AS bookingNo,
+               b.venue_name AS venueName,
+               b.source,
+               b.contact_name AS contactName,
+               b.contact_phone AS contactPhone,
+               b.court_name AS courtName,
+               b.sport_name AS sportName,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               b.amount_fen AS amountFen,
+               b.status,
+               p.status AS paymentStatus
+        FROM s_booking b
+        LEFT JOIN s_payment p ON p.booking_id = b.id
+        WHERE b.venue_id = #{venueId}
+        <if test="date != null">AND DATE(CONVERT_TZ(b.start_at, '+00:00', '+08:00')) = #{date}</if>
+        ORDER BY b.start_at, b.id
+    </select>
+
+    <select id="selectOperationReport" resultType="com.sportsbooking.admin.base.bo.OperationReportDailyBO">
+        SELECT DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+               COUNT(*) AS bookingCount,
+               SUM(CASE WHEN b.status IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW') THEN 1 ELSE 0 END)
+                   AS effectiveBookingCount,
+               SUM(CASE WHEN b.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completedCount,
+               SUM(CASE WHEN b.status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelledCount,
+               SUM(CASE WHEN b.status = 'NO_SHOW' THEN 1 ELSE 0 END) AS noShowCount,
+               SUM(CASE WHEN b.status IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW') THEN b.amount_fen ELSE 0 END)
+                   AS amountFen
+        FROM s_booking b
+        WHERE b.start_at &gt;= #{startAt}
+          AND b.start_at &lt; #{endAt}
+        <if test="venueId != null">AND b.venue_id = #{venueId}</if>
+        GROUP BY reportDate
+        ORDER BY reportDate
+    </select>
+
+    <select id="selectServiceFeeBookings" resultType="com.sportsbooking.admin.base.bo.ServiceFeeBookingBO">
+        SELECT b.booking_no AS bookingNo,
+               b.venue_id AS venueId,
+               b.venue_name AS venueName,
+               b.court_name AS courtName,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               b.status,
+               b.amount_fen AS amountFen,
+               b.service_fee_rate_basis_points AS serviceFeeRateBasisPoints,
+               v.service_fee_rate_basis_points AS currentServiceFeeRateBasisPoints
+        FROM s_booking b
+        JOIN s_venue v ON v.id = b.venue_id
+        WHERE b.source = 'ONLINE'
+          AND b.status IN ('COMPLETED', 'NO_SHOW')
+          AND b.service_fee_rate_basis_points &gt; 0
+          AND b.end_at &gt;= #{startAt}
+          AND b.end_at &lt; #{endAt}
+        <if test="venueId != null">AND b.venue_id = #{venueId}</if>
+        ORDER BY b.venue_name, b.end_at, b.id
+    </select>
+
+    <select id="selectVerifiable" resultType="com.sportsbooking.admin.base.po.Booking">
+        SELECT *
+        FROM s_booking
+        WHERE venue_id = #{venueId}
+          AND status = 'CONFIRMED'
+          AND start_at &lt;= #{latest}
+          AND end_at &gt;= #{earliest}
+        ORDER BY start_at
+    </select>
+
+    <select id="selectExpiredPendingIds" resultType="long">
+        SELECT id FROM s_booking
+        WHERE status = 'PENDING_PAYMENT' AND payment_expires_at &lt;= #{now}
+        ORDER BY id
+        LIMIT 200
+    </select>
+
+    <select id="selectNoShowIds" resultType="long">
+        SELECT id FROM s_booking
+        WHERE status = 'CONFIRMED' AND end_at &lt; #{now}
+        ORDER BY id
+        LIMIT 200
+    </select>
+</mapper>

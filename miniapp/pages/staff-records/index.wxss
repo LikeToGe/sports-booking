@@ -1,0 +1,6 @@
+.records-page { display: grid; align-content: start; gap: 24rpx; }
+.records { display: grid; gap: 20rpx; }
+.record-card { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; padding: 24rpx; }
+.record-title { font-weight: 600; }
+.record-card .block { margin-top: 8rpx; font-size: 24rpx; }
+.record-time { flex: 0 0 auto; color: var(--muted); font-size: 22rpx; font-variant-numeric: tabular-nums; text-align: right; }

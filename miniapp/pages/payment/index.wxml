@@ -1,0 +1,11 @@
+<view class="page payment-page" wx:if="{{detail}}">
+  <view class="screen-head"><text class="screen-title">模拟支付</text><text class="muted">本地演示不会发起真实扣款。</text></view>
+  <view class="payment-card surface">
+    <text class="muted">待支付金额</text>
+    <text class="amount">{{amount}}</text>
+    <text class="countdown">剩余 {{countdown}}</text>
+    <view class="payment-order"><text>{{detail.booking.venueName}}</text><text class="muted">{{detail.booking.courtName}} · {{detail.booking.sportName}}</text></view>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button class="button-primary" disabled="{{loading || seconds <= 0}}" bindtap="pay">{{loading ? '正在支付' : '模拟支付成功'}}</button>
+</view>

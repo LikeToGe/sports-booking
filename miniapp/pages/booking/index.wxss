@@ -1,0 +1,9 @@
+.detail-page { display: grid; align-content: start; gap: 24rpx; }
+.detail-head { display: flex; align-items: start; justify-content: space-between; gap: 24rpx; padding: 28rpx; }
+.block { margin-top: 10rpx; font-size: 24rpx; }
+.amount { font-size: 42rpx; white-space: nowrap; }
+.facts { display: grid; gap: 24rpx; padding: 28rpx; }
+.facts > view { display: grid; grid-template-columns: 120rpx minmax(0, 1fr); gap: 20rpx; }
+.credential { display: grid; justify-items: center; gap: 20rpx; padding: 28rpx; text-align: center; }
+.qr { width: 400rpx; height: 400rpx; }
+.short-code { font-size: 56rpx; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 10rpx; }

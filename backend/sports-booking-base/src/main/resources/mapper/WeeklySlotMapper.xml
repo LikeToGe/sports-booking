@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.WeeklySlotMapper">
+    <select id="selectByVenue" resultType="com.sportsbooking.admin.base.po.WeeklySlot">
+        SELECT ws.*
+        FROM s_weekly_slot ws
+        JOIN s_court c ON c.id = ws.court_id
+        WHERE c.venue_id = #{venueId}
+        <if test="status != null">AND ws.status = #{status}</if>
+        ORDER BY ws.day_of_week, ws.start_time, c.name
+    </select>
+
+    <select id="countOverlapping" resultType="int">
+        SELECT COUNT(*)
+        FROM s_weekly_slot
+        WHERE court_id = #{courtId}
+          AND day_of_week = #{dayOfWeek}
+          AND status = 'ACTIVE'
+          AND start_time &lt; #{endTime}
+          AND end_time &gt; #{startTime}
+        <if test="excludedId != null">AND id != #{excludedId}</if>
+    </select>
+</mapper>

@@ -1,0 +1,8 @@
+<view class="page detail-page" wx:if="{{booking}}">
+  <view class="detail-head surface"><view><text class="screen-title">{{statusLabel}}</text><text class="muted block">预约号 {{booking.bookingNo}}</text></view><text class="price amount">{{amount}}</text></view>
+  <view class="facts surface"><view><text class="muted">场馆</text><text>{{booking.venueName}}</text></view><view><text class="muted">场地</text><text>{{booking.courtName}} · {{booking.sportName}}</text></view><view><text class="muted">时间</text><text>{{date}}　{{time}}</text></view><view><text class="muted">联系人</text><text>{{booking.contactName}} · {{booking.contactPhone}}</text></view></view>
+  <view wx:if="{{booking.status === 'CONFIRMED' && credential.shortCode}}" class="credential surface"><text class="section-title">到场核销</text><image class="qr" src="{{credential.qr}}" mode="aspectFit" aria-label="预约核销二维码" /><text class="short-code">{{credential.shortCode}}</text><text class="muted">二维码会自动更新，短码可在扫码失败时使用。</text></view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button wx:if="{{booking.status === 'PENDING_PAYMENT'}}" class="button-primary" bindtap="pay">继续支付</button>
+  <button wx:if="{{booking.status === 'CONFIRMED'}}" class="button-danger" bindtap="cancel">取消预约</button>
+</view>

@@ -1,0 +1,2 @@
+const { request } = require("../../utils/api");
+Page({ data: { records: [], error: "", loading: true }, async onShow() { try { const records = await request("/staff/verifications/records"); this.setData({ records: records.map(item => ({ ...item, time: new Date(item.verifiedAt).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false }) })) }); } catch (error) { this.setData({ error: error.message }); } finally { this.setData({ loading: false }); } } });

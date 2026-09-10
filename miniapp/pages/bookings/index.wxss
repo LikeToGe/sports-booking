@@ -1,0 +1,7 @@
+.bookings-page { display: grid; align-content: start; gap: 24rpx; }
+.booking-list { display: grid; gap: 20rpx; }
+.booking-card { display: grid; gap: 12rpx; width: 100%; padding: 24rpx; color: var(--ink); text-align: left; line-height: 1.4; }
+.booking-top, .booking-foot { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.date { color: var(--muted); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.booking-court { color: var(--ink-2); }
+.booking-foot { padding-top: 16rpx; border-top: 2rpx solid var(--rule-2); }

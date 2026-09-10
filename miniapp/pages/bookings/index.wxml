@@ -1,0 +1,6 @@
+<view class="page bookings-page">
+  <view class="screen-head"><text class="screen-title">我的预约</text><text class="muted">支付、核销与取消状态都在这里。</text></view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view class="booking-list"><button wx:for="{{bookings}}" wx:key="id" class="booking-card surface" data-id="{{item.id}}" bindtap="open"><view class="booking-top"><text class="date">{{item.date}}</text><text class="status status-{{item.statusTone}}">{{item.statusLabel}}</text></view><text class="section-title">{{item.venueName}}</text><text class="booking-court">{{item.courtName}} · {{item.sportName}}</text><view class="booking-foot"><text class="muted">{{item.time}}</text><text class="price">{{item.price}}</text></view></button></view>
+  <view wx:if="{{!loading && !bookings.length}}" class="empty surface"><text class="empty-title">还没有预约</text><text>在“找场馆”中选择日期和场次。</text></view>
+</view>

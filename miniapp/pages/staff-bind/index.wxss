@@ -1,0 +1,4 @@
+.bind-page { display: grid; align-content: start; gap: 24rpx; }
+.bind-panel { display: grid; gap: 20rpx; padding: 28rpx; }
+.code-input { font-size: 42rpx; font-variant-numeric: tabular-nums; letter-spacing: 12rpx; text-align: center; }
+.helper { font-size: 24rpx; line-height: 1.6; }

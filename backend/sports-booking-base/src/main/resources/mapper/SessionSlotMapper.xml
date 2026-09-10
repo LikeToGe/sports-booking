@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.SessionSlotMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.SessionSlot">
+        SELECT * FROM s_session_slot WHERE id = #{id} FOR UPDATE
+    </select>
+
+    <insert id="insertIgnore" useGeneratedKeys="true" keyProperty="id">
+        INSERT IGNORE INTO s_session_slot (
+            venue_id, court_id, sport_type_id, weekly_slot_id, slot_date,
+            start_at, end_at, price_fen, status, created_at, updated_at
+        ) VALUES (
+            #{venueId}, #{courtId}, #{sportTypeId}, #{weeklySlotId}, #{slotDate},
+            #{startAt}, #{endAt}, #{priceFen}, #{status}, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)
+        )
+    </insert>
+
+    <update id="updateOpenForTemplate">
+        UPDATE s_session_slot
+        SET sport_type_id = #{sportTypeId},
+            start_at = #{startAt},
+            end_at = #{endAt},
+            price_fen = #{priceFen},
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE weekly_slot_id = #{weeklySlotId}
+          AND slot_date = #{slotDate}
+          AND status = 'OPEN'
+    </update>
+
+    <select id="countOverlapping" resultType="int">
+        SELECT COUNT(*)
+        FROM s_session_slot
+        WHERE court_id = #{courtId}
+          AND status IN ('OPEN', 'HELD', 'BOOKED')
+          AND start_at &lt; #{endAt}
+          AND end_at &gt; #{startAt}
+        <if test="weeklySlotId != null">
+          AND (weekly_slot_id IS NULL OR weekly_slot_id != #{weeklySlotId})
+        </if>
+    </select>
+
+    <update id="closeOpenForTemplate">
+        UPDATE s_session_slot
+        SET status = 'CLOSED', updated_at = UTC_TIMESTAMP(3)
+        WHERE weekly_slot_id = #{weeklySlotId}
+          AND status = 'OPEN'
+          AND start_at &gt;= #{now}
+    </update>
+
+    <select id="countBusyForDate" resultType="int">
+        SELECT COUNT(*)
+        FROM s_session_slot
+        WHERE venue_id = #{venueId}
+          AND slot_date = #{date}
+          AND status IN ('HELD', 'BOOKED')
+    </select>
+
+    <update id="closeOpenForDate">
+        UPDATE s_session_slot
+        SET status = 'CLOSED', updated_at = UTC_TIMESTAMP(3)
+        WHERE venue_id = #{venueId}
+          AND slot_date = #{date}
+          AND status = 'OPEN'
+    </update>
+
+    <select id="selectVenueDay" resultType="com.sportsbooking.admin.base.bo.SessionSlotBO">
+        SELECT ss.id,
+               ss.court_id AS courtId,
+               c.name AS courtName,
+               ss.sport_type_id AS sportTypeId,
+               st.name AS sportName,
+               DATE_FORMAT(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(ss.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               ss.price_fen AS priceFen,
+               ss.status
+        FROM s_session_slot ss
+        JOIN s_court c ON c.id = ss.court_id
+        JOIN s_sport_type st ON st.id = ss.sport_type_id
+        WHERE ss.venue_id = #{venueId} AND ss.slot_date = #{date}
+        ORDER BY ss.start_at, c.name
+    </select>
+</mapper>
