@@ -1,5 +1,45 @@
 [
   {
+    "date": "2026-09-03",
+    "scope": "app",
+    "macrostructure": "Ecosystem Index",
+    "theme": "custom",
+    "theme_axes": "cool-neutral / system-native / chromatic-green",
+    "vibe": "轻快运动、图片优先、移动任务流",
+    "enrichment": "venue photography",
+    "brief": "约场微信小程序全部页面与布局重构"
+  },
+  {
+    "date": "2026-09-03",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "cool-neutral / system-native / chromatic-green",
+    "vibe": "紧凑运营、工具优先、中性工作区",
+    "enrichment": "none",
+    "brief": "约场管理后台全页面密度与层级重构"
+  },
+  {
+    "date": "2026-09-03",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "light / system-native / chromatic-green",
+    "vibe": "紧凑运营、清晰层级、数据优先",
+    "enrichment": "none",
+    "brief": "约场管理后台分页与数据工作区重构"
+  },
+  {
+    "date": "2026-08-28",
+    "scope": "app",
+    "macrostructure": "Ecosystem Index + Index-First",
+    "theme": "custom",
+    "theme_axes": "light / system-native / chromatic-green",
+    "vibe": "明亮运动、清爽克制、任务优先",
+    "enrichment": "venue photography",
+    "brief": "约场多场馆预约小程序与管理后台重设计"
+  },
+  {
     "date": "2026-08-17",
     "macrostructure": "Workbench",
     "theme": "Cobalt",

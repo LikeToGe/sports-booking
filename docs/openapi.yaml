@@ -1,3961 +1,629 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
-  title: Venue Booking MVP Admin API
+  title: 约场 API
   version: 0.1.0
-  description: |
-    T-01 至 T-12 Mock 功能闭环：平台与场馆管理员完成供给、订单、账单与审计管理；小程序用户完成查询、预约、Mock 支付、取消、退款和核销凭证；店员完成独立身份绑定与核销。真实支付、真实退款和生产环境仍不在本契约范围内。
-    所有响应使用 data、code、serviceCode、msg 四个外层字段，serviceCode 固定为 "10000"。
+  description: 本地 Mock MVP；具体时间使用 UTC ISO 8601，页面按 Asia/Shanghai 展示。
 servers:
-  - url: /api
+  - url: http://127.0.0.1:8089/api
 tags:
-  - name: AdminAuth
-  - name: Dashboards
-  - name: Organizations
-  - name: Catalog
-  - name: VenueProfile
-  - name: VenueResources
-  - name: VenueSchedules
-  - name: TransactionGates
-  - name: MiniAuth
-  - name: MiniVenues
-  - name: MiniBookings
-  - name: MiniPayments
-  - name: MiniRefunds
-  - name: Employees
-  - name: StaffBinding
-  - name: StaffVerifications
-  - name: PlatformOrders
-  - name: VenueOrders
-  - name: Billing
-  - name: AuditLogs
+  - name: Auth
+  - name: Platform
+  - name: VenueAdmin
+  - name: Mini
+  - name: Staff
 paths:
-  /admin/dashboard/summary:
+  /auth/admin/login:
+    post:
+      tags: [Auth]
+      summary: 后台登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/admin/logout:
+    post:
+      tags: [Auth]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/mini/mock-login:
+    post:
+      tags: [Auth]
+      summary: 小程序模拟登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/mini/logout:
+    post:
+      tags: [Auth]
+      security: [{ MiniToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/mini/profile/detail:
     get:
-      tags: [Dashboards]
-      summary: 查询平台运营汇总
-      operationId: getPlatformDashboardSummary
-      security: [{ adminSession: [] }]
+      tags: [Auth]
+      security: [{ MiniToken: [] }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /venue/dashboard/summary:
-    get:
-      tags: [Dashboards]
-      summary: 查询当前场馆经营汇总与七日趋势
-      operationId: getVenueDashboardSummary
-      security: [{ adminSession: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /admin/auth/login:
-    post:
-      tags: [AdminAuth]
-      summary: 管理端登录
-      operationId: adminLogin
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: 已处理；成功时服务端写入安全会话 Cookie。
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-              description: HttpOnly、Secure、SameSite 会话 Cookie。
-            X-CSRF-Token:
-              schema:
-                type: string
-              description: 与本次会话绑定的 CSRF 令牌；后续有副作用请求放入 X-CSRF-Token 请求头。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-  /admin/auth/password/change:
-    post:
-      tags: [AdminAuth]
-      summary: 首次登录修改初始密码
-      operationId: changeInitialPassword
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangePasswordRequest'
-      responses:
-        '200':
-          description: 密码已修改，其他会话已撤销。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/auth/logout:
-    post:
-      tags: [AdminAuth]
-      summary: 退出当前会话
-      operationId: adminLogout
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 当前会话已撤销。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-  /admin/auth/session:
-    get:
-      tags: [AdminAuth]
-      summary: 查询当前管理端会话
-      operationId: getAdminSession
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 当前认证主体及其数据范围。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SessionResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-  /admin/organizations:
-    get:
-      tags: [Organizations]
-      summary: 分页查询经营主体及其唯一门店、场馆管理员
-      operationId: listOrganizations
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [ACTIVE, PAUSED]
-        - name: keyword
-          in: query
-          required: false
-          description: 匹配经营主体、门店、管理员名称或账号。
-          schema: { type: string }
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 记录使用字符串 ID 与字符串分页计数；不包含密码哈希或会话令牌。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [Organizations]
-      summary: 创建经营主体、唯一门店和首个场馆管理员
-      operationId: createOrganization
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrganizationRequest'
-      responses:
-        '200':
-          description: 创建成功；平台管理员设置并线下交接的临时密码不出现在响应中。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateOrganizationResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/organizations/{organizationId}:
-    get:
-      tags: [Organizations]
-      summary: 查询经营主体、门店、管理员与交易门禁详情
-      operationId: getOrganization
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-      security: [{ adminSession: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /admin/organizations/{organizationId}/status:
-    patch:
-      tags: [Organizations]
-      summary: 平台启用或暂停经营主体
-      operationId: updateOrganizationStatus
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StatusUpdateRequest'
-      responses:
-        '200':
-          description: 暂停时在经营主体门禁写入平台状态 blocker；恢复只解除该 blocker。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-  /admin/organizations/{organizationId}/admin-password/reset:
-    post:
-      tags: [Organizations]
-      summary: 重置当前经营主体场馆管理员密码
-      operationId: resetVenueAdminPassword
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResetVenueAdminPasswordRequest'
-      responses:
-        '200':
-          description: 写入临时密码哈希，撤销该场馆管理员全部旧会话并写入审计；密码不返回。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-  /admin/stores/{storeId}/status:
-    patch:
-      tags: [Organizations]
-      summary: 平台启用或暂停单门店场馆
-      operationId: updateStoreStatus
-      parameters:
-        - $ref: '#/components/parameters/StoreId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StatusUpdateRequest'
-      responses:
-        '200':
-          description: 状态已更新；暂停时同步创建平台状态交易 blocker，恢复只解除该 blocker，不影响其他暂停原因或存量交易。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /admin/organizations/{organizationId}/transaction-gate:
-    get:
-      tags: [TransactionGates]
-      summary: 查询经营主体及其唯一门店的交易门禁状态
-      operationId: getOrganizationTransactionGate
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回主体、门店两级门禁及所有暂停原因。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /admin/organizations/{organizationId}/transaction-blockers:
-    post:
-      tags: [TransactionGates]
-      summary: 平台管理员暂停经营主体新增交易
-      operationId: createOrganizationTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ManualTransactionBlockerRequest'
-      responses:
-        '200':
-          description: 暂停原因已生效；不释放既有占用或订单。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/organizations/{organizationId}/transaction-blockers/{blockerId}/release:
-    post:
-      tags: [TransactionGates]
-      summary: 解除经营主体的指定交易暂停原因
-      operationId: releaseOrganizationTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/OrganizationId'
-        - $ref: '#/components/parameters/BlockerId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅解除指定 blocker；其他原因仍可保持门禁关闭。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/stores/{storeId}/transaction-gate:
-    get:
-      tags: [TransactionGates]
-      summary: 查询门店及经营主体交易门禁状态
-      operationId: getStoreTransactionGate
-      parameters:
-        - $ref: '#/components/parameters/StoreId'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回主体、门店两级门禁及所有暂停原因。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /admin/stores/{storeId}/transaction-blockers:
-    post:
-      tags: [TransactionGates]
-      summary: 平台管理员暂停门店新增交易
-      operationId: createStoreTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/StoreId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ManualTransactionBlockerRequest'
-      responses:
-        '200':
-          description: 暂停原因已生效；不释放既有占用或订单。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/stores/{storeId}/transaction-blockers/{blockerId}/release:
-    post:
-      tags: [TransactionGates]
-      summary: 解除门店的指定交易暂停原因
-      operationId: releaseStoreTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/StoreId'
-        - $ref: '#/components/parameters/BlockerId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅解除指定 blocker；其他原因仍可保持门禁关闭。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/transaction-gate:
-    get:
-      tags: [TransactionGates]
-      summary: 场馆管理员查询本人门店及经营主体交易门禁
-      operationId: getCurrentVenueTransactionGate
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回主体、门店两级门禁及所有暂停原因。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-  /venue/transaction-blockers:
-    post:
-      tags: [TransactionGates]
-      summary: 场馆管理员暂停本人门店新增交易
-      operationId: createCurrentVenueTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ManualTransactionBlockerRequest'
-      responses:
-        '200':
-          description: 暂停原因已生效；不释放既有占用或订单。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/transaction-blockers/{blockerId}/release:
-    post:
-      tags: [TransactionGates]
-      summary: 场馆管理员解除本人门店的指定暂停原因
-      operationId: releaseCurrentVenueTransactionBlocker
-      parameters:
-        - $ref: '#/components/parameters/BlockerId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅解除指定 blocker；其他原因仍可保持门禁关闭。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionStatusResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/sport-categories:
-    get:
-      tags: [Catalog]
-      summary: 分页查询运动分类
-      operationId: listSportCategories
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/StatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回按层级和排序排列的扁平分类记录；客户端以 parentId 渲染两级树。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SportCategoryPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [Catalog]
-      summary: 创建运动分类
-      operationId: createSportCategory
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SportCategoryUpsertRequest'
-      responses:
-        '200':
-          description: 分类已创建。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SportCategoryResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/sport-categories/{categoryId}:
+        '200': { $ref: '#/components/responses/Success' }
+  /auth/mini/profile/update:
     put:
-      tags: [Catalog]
-      summary: 编辑运动分类
-      operationId: updateSportCategory
-      parameters:
-        - $ref: '#/components/parameters/CategoryId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
+      tags: [Auth]
+      security: [{ MiniToken: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SportCategoryUpsertRequest'
+              type: object
+              required: [contactName, phone]
+              properties:
+                contactName: { type: string }
+                phone: { type: string }
       responses:
-        '200':
-          description: 分类已更新。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SportCategoryResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/sport-categories/{categoryId}/status:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/list:
+    get:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/create:
+    post:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 创建场馆及首个管理员
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [venue, adminUsername, adminPassword]
+              properties:
+                venue: { $ref: '#/components/schemas/VenueWrite' }
+                adminUsername: { type: string }
+                adminPassword: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/{venueId}/status:
     patch:
-      tags: [Catalog]
-      summary: 启用或停用运动分类
-      operationId: updateSportCategoryStatus
-      parameters:
-        - $ref: '#/components/parameters/CategoryId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StatusUpdateRequest'
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/VenueId' }]
+      requestBody: { $ref: '#/components/requestBodies/Status' }
       responses:
-        '200':
-          description: 分类状态已更新，历史引用不受影响。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/rental-types:
-    get:
-      tags: [Catalog]
-      summary: 分页查询出租类型
-      operationId: listRentalTypes
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/SportCategoryIdFilter'
-        - $ref: '#/components/parameters/StatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回出租类型及其所属具体运动项目。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RentalTypePageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [Catalog]
-      summary: 创建出租类型
-      operationId: createRentalType
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RentalTypeUpsertRequest'
-      responses:
-        '200':
-          description: 出租类型已创建。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RentalTypeResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/rental-types/{rentalTypeId}:
-    put:
-      tags: [Catalog]
-      summary: 编辑出租类型
-      operationId: updateRentalType
-      parameters:
-        - $ref: '#/components/parameters/RentalTypeId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RentalTypeUpsertRequest'
-      responses:
-        '200':
-          description: 出租类型已更新。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RentalTypeResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /admin/catalog/rental-types/{rentalTypeId}/status:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/{venueId}/service-fee-rate:
     patch:
-      tags: [Catalog]
-      summary: 启用或停用出租类型
-      operationId: updateRentalTypeStatus
-      parameters:
-        - $ref: '#/components/parameters/RentalTypeId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 更新场馆平台服务费率
+      parameters: [{ $ref: '#/components/parameters/VenueId' }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatusUpdateRequest'
+              type: object
+              required: [serviceFeeRatePercent]
+              properties:
+                serviceFeeRatePercent:
+                  type: number
+                  minimum: 0
+                  maximum: 30
+                  multipleOf: 0.01
       responses:
-        '200':
-          description: 出租类型状态已更新，历史引用不受影响。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /venue/catalog/sport-categories:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/sports/list:
     get:
-      tags: [Catalog]
-      summary: 场馆管理员查询可用于创建场地的启用运动分类
-      operationId: listVenueAvailableSportCategories
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - adminSession: []
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
       responses:
-        '200':
-          description: 仅返回启用分类；场馆管理员不具备字典维护权限。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SportCategoryPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-  /venue/catalog/rental-types:
-    get:
-      tags: [Catalog]
-      summary: 场馆管理员查询可用于创建场地的启用出租类型
-      operationId: listVenueAvailableRentalTypes
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/SportCategoryIdFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅返回启用出租类型；场馆管理员不具备字典维护权限。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RentalTypePageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-  /venue/profile:
-    get:
-      tags: [VenueProfile]
-      summary: 查询当前场馆管理员所属门店资料
-      operationId: getCurrentVenueProfile
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅返回认证场馆管理员所属的唯一门店。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VenueProfileResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    put:
-      tags: [VenueProfile]
-      summary: 更新当前场馆管理员所属门店资料
-      operationId: updateCurrentVenueProfile
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VenueProfileUpdateRequest'
-      responses:
-        '200':
-          description: 资料立即生效并写入审计记录。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VenueProfileResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-  /venue/resources/courts:
-    get:
-      tags: [VenueResources]
-      summary: 分页查询当前场馆物理场地
-      operationId: listCurrentVenuePhysicalCourts
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/StatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅返回当前认证场馆管理员所属门店的物理场地摘要。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PhysicalCourtPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/sports/create:
     post:
-      tags: [VenueResources]
-      summary: 创建物理场地及其固定 A/B 资源和初始可售单元
-      operationId: createCurrentVenuePhysicalCourt
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePhysicalCourtRequest'
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
       responses:
-        '200':
-          description: 同一事务中创建物理场地、A/B 基础资源及全场、A/B 半场三个 v1 可售单元。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PhysicalCourtResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/resources/courts/{courtId}:
-    get:
-      tags: [VenueResources]
-      summary: 查询物理场地、A/B 基础资源和当前可售单元版本
-      operationId: getCurrentVenuePhysicalCourt
-      parameters:
-        - $ref: '#/components/parameters/CourtId'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回当前门店范围内的完整组合关系；不返回删除操作，因为版本和基础资源必须保留给历史引用。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PhysicalCourtResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /venue/resources/courts/{courtId}/status:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/sports/{sportTypeId}/status:
     patch:
-      tags: [VenueResources]
-      summary: 上架或下架物理场地
-      operationId: updateCurrentVenuePhysicalCourtStatus
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
       parameters:
-        - $ref: '#/components/parameters/CourtId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResourceStatusUpdateRequest'
-      responses:
-        '200':
-          description: 仅变更上架状态，不删除基础资源、可售单元或版本。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /venue/resources/sellable-units:
-    get:
-      tags: [VenueResources]
-      summary: 分页查询当前场馆可售单元
-      operationId: listCurrentVenueSellableUnits
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/StatusFilter'
-      security: [{ adminSession: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericPageResponse' }
-  /venue/resources/sellable-units/{sellableUnitId}/status:
-    patch:
-      tags: [VenueResources]
-      summary: 上架或下架可售单元
-      operationId: updateCurrentVenueSellableUnitStatus
-      parameters:
-        - $ref: '#/components/parameters/SellableUnitId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResourceStatusUpdateRequest'
-      responses:
-        '200':
-          description: 仅变更可售单元上架状态。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /venue/resources/sellable-units/{sellableUnitId}/versions:
-    get:
-      tags: [VenueResources]
-      summary: 分页查询可售单元的资源组合版本
-      operationId: listCurrentVenueSellableUnitVersions
-      parameters:
-        - $ref: '#/components/parameters/SellableUnitId'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 当前版本为 CURRENT，旧版本为 RETIRED；两者都只读保留。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SellableUnitVersionPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [VenueResources]
-      summary: 创建可售单元资源组合新版本
-      operationId: createCurrentVenueSellableUnitVersion
-      parameters:
-        - $ref: '#/components/parameters/SellableUnitId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateSellableUnitVersionRequest'
-      responses:
-        '200':
-          description: 服务端锁定可售单元后将旧 CURRENT 版本转为 RETIRED，并创建下一个 CURRENT 版本；版本和基础资源均无删除接口。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SellableUnitVersionResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/schedules/versions:
-    get:
-      tags: [VenueSchedules]
-      summary: 分页查询当前场馆排期版本
-      operationId: listCurrentVenueScheduleVersions
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/ScheduleVersionStatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回当前场馆范围内的草稿与已发布排期版本摘要。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduleVersionPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [VenueSchedules]
-      summary: 创建排期草稿
-      operationId: createCurrentVenueScheduleDraft
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScheduleVersionRequest'
-      responses:
-        '200':
-          description: 创建可整体编辑的 DRAFT 版本；时段必须按 30 分钟对齐且共享基础资源不能重叠。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduleVersionResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/schedules/versions/{scheduleVersionId}:
-    get:
-      tags: [VenueSchedules]
-      summary: 查询排期版本及其周模板和特殊日期
-      operationId: getCurrentVenueScheduleVersion
-      parameters:
-        - $ref: '#/components/parameters/ScheduleVersionId'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 特殊日期记录存在时完整覆盖同日周模板；CLOSED 没有子时段，OVERRIDE 只使用其子时段。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduleVersionResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-    put:
-      tags: [VenueSchedules]
-      summary: 整体替换排期草稿配置
-      operationId: updateCurrentVenueScheduleDraft
-      parameters:
-        - $ref: '#/components/parameters/ScheduleVersionId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScheduleVersionRequest'
-      responses:
-        '200':
-          description: 仅 DRAFT 可更新，已发布版本必须以新草稿替代。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduleVersionResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/schedules/versions/{scheduleVersionId}/publish:
-    post:
-      tags: [VenueSchedules]
-      summary: 发布排期草稿并生成滚动库存
-      operationId: publishCurrentVenueScheduleVersion
-      parameters:
-        - $ref: '#/components/parameters/ScheduleVersionId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 发布后生成未来 bookingMaxDays 天固定时段和基础资源 30 分钟原子；旧版本保留其生效日期范围。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScheduleVersionResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /venue/schedules/inventory:
-    get:
-      tags: [VenueSchedules]
-      summary: 分页查询指定日期库存日历
-      operationId: listCurrentVenueInventory
-      parameters:
-        - $ref: '#/components/parameters/InventoryDate'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/InventoryStatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 返回固定可售实例及其基础资源原子状态；只有 AVAILABLE 可供后续预约和人工占用选择。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InventorySlotPageResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-  /venue/blocks:
-    get:
-      tags: [VenueSchedules]
-      summary: 分页查询人工占用
-      operationId: listCurrentVenueManualBlocks
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/BlockDateFilter'
-        - $ref: '#/components/parameters/BlockStatusFilter'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅返回当前场馆人工占用记录。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ManualBlockPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [VenueSchedules]
-      summary: 对固定可售实例创建人工占用
-      operationId: createCurrentVenueManualBlock
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateManualBlockRequest'
-      responses:
-        '200':
-          description: 服务端按基础资源和原子开始时间稳定排序加锁，全部 AVAILABLE 才创建占用并转为 INTERNAL_BLOCKED。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ManualBlockResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /mini/auth/login:
-    post:
-      tags: [MiniAuth]
-      summary: 交换开发环境 Mock 微信授权码并签发小程序会话
-      operationId: miniLogin
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MiniLoginRequest'
-      responses:
-        '200':
-          description: 返回短期访问令牌和一次性可轮换刷新令牌。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MiniSessionResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-  /mini/auth/refresh:
-    post:
-      tags: [MiniAuth]
-      summary: 轮换小程序刷新令牌
-      operationId: refreshMiniSession
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MiniRefreshRequest'
-      responses:
-        '200':
-          description: 旧刷新令牌同步失效，返回新访问及刷新令牌。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MiniSessionResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-  /mini/auth/logout:
-    post:
-      tags: [MiniAuth]
-      summary: 撤销当前小程序会话
-      operationId: miniLogout
-      security: [{ miniBearer: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/EmptySuccessResponse' }
-  /mini/venues:
-    get:
-      tags: [MiniVenues]
-      summary: 公开查询当前可预约场馆
-      operationId: listPublicVenues
-      security: []
-      parameters:
-        - name: date
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-        - name: sportCategoryId
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: keyword
-          in: query
-          required: false
-          schema:
-            type: string
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      responses:
-        '200':
-          description: 仅返回主体/门店可交易且至少存在一个全部原子可售时段的场馆。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PublicVenuePageResponse'
-  /mini/venues/{storeId}:
-    get:
-      tags: [MiniVenues]
-      summary: 查询公开场馆详情及指定日期固定可售时段
-      operationId: getPublicVenue
-      security: []
-      parameters:
-        - $ref: '#/components/parameters/StoreId'
-        - name: date
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: 仅返回当前排期、门禁开放且所有关联原子可售的固定时段。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PublicVenueResponse'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /mini/venues/sport-categories:
-    get:
-      tags: [MiniVenues]
-      summary: 查询指定日期有可售场馆的运动分类
-      operationId: listPublicSportCategories
-      security: []
-      parameters:
-        - name: date
-          in: query
-          schema: { type: string, format: date }
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /mini/bookings:
-    get:
-      tags: [MiniBookings]
-      summary: 分页查询当前用户订单
-      operationId: listMyBookings
-      parameters:
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [PENDING_PAYMENT, PAYMENT_PROCESSING, PAYMENT_UNKNOWN, CONFIRMED, CANCELLED, COMPLETED]
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - miniBearer: []
-      responses:
-        '200':
-          description: 返回当前用户订单。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingOrderPageResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-    post:
-      tags: [MiniBookings]
-      summary: 创建待支付固定时段预约
-      operationId: createBooking
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - name: X-Device-Id
-          in: header
-          required: true
-          schema:
-            type: string
-            maxLength: 128
-      security:
-        - miniBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateBookingRequest'
-      responses:
-        '200':
-          description: 原子库存已进入 PAYMENT_LOCKED，支付占用有效期为十分钟。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingOrderResponse'
-        '400':
-          $ref: '#/components/responses/BusinessError'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-        '429':
-          $ref: '#/components/responses/BusinessError'
-  /mini/bookings/{orderId}:
-    get:
-      tags: [MiniBookings]
-      summary: 查询当前用户订单详情
-      operationId: getMyBooking
-      parameters:
-        - name: orderId
+        - name: sportTypeId
           in: path
           required: true
-          schema:
-            type: string
-      security:
-        - miniBearer: []
+          schema: { type: integer, format: int64 }
+      requestBody: { $ref: '#/components/requestBodies/Status' }
       responses:
-        '200':
-          description: 返回当前用户订单详情。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingOrderResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-  /mini/bookings/{orderId}/cancel:
-    post:
-      tags: [MiniBookings]
-      summary: 用户取消未开始且未核销的预约
-      operationId: cancelMyBooking
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/reports/operations:
+    get:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 查询平台经营总报表，可筛选单个场馆
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/OrderId'
-      security:
-        - miniBearer: []
+        - { name: venueId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/StartDate' }
+        - { $ref: '#/components/parameters/EndDate' }
       responses:
-        '200':
-          description: 返回取消事实及可选退款单 ID；退款通过 Mock Provider 后续推进。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-        '409':
-          $ref: '#/components/responses/BusinessError'
-  /mini/bookings/{orderId}/verification-credential:
-    post:
-      tags: [MiniBookings]
-      summary: 签发当前用户订单的二维码与短码核销凭证
-      operationId: issueBookingVerificationCredential
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/reports/service-fees:
+    get:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 查询平台月度服务费，可筛选单个场馆
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/OrderId'
-      security:
-        - miniBearer: []
+        - { name: venueId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/BillingMonth' }
       responses:
-        '200':
-          description: 只返回当前有效凭证；原始令牌不会被服务端持久化。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VerificationCredentialResponse'
-  /mini/payments:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/profile/detail:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/profile/update:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VenueWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/profile/cover:
     post:
-      tags: [MiniPayments]
-      summary: 为当前用户待支付订单创建 Mock 支付单
-      operationId: createMockPayment
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sports/list:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sports/create:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/courts/list:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/courts/create:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Court' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/courts/{courtId}:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
       parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-      security:
-        - miniBearer: []
+        - name: courtId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody: { $ref: '#/components/requestBodies/Court' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/courts/{courtId}/image:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters:
+        - name: courtId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/weekly-slots/list:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/weekly-slots/create:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/WeeklySlot' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/weekly-slots/{weeklySlotId}/update:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/WeeklySlotId' }]
+      requestBody: { $ref: '#/components/requestBodies/WeeklySlot' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/weekly-slots/{weeklySlotId}/disable:
+    delete:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/WeeklySlotId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/weekly-slots/copy-day:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PaymentCreateRequest'
+              type: object
+              required: [sourceDay, targetDays]
+              properties:
+                sourceDay: { type: integer, minimum: 1, maximum: 7 }
+                targetDays: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
       responses:
-        '200':
-          description: 返回 CREATED 支付单。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentResponse'
-  /mini/payments/{paymentId}:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/list:
     get:
-      tags: [MiniPayments]
-      summary: 查询当前用户支付单
-      operationId: getMockPayment
-      parameters:
-        - $ref: '#/components/parameters/PaymentId'
-      security:
-        - miniBearer: []
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/Date' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentResponse'
-  /mini/payments/{paymentId}/mock-result:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/create:
     post:
-      tags: [MiniPayments]
-      summary: 注入 Mock 支付结果
-      operationId: applyMockPaymentResult
-      parameters:
-        - $ref: '#/components/parameters/PaymentId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-      security:
-        - miniBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MockResultRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
       responses:
-        '200':
-          description: SUCCESS、FAILED、UNKNOWN 通过持久化 inbox 幂等推进支付和订单状态。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentResponse'
-  /mini/refunds/{refundId}:
-    get:
-      tags: [MiniRefunds]
-      summary: 查询当前用户退款单
-      operationId: getMyRefund
-      parameters:
-        - $ref: '#/components/parameters/RefundId'
-      security:
-        - miniBearer: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefundResponse'
-  /mini/refunds/{refundId}/mock-result:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/{sessionSlotId}/open:
     post:
-      tags: [MiniRefunds]
-      summary: 注入 Mock 退款结果
-      operationId: applyMockRefundResult
-      parameters:
-        - $ref: '#/components/parameters/RefundId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-      security:
-        - miniBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MockRefundResultRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 重新开启未来且未冲突的已关闭场次
+      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefundResponse'
-  /venue/orders:
-    get:
-      tags: [VenueOrders]
-      summary: 分页查询当前场馆订单
-      operationId: listVenueOrders
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: orderStatus
-          in: query
-          schema: { type: string }
-        - name: orderNo
-          in: query
-          schema: { type: string }
-        - name: paymentStatus
-          in: query
-          schema: { type: string }
-        - name: dateFrom
-          in: query
-          schema: { type: string, format: date }
-        - name: dateTo
-          in: query
-          schema: { type: string, format: date }
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPageResponse'
-  /venue/orders/{orderId}:
-    get:
-      tags: [VenueOrders]
-      summary: 查询当前场馆订单详情
-      operationId: getVenueOrder
-      parameters:
-        - $ref: '#/components/parameters/OrderId'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderResponse'
-  /venue/orders/{orderId}/cancel:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/{sessionSlotId}/close:
     post:
-      tags: [VenueOrders]
-      summary: 场馆取消未开始订单
-      operationId: cancelVenueOrder
-      parameters:
-        - $ref: '#/components/parameters/OrderId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReasonRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 关闭无有效预约的具体场次
+      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /venue/orders/{orderId}/contact-phone/reveal:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/close-day:
     post:
-      tags: [VenueOrders]
-      summary: 授权查看完整联系人手机号
-      operationId: revealVenueOrderPhone
-      parameters:
-        - $ref: '#/components/parameters/OrderId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReasonRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 关闭指定日期内无有效预约的具体场次
       responses:
-        '200':
-          description: 返回 contactPhone 并写入审计。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /admin/orders:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/bookings/list:
     get:
-      tags: [PlatformOrders]
-      summary: 分页查询全局订单
-      operationId: listPlatformOrders
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: orderStatus
-          in: query
-          schema: { type: string }
-        - name: orderNo
-          in: query
-          schema: { type: string }
-        - name: paymentStatus
-          in: query
-          schema: { type: string }
-        - name: dateFrom
-          in: query
-          schema: { type: string, format: date }
-        - name: dateTo
-          in: query
-          schema: { type: string, format: date }
-        - name: keyword
-          in: query
-          description: 场馆名称关键词。
-          schema: { type: string }
-      security:
-        - adminSession: []
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/OptionalDate' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPageResponse'
-  /admin/orders/{orderId}:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/reports/operations:
     get:
-      tags: [PlatformOrders]
-      summary: 查询全局订单详情
-      operationId: getPlatformOrder
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 查询当前场馆经营报表
       parameters:
-        - $ref: '#/components/parameters/OrderId'
-      security:
-        - adminSession: []
+        - { $ref: '#/components/parameters/StartDate' }
+        - { $ref: '#/components/parameters/EndDate' }
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderResponse'
-  /admin/orders/{orderId}/contact-phone/reveal:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/reports/service-fees:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 查询当前场馆月度服务费
+      parameters: [{ $ref: '#/components/parameters/BillingMonth' }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/bookings/create:
     post:
-      tags: [PlatformOrders]
-      summary: 平台授权查看完整联系人手机号
-      operationId: revealPlatformOrderPhone
-      parameters:
-        - $ref: '#/components/parameters/OrderId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReasonRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 创建线下预约
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /venue/employees:
-    get:
-      tags: [Employees]
-      summary: 分页查询当前场馆店员
-      operationId: listVenueEmployees
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/bookings/{bookingId}/cancel:
     post:
-      tags: [Employees]
-      summary: 新增店员
-      operationId: createVenueEmployee
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmployeeCreateRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/BookingId' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /venue/employees/{employeeId}/status:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/employees/list:
+    get:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/employees/create:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/employees/{employeeId}/binding-code:
+    post:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/employees/{employeeId}/status:
     patch:
-      tags: [Employees]
-      summary: 启用或停用店员
-      operationId: updateVenueEmployeeStatus
-      parameters:
-        - $ref: '#/components/parameters/EmployeeId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EmployeeStatusRequest'
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
+      requestBody: { $ref: '#/components/requestBodies/Status' }
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /venue/employees/verifications:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/sports:
     get:
-      tags: [Employees]
-      summary: 分页查询当前场馆全部核销记录
-      operationId: listVenueVerifications
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: result
-          in: query
-          schema: { type: string }
-        - name: employeeId
-          in: query
-          schema: { type: string }
-        - name: dateFrom
-          in: query
-          schema: { type: string, format: date }
-        - name: dateTo
-          in: query
-          schema: { type: string, format: date }
-      security: [{ adminSession: [] }]
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericPageResponse' }
-  /venue/employees/{employeeId}/binding-code:
-    post:
-      tags: [Employees]
-      summary: 生成一次性店员绑定码
-      operationId: issueEmployeeBindingCode
-      parameters:
-        - $ref: '#/components/parameters/EmployeeId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: bindingCode 只在本响应显示一次。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /staff/binding:
-    post:
-      tags: [StaffBinding]
-      summary: 使用一次性绑定码绑定店员微信身份
-      operationId: bindStaffIdentity
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/StaffBindingRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StaffSessionResponse'
-  /staff/binding/refresh:
-    post:
-      tags: [StaffBinding]
-      summary: 轮换店员刷新令牌
-      operationId: refreshStaffSession
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StaffSessionResponse'
-  /staff/binding/session:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/venues:
     get:
-      tags: [StaffBinding]
-      summary: 查询当前店员会话
-      operationId: getStaffSession
-      security:
-        - staffBearer: []
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      parameters:
+        - { name: keyword, in: query, schema: { type: string } }
+        - { name: sportTypeId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/OptionalDate' }
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /staff/binding/logout:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/venues/{venueId}:
+    get:
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/VenueId' }
+        - { name: sportTypeId, in: query, schema: { type: integer, format: int64 } }
+        - { $ref: '#/components/parameters/OptionalDate' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/bookings/list:
+    get:
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/bookings/create:
     post:
-      tags: [StaffBinding]
-      summary: 撤销当前店员会话
-      operationId: logoutStaffSession
-      security:
-        - staffBearer: []
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      summary: 创建待支付预约并占位
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-  /staff/verifications/short-code/precheck:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/bookings/{bookingId}:
+    get:
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/BookingId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/bookings/{bookingId}/mock-pay:
     post:
-      tags: [StaffVerifications]
-      summary: 短码核销预检
-      operationId: precheckShortCodeVerification
-      security:
-        - staffBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShortCodePrecheckRequest'
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/BookingId' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VerificationPrecheckResponse'
-  /staff/verifications/qr/precheck:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/bookings/{bookingId}/cancel:
     post:
-      tags: [StaffVerifications]
-      summary: 二维码核销预检
-      operationId: precheckQrVerification
-      security:
-        - staffBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QrPrecheckRequest'
+      tags: [Mini]
+      security: [{ MiniToken: [] }]
+      parameters: [{ $ref: '#/components/parameters/BookingId' }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VerificationPrecheckResponse'
-  /staff/verifications/{credentialId}/confirm:
+        '200': { $ref: '#/components/responses/Success' }
+  /mini/staff/bind:
     post:
-      tags: [StaffVerifications]
-      summary: 确认首次核销或返回首次成功事实
-      operationId: confirmVerification
-      parameters:
-        - $ref: '#/components/parameters/CredentialId'
-      security:
-        - staffBearer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VerificationConfirmRequest'
+      tags: [Staff]
+      security: [{ MiniToken: [] }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /staff/verifications/mine:
+        '200': { $ref: '#/components/responses/Success' }
+  /staff/verifications/records:
     get:
-      tags: [StaffVerifications]
-      summary: 分页查询本人核销尝试记录
-      operationId: listMyVerificationAttempts
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - staffBearer: []
+      tags: [Staff]
+      security: [{ MiniToken: [] }]
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /admin/billing/fee-ledgers:
-    get:
-      tags: [Billing]
-      summary: 查询全平台服务费分录
-      operationId: listPlatformFeeLedgers
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /admin/billing/monthly-bills:
-    get:
-      tags: [Billing]
-      summary: 查询全平台月账单
-      operationId: listPlatformMonthlyBills
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /admin/billing/monthly-bills/generate:
+        '200': { $ref: '#/components/responses/Success' }
+  /staff/verifications/verify:
     post:
-      tags: [Billing]
-      summary: 生成指定账期的月账单草稿
-      operationId: generateMonthlyBills
-      parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BillingPeriodRequest'
+      tags: [Staff]
+      security: [{ MiniToken: [] }]
+      summary: 二维码或短码核销
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /admin/billing/monthly-bills/{billId}:
-    get:
-      tags: [Billing]
-      summary: 查询平台月账单、分录与收款详情
-      operationId: getPlatformMonthlyBill
-      parameters:
-        - $ref: '#/components/parameters/BillId'
-      security: [{ adminSession: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /admin/billing/monthly-bills/{billId}/issue:
-    post:
-      tags: [Billing]
-      summary: 签发草稿账单
-      operationId: issueMonthlyBill
-      parameters:
-        - $ref: '#/components/parameters/BillId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IssueBillRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /admin/billing/monthly-bills/{billId}/payments:
-    post:
-      tags: [Billing]
-      summary: 记录全额线下收款并标记已支付
-      operationId: recordMonthlyBillPayment
-      parameters:
-        - $ref: '#/components/parameters/BillId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/BillPaymentRequest'
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericResponse'
-  /venue/billing/fee-ledgers:
-    get:
-      tags: [Billing]
-      summary: 查询当前场馆服务费分录
-      operationId: listVenueFeeLedgers
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /venue/billing/monthly-bills:
-    get:
-      tags: [Billing]
-      summary: 查询当前场馆月账单
-      operationId: listVenueMonthlyBills
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /venue/billing/monthly-bills/{billId}:
-    get:
-      tags: [Billing]
-      summary: 查询当前场馆月账单、分录与收款详情
-      operationId: getVenueMonthlyBill
-      parameters:
-        - $ref: '#/components/parameters/BillId'
-      security: [{ adminSession: [] }]
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/GenericResponse' }
-  /admin/audit-logs:
-    get:
-      tags: [AuditLogs]
-      summary: 查询平台审计记录
-      operationId: listPlatformAuditLogs
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: action
-          in: query
-          schema: { type: string }
-        - name: result
-          in: query
-          schema: { type: string }
-        - name: targetType
-          in: query
-          schema: { type: string }
-        - name: dateFrom
-          in: query
-          schema: { type: string, format: date }
-        - name: dateTo
-          in: query
-          schema: { type: string, format: date }
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /venue/audit-logs:
-    get:
-      tags: [AuditLogs]
-      summary: 查询当前场馆审计记录
-      operationId: listVenueAuditLogs
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: action
-          in: query
-          schema: { type: string }
-        - name: result
-          in: query
-          schema: { type: string }
-        - name: targetType
-          in: query
-          schema: { type: string }
-        - name: dateFrom
-          in: query
-          schema: { type: string, format: date }
-        - name: dateTo
-          in: query
-          schema: { type: string, format: date }
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericPageResponse'
-  /venue/blocks/{blockId}/cancel:
-    post:
-      tags: [VenueSchedules]
-      summary: 取消未来人工占用
-      operationId: cancelCurrentVenueManualBlock
-      parameters:
-        - $ref: '#/components/parameters/BlockId'
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/CsrfToken'
-      security:
-        - adminSession: []
-      responses:
-        '200':
-          description: 仅未来 ACTIVE 占用可取消；若其排期版本已过期，原子转为 RECONCILE_PENDING。
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EmptySuccessResponse'
-        '401':
-          $ref: '#/components/responses/BusinessError'
-        '403':
-          $ref: '#/components/responses/BusinessError'
-        '404':
-          $ref: '#/components/responses/BusinessError'
-        '409':
-          $ref: '#/components/responses/BusinessError'
+        '200': { $ref: '#/components/responses/Success' }
 components:
   securitySchemes:
-    adminSession:
+    AdminToken:
       type: apiKey
-      in: cookie
-      name: ADMIN_SESSION
-    miniBearer:
-      type: http
-      scheme: bearer
-      bearerFormat: opaque
-    staffBearer:
-      type: http
-      scheme: bearer
-      bearerFormat: opaque
+      in: header
+      name: X-Admin-Token
+    MiniToken:
+      type: apiKey
+      in: header
+      name: X-Mini-Token
   parameters:
-    IdempotencyKey:
-      name: Idempotency-Key
-      in: header
-      required: true
-      schema:
-        type: string
-        maxLength: 128
-      description: 同一认证账号、方法和路径内唯一；重复提交返回首次处理结果。
-    CsrfToken:
-      name: X-CSRF-Token
-      in: header
-      required: true
-      schema:
-        type: string
-      description: 与当前 Cookie 会话绑定的 CSRF 令牌。
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    PageSize:
-      name: pageSize
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 100
-        default: 20
-    StoreId:
-      name: storeId
+    VenueId:
+      name: venueId
       in: path
       required: true
-      schema:
-        type: string
-    OrganizationId:
-      name: organizationId
+      schema: { type: integer, format: int64 }
+    BookingId:
+      name: bookingId
       in: path
       required: true
-      schema:
-        type: string
-    BlockerId:
-      name: blockerId
+      schema: { type: integer, format: int64 }
+    WeeklySlotId:
+      name: weeklySlotId
       in: path
       required: true
-      schema:
-        type: string
-    CategoryId:
-      name: categoryId
+      schema: { type: integer, format: int64 }
+    SessionSlotId:
+      name: sessionSlotId
       in: path
       required: true
-      schema:
-        type: string
-    RentalTypeId:
-      name: rentalTypeId
-      in: path
-      required: true
-      schema:
-        type: string
-    CourtId:
-      name: courtId
-      in: path
-      required: true
-      schema:
-        type: string
-    SellableUnitId:
-      name: sellableUnitId
-      in: path
-      required: true
-      schema:
-        type: string
-    ScheduleVersionId:
-      name: scheduleVersionId
-      in: path
-      required: true
-      schema:
-        type: string
-    BlockId:
-      name: blockId
-      in: path
-      required: true
-      schema:
-        type: string
-    SportCategoryIdFilter:
-      name: sportCategoryId
-      in: query
-      required: false
-      schema:
-        type: string
-    StatusFilter:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-        enum: [ACTIVE, DISABLED]
-    ScheduleVersionStatusFilter:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-        enum: [DRAFT, PUBLISHED, RETIRED]
-    InventoryDate:
-      name: date
-      in: query
-      required: true
-      schema:
-        type: string
-        format: date
-        example: '2026-08-10'
-    InventoryStatusFilter:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-        enum: [AVAILABLE, PAYMENT_LOCKED, PROCESSING, UNKNOWN, BOOKED, INTERNAL_BLOCKED, RECONCILE_PENDING]
-    BlockDateFilter:
-      name: date
-      in: query
-      required: false
-      schema:
-        type: string
-        format: date
-    BlockStatusFilter:
-      name: status
-      in: query
-      required: false
-      schema:
-        type: string
-        enum: [ACTIVE, CANCELLED]
-    OrderId:
-      name: orderId
-      in: path
-      required: true
-      schema: { type: string }
-    PaymentId:
-      name: paymentId
-      in: path
-      required: true
-      schema: { type: string }
-    RefundId:
-      name: refundId
-      in: path
-      required: true
-      schema: { type: string }
+      schema: { type: integer, format: int64 }
     EmployeeId:
       name: employeeId
       in: path
       required: true
-      schema: { type: string }
-    CredentialId:
-      name: credentialId
-      in: path
+      schema: { type: integer, format: int64 }
+    Date:
+      name: date
+      in: query
       required: true
-      schema: { type: string }
-    BillId:
-      name: billId
-      in: path
+      schema: { type: string, format: date }
+    OptionalDate:
+      name: date
+      in: query
+      required: false
+      schema: { type: string, format: date }
+    BillingMonth:
+      name: billingMonth
+      in: query
       required: true
-      schema: { type: string }
-  responses:
-    BusinessError:
-      description: 协议或业务拒绝；仍使用统一外层结构。
+      schema:
+        type: string
+        pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+    StartDate:
+      name: startDate
+      in: query
+      required: true
+      schema: { type: string, format: date }
+    EndDate:
+      name: endDate
+      in: query
+      required: true
+      schema: { type: string, format: date }
+  schemas:
+    VenueWrite:
+      type: object
+      required: [name, address, phone]
+      properties:
+        name: { type: string }
+        city: { type: string, default: 郑州市 }
+        address: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        phone: { type: string }
+        facilities: { type: string }
+        entryNotice: { type: string }
+        bookingDaysAhead: { type: integer, default: 7 }
+        minBookingMinutes: { type: integer, default: 30 }
+        cancelCutoffMinutes: { type: integer, default: 120 }
+  requestBodies:
+    Name:
+      required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
-  schemas:
-    ResponseMeta:
-      type: object
-      required: [code, serviceCode, msg]
-      properties:
-        code:
-          type: integer
-          example: 1
-          description: 1 表示业务处理成功，其他取值由错误码表冻结。
-        serviceCode:
-          type: string
-          enum: ['10000']
-          example: '10000'
-        msg:
-          type: string
-          example: 业务处理成功
-    ErrorResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              type: object
-              nullable: true
-              additionalProperties: true
-            code:
-              example: 0
-            msg:
-              example: 业务处理失败
-    LoginRequest:
-      type: object
-      required: [username, password]
-      properties:
-        username:
-          type: string
-          maxLength: 64
-        password:
-          type: string
-          format: password
-        localMfaCode:
-          type: string
-          description: 平台管理员在 MVP 环境使用的本地二次验证码；场馆管理员不传。
-    LoginData:
-      type: object
-      required: [accountId, username, displayName, role, forcePasswordChange]
-      properties:
-        accountId:
-          type: string
-          example: '1'
-        username:
-          type: string
-          example: platform_admin
-        displayName:
-          type: string
-          example: 平台管理员
-        role:
-          type: string
-          enum: [PLATFORM_ADMIN, VENUE_ADMIN]
-        organizationId:
-          type: string
-          nullable: true
-        storeId:
-          type: string
-          nullable: true
-        forcePasswordChange:
-          type: boolean
-    LoginResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/LoginData'
-    ChangePasswordRequest:
-      type: object
-      required: [currentPassword, newPassword, confirmPassword]
-      properties:
-        currentPassword:
-          type: string
-          format: password
-        newPassword:
-          type: string
-          format: password
-        confirmPassword:
-          type: string
-          format: password
-    EmptySuccessResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              type: object
-              nullable: true
-              example: null
-    CreateOrganizationRequest:
-      type: object
-      required: [organizationName, storeName, adminDisplayName, adminUsername, initialPassword, serviceRateBasisPoints]
-      properties:
-        organizationName:
-          type: string
-          maxLength: 128
-        storeName:
-          type: string
-          maxLength: 128
-        adminDisplayName:
-          type: string
-          maxLength: 64
-        adminUsername:
-          type: string
-          maxLength: 64
-        initialPassword:
-          type: string
-          format: password
-          description: 平台管理员在线下交接前设置的临时密码；仅用于写入密码哈希，不出现在响应、审计或普通日志中。
-        serviceRateBasisPoints:
-          type: integer
-          minimum: 0
-          maximum: 10000
-          example: 600
-    CreateOrganizationData:
-      type: object
-      required: [organizationId, organizationNo, storeId, storeNo, adminAccountId, adminUsername]
-      properties:
-        organizationId:
-          type: string
-          example: '101'
-        organizationNo:
-          type: string
-          example: ORG202608070001
-        storeId:
-          type: string
-          example: '201'
-        storeNo:
-          type: string
-          example: STR202608070001
-        adminAccountId:
-          type: string
-          example: '301'
-        adminUsername:
-          type: string
-          example: xinghe_admin
-        forcePasswordChange:
-          type: boolean
-          example: true
-    CreateOrganizationResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/CreateOrganizationData'
-    SessionData:
-      type: object
-      required: [accountId, username, displayName, role, forcePasswordChange, expiresAt]
-      properties:
-        accountId:
-          type: string
-        username:
-          type: string
-        displayName:
-          type: string
-        role:
-          type: string
-          enum: [PLATFORM_ADMIN, VENUE_ADMIN]
-        organizationId:
-          type: string
-          nullable: true
-        storeId:
-          type: string
-          nullable: true
-        forcePasswordChange:
-          type: boolean
-        expiresAt:
-          type: string
-          example: '2026-08-07 18:30:00'
-    SessionResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/SessionData'
-    VenueProfileData:
-      type: object
-      required: [organizationId, organizationNo, organizationName, storeId, storeNo, storeName, status, serviceRateBasisPoints, createTime]
-      properties:
-        organizationId:
-          type: string
-        organizationNo:
-          type: string
-        organizationName:
-          type: string
-        storeId:
-          type: string
-        storeNo:
-          type: string
-        storeName:
-          type: string
-        status:
-          type: string
-          enum: [ACTIVE, PAUSED]
-        serviceRateBasisPoints:
-          type: integer
-          example: 600
-        introduction:
-          type: string
-          nullable: true
-        address:
-          type: string
-          nullable: true
-        contactPhone:
-          type: string
-          nullable: true
-        longitude:
-          type: string
-          nullable: true
-          example: '121.4737010'
-        latitude:
-          type: string
-          nullable: true
-          example: '31.2304160'
-        imageUrls:
-          type: array
-          items:
-            type: string
-        facilities:
-          type: array
-          items:
-            type: string
-        trafficNote:
-          type: string
-          nullable: true
-        entryNotice:
-          type: string
-          nullable: true
-        equipmentNote:
-          type: string
-          nullable: true
-        parkingNote:
-          type: string
-          nullable: true
-        liabilityNote:
-          type: string
-          nullable: true
-        createTime:
-          type: string
-          example: '2026-08-07 10:00:00'
-    VenueProfileResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/VenueProfileData'
-    VenueProfileUpdateRequest:
-      type: object
-      required: [storeName]
-      properties:
-        storeName:
-          type: string
-          maxLength: 128
-        introduction:
-          type: string
-          nullable: true
-        address:
-          type: string
-          nullable: true
-          maxLength: 255
-        contactPhone:
-          type: string
-          nullable: true
-          maxLength: 32
-        longitude:
-          type: string
-          nullable: true
-        latitude:
-          type: string
-          nullable: true
-        imageUrls:
-          type: array
-          items:
-            type: string
-        facilities:
-          type: array
-          items:
-            type: string
-        trafficNote:
-          type: string
-          nullable: true
-        entryNotice:
-          type: string
-          nullable: true
-        equipmentNote:
-          type: string
-          nullable: true
-        parkingNote:
-          type: string
-          nullable: true
-        liabilityNote:
-          type: string
-          nullable: true
-    StatusUpdateRequest:
-      type: object
-      required: [status]
-      properties:
-        status:
-          type: string
-          enum: [ACTIVE, PAUSED, DISABLED]
-    SportCategoryUpsertRequest:
-      type: object
-      required: [code, name, sortOrder]
-      properties:
-        parentId:
-          type: string
-          nullable: true
-          description: 为空时创建一级分类；非空时必须引用一级分类。
-        code:
-          type: string
-          maxLength: 32
-        name:
-          type: string
-          maxLength: 64
-        icon:
-          type: string
-          nullable: true
-          maxLength: 64
-        sortOrder:
-          type: integer
-          minimum: 0
-    SportCategoryData:
-      type: object
-      required: [id, parentId, code, name, level, sortOrder, status]
-      properties:
-        id:
-          type: string
-        parentId:
-          type: string
-          nullable: true
-        code:
-          type: string
-        name:
-          type: string
-        level:
-          type: integer
-          enum: [1, 2]
-        icon:
-          type: string
-          nullable: true
-        sortOrder:
-          type: integer
-        status:
-          type: string
-          enum: [ACTIVE, DISABLED]
-        createTime:
-          type: string
-    SportCategoryResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/SportCategoryData'
-    SportCategoryPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/SportCategoryPageData'
-    SportCategoryPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/SportCategoryData'
-    RentalTypeUpsertRequest:
-      type: object
-      required: [sportCategoryId, name]
-      properties:
-        sportCategoryId:
-          type: string
-        name:
-          type: string
-          maxLength: 64
-    RentalTypeData:
-      type: object
-      required: [id, sportCategoryId, sportCategoryName, name, status]
-      properties:
-        id:
-          type: string
-        sportCategoryId:
-          type: string
-        sportCategoryName:
-          type: string
-        name:
-          type: string
-        status:
-          type: string
-          enum: [ACTIVE, DISABLED]
-        createTime:
-          type: string
-    RentalTypeResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/RentalTypeData'
-    RentalTypePageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/RentalTypePageData'
-    RentalTypePageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/RentalTypeData'
-    CreatePhysicalCourtRequest:
-      type: object
-      required: [sportCategoryId, fullRentalTypeId, halfRentalTypeId, name, sortOrder]
-      properties:
-        sportCategoryId:
-          type: string
-          description: 启用的二级运动项目 ID。
-        fullRentalTypeId:
-          type: string
-          description: 用于自动创建全场可售单元的启用出租类型 ID。
-        halfRentalTypeId:
-          type: string
-          description: 用于自动创建 A/B 半场可售单元的启用出租类型 ID，必须与 fullRentalTypeId 不同。
-        name:
-          type: string
-          maxLength: 128
-        sortOrder:
-          type: integer
-          minimum: 0
-    ResourceStatusUpdateRequest:
-      type: object
-      required: [status]
-      properties:
-        status:
-          type: string
-          enum: [ACTIVE, DISABLED]
-    CreateSellableUnitVersionRequest:
-      type: object
-      required: [baseResourceIds]
-      properties:
-        baseResourceIds:
-          type: array
-          minItems: 1
-          maxItems: 2
-          uniqueItems: true
-          items:
-            type: string
-          description: 当前物理场地内 A/B 基础资源的非空子集；顺序不影响组合含义。
-    BaseResourceData:
-      type: object
-      required: [id, code, name, sortOrder]
-      properties:
-        id:
-          type: string
-        code:
-          type: string
-          enum: [A, B]
-        name:
-          type: string
-        sortOrder:
-          type: integer
-    SellableUnitVersionData:
-      type: object
-      required: [id, versionNo, versionStatus, baseResources, createTime]
-      properties:
-        id:
-          type: string
-        versionNo:
-          type: integer
-          minimum: 1
-        versionStatus:
-          type: string
-          enum: [CURRENT, RETIRED]
-        baseResources:
-          type: array
-          minItems: 1
-          maxItems: 2
-          items:
-            $ref: '#/components/schemas/BaseResourceData'
-        createTime:
-          type: string
-    SellableUnitData:
-      type: object
-      required: [id, rentalTypeId, rentalTypeName, name, sortOrder, status, currentVersion, createTime]
-      properties:
-        id:
-          type: string
-        rentalTypeId:
-          type: string
-        rentalTypeName:
-          type: string
-        name:
-          type: string
-        sortOrder:
-          type: integer
-        status:
-          type: string
-          enum: [ACTIVE, DISABLED]
-        currentVersion:
-          $ref: '#/components/schemas/SellableUnitVersionData'
-        createTime:
-          type: string
-    PhysicalCourtData:
-      type: object
-      required: [id, sportCategoryId, sportCategoryCode, sportCategoryName, name, sortOrder, status, createTime]
-      properties:
-        id:
-          type: string
-        sportCategoryId:
-          type: string
-        sportCategoryCode:
-          type: string
-        sportCategoryName:
-          type: string
-        name:
-          type: string
-        sortOrder:
-          type: integer
-        status:
-          type: string
-          enum: [ACTIVE, DISABLED]
-        baseResources:
-          type: array
-          description: 场地详情接口返回，分页列表不返回。
-          items:
-            $ref: '#/components/schemas/BaseResourceData'
-        sellableUnits:
-          type: array
-          description: 场地详情接口返回，包含每个可售单元的当前版本。
-          items:
-            $ref: '#/components/schemas/SellableUnitData'
-        createTime:
-          type: string
-    PhysicalCourtResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/PhysicalCourtData'
-    PhysicalCourtPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/PhysicalCourtData'
-    PhysicalCourtPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/PhysicalCourtPageData'
-    SellableUnitVersionResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/SellableUnitVersionData'
-    SellableUnitVersionPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/SellableUnitVersionData'
-    SellableUnitVersionPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/SellableUnitVersionPageData'
-    ScheduleSlotRequest:
-      type: object
-      required: [sellableUnitVersionId, startTime, endTime, priceFen]
-      properties:
-        weekDay:
-          type: integer
-          minimum: 1
-          maximum: 7
-          nullable: true
-          description: 周模板必填；特殊日期子时段不传。
-        sellableUnitVersionId:
-          type: string
-          description: 当前上架可售单元版本 ID。
-        startTime:
-          type: string
-          example: '18:00'
-          description: 必须按 30 分钟对齐。
-        endTime:
-          type: string
-          example: '19:30'
-          description: 必须按 30 分钟对齐且晚于 startTime。
-        priceFen:
-          type: integer
-          minimum: 1
-          description: 整段总价，单位分。
-          example: 6000
-    SpecialDateRequest:
-      type: object
-      required: [date, specialType, slots]
-      properties:
-        date:
-          type: string
-          format: date
-        specialType:
-          type: string
-          enum: [CLOSED, OVERRIDE]
-        slots:
-          type: array
-          description: CLOSED 时必须为空；OVERRIDE 时至少一条，且每条不传 weekDay。
-          items:
-            $ref: '#/components/schemas/ScheduleSlotRequest'
-    ScheduleVersionRequest:
-      type: object
-      required: [effectiveFrom]
-      properties:
-        effectiveFrom:
-          type: string
-          format: date
-          description: 不早于场馆业务日期今天。
-        weeklySlots:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduleSlotRequest'
-        specialDates:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpecialDateRequest'
-    ScheduleSlotData:
-      type: object
-      required: [id, sellableUnitVersionId, sellableUnitName, sellableUnitVersionNo, startTime, endTime, priceFen]
-      properties:
-        id:
-          type: string
-        weekDay:
-          type: integer
-          nullable: true
-        sellableUnitVersionId:
-          type: string
-        sellableUnitName:
-          type: string
-        sellableUnitVersionNo:
-          type: integer
-        startTime:
-          type: string
-        endTime:
-          type: string
-        priceFen:
-          type: integer
-    SpecialDateData:
-      type: object
-      required: [id, date, specialType, slots]
-      properties:
-        id:
-          type: string
-        date:
-          type: string
-          format: date
-        specialType:
-          type: string
-          enum: [CLOSED, OVERRIDE]
-        slots:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduleSlotData'
-    ScheduleVersionData:
-      type: object
-      required: [id, versionNo, versionStatus, effectiveFrom, createTime]
-      properties:
-        id:
-          type: string
-        versionNo:
-          type: integer
-        versionStatus:
-          type: string
-          enum: [DRAFT, PUBLISHED, RETIRED]
-        effectiveFrom:
-          type: string
-          format: date
-        effectiveTo:
-          type: string
-          format: date
-          nullable: true
-        publishedAt:
-          type: string
-          nullable: true
-        weeklySlots:
-          type: array
-          description: 详情接口返回，分页摘要不返回。
-          items:
-            $ref: '#/components/schemas/ScheduleSlotData'
-        specialDates:
-          type: array
-          description: 详情接口返回，分页摘要不返回。
-          items:
-            $ref: '#/components/schemas/SpecialDateData'
-        createTime:
-          type: string
-    ScheduleVersionResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/ScheduleVersionData'
-    ScheduleVersionPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScheduleVersionData'
-    ScheduleVersionPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/ScheduleVersionPageData'
-    InventoryAtomData:
-      type: object
-      required: [baseResourceId, startTime, inventoryStatus]
-      properties:
-        baseResourceId:
-          type: string
-        startTime:
-          type: string
-        inventoryStatus:
-          type: string
-          enum: [AVAILABLE, PAYMENT_LOCKED, PROCESSING, UNKNOWN, BOOKED, INTERNAL_BLOCKED, RECONCILE_PENDING]
-        manualBlockId:
-          type: string
-          nullable: true
-    InventorySlotData:
-      type: object
-      required: [id, scheduleVersionId, sellableUnitVersionId, sellableUnitName, sellableUnitVersionNo, date, startTime, endTime, priceFen, inventoryStatus, atoms]
-      properties:
-        id:
-          type: string
-        scheduleVersionId:
-          type: string
-        sellableUnitVersionId:
-          type: string
-        sellableUnitName:
-          type: string
-        sellableUnitVersionNo:
-          type: integer
-        date:
-          type: string
-          format: date
-        startTime:
-          type: string
-        endTime:
-          type: string
-        priceFen:
-          type: integer
-        inventoryStatus:
-          type: string
-          enum: [AVAILABLE, PAYMENT_LOCKED, PROCESSING, UNKNOWN, BOOKED, INTERNAL_BLOCKED, RECONCILE_PENDING]
-        atoms:
-          type: array
-          items:
-            $ref: '#/components/schemas/InventoryAtomData'
-    InventorySlotPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/InventorySlotData'
-    InventorySlotPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/InventorySlotPageData'
-    CreateManualBlockRequest:
-      type: object
-      required: [inventorySlotId, blockType]
-      properties:
-        inventorySlotId:
-          type: string
-        blockType:
-          type: string
-          enum: [OFFLINE_RESERVATION, MAINTENANCE, EVENT, SELF_USE]
-        contactName:
-          type: string
-          nullable: true
-          maxLength: 64
-        contactPhone:
-          type: string
-          nullable: true
-          maxLength: 32
-        remark:
-          type: string
-          nullable: true
-          maxLength: 255
-    ManualBlockData:
-      type: object
-      required: [id, blockNo, inventorySlotId, sellableUnitVersionId, sellableUnitName, sellableUnitVersionNo, date, startTime, endTime, blockType, blockStatus, createTime]
-      properties:
-        id:
-          type: string
-        blockNo:
-          type: string
-        inventorySlotId:
-          type: string
-        sellableUnitVersionId:
-          type: string
-        sellableUnitName:
-          type: string
-        sellableUnitVersionNo:
-          type: integer
-        date:
-          type: string
-          format: date
-        startTime:
-          type: string
-        endTime:
-          type: string
-        blockType:
-          type: string
-          enum: [OFFLINE_RESERVATION, MAINTENANCE, EVENT, SELF_USE]
-        contactName:
-          type: string
-          nullable: true
-        contactPhone:
-          type: string
-          nullable: true
-        remark:
-          type: string
-          nullable: true
-        blockStatus:
-          type: string
-          enum: [ACTIVE, CANCELLED]
-        cancelledAt:
-          type: string
-          nullable: true
-        createTime:
-          type: string
-    ManualBlockResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/ManualBlockData'
-    ManualBlockPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/ManualBlockData'
-    ManualBlockPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/ManualBlockPageData'
-    ManualTransactionBlockerRequest:
-      type: object
-      required: [reason]
-      properties:
-        reason:
-          type: string
-          minLength: 1
-          maxLength: 255
-    TransactionBlockerData:
-      type: object
-      required: [id, causeType, causeId, blockerStatus, reason, createTime]
-      properties:
-        id:
-          type: string
-        causeType:
-          type: string
-          enum: [MANUAL, PLATFORM_STATUS, BALANCE_INSUFFICIENT, RISK]
-        causeId:
-          type: string
-        blockerStatus:
-          type: string
-          enum: [ACTIVE, RELEASED]
-        reason:
-          type: string
-        releasedAt:
-          type: string
-          nullable: true
-        releasedOperatorId:
-          type: string
-          nullable: true
-        createTime:
-          type: string
-    TransactionGateData:
-      type: object
-      required: [id, scopeType, scopeId, gateStatus, gateVersion, blockers]
-      properties:
-        id:
-          type: string
-        scopeType:
-          type: string
-          enum: [ORGANIZATION, STORE]
-        scopeId:
-          type: string
-        gateStatus:
-          type: string
-          enum: [OPEN, BLOCKED]
-        gateVersion:
-          type: string
-        blockers:
-          type: array
-          items:
-            $ref: '#/components/schemas/TransactionBlockerData'
-    TransactionStatusData:
-      type: object
-      required: [organizationGate, storeGate, allowsNewTransaction]
-      properties:
-        organizationGate:
-          $ref: '#/components/schemas/TransactionGateData'
-        storeGate:
-          $ref: '#/components/schemas/TransactionGateData'
-        allowsNewTransaction:
-          type: boolean
-    TransactionStatusResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/TransactionStatusData'
-    MiniLoginRequest:
-      type: object
-      required: [code]
-      properties:
-        code:
-          type: string
-          description: '开发测试环境使用 mock: 开头的授权码；生产适配器替换为微信临时 code。'
-    MiniRefreshRequest:
-      type: object
-      required: [refreshToken]
-      properties:
-        refreshToken:
-          type: string
-    MiniSessionData:
-      type: object
-      required: [userId, accessToken, refreshToken, accessExpiresAt]
-      properties:
-        userId:
-          type: string
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-        accessExpiresAt:
-          type: string
-    MiniSessionResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/MiniSessionData'
-    PublicVenueSlotData:
-      type: object
-      required: [id, scheduleVersionId, sellableUnitVersionId, sellableUnitName, sellableUnitVersionNo, startTime, endTime, priceFen]
-      properties:
-        id:
-          type: string
-        scheduleVersionId:
-          type: string
-        sellableUnitVersionId:
-          type: string
-        sellableUnitName:
-          type: string
-        sellableUnitVersionNo:
-          type: integer
-        startTime:
-          type: string
-        endTime:
-          type: string
-        priceFen:
-          type: integer
-    PublicVenueData:
-      type: object
-      required: [storeId, storeName, imageUrls, facilities]
-      properties:
-        storeId:
-          type: string
-        storeName:
-          type: string
-        address:
-          type: string
-          nullable: true
-        contactPhone:
-          type: string
-          nullable: true
-        introduction:
-          type: string
-          nullable: true
-        imageUrls:
-          type: array
-          items:
-            type: string
-        facilities:
-          type: array
-          items:
-            type: string
-        trafficNote:
-          type: string
-          nullable: true
-        entryNotice:
-          type: string
-          nullable: true
-        equipmentNote:
-          type: string
-          nullable: true
-        parkingNote:
-          type: string
-          nullable: true
-        date:
-          type: string
-          format: date
-        slots:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicVenueSlotData'
-    PublicVenueResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/PublicVenueData'
-    PublicVenuePageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/PublicVenueData'
-    PublicVenuePageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/PublicVenuePageData'
-    CreateBookingRequest:
-      type: object
-      required: [inventorySlotId, contactName, contactPhone, privacyPolicyVersion, privacyConsentScene]
-      properties:
-        inventorySlotId:
-          type: string
-        contactName:
-          type: string
-          maxLength: 64
-        contactPhone:
-          type: string
-          maxLength: 32
-        privacyPolicyVersion:
-          type: string
-          maxLength: 64
-        privacyConsentScene:
-          type: string
-          maxLength: 64
-    BookingOrderData:
-      type: object
-      required: [id, orderNo, storeId, storeName, inventorySlotId, scheduleVersionId, sellableUnitVersionId, sellableUnitName, date, startTime, endTime, priceFen, orderStatus, holdExpiresAt, createTime]
-      properties:
-        id:
-          type: string
-        orderNo:
-          type: string
-        storeId:
-          type: string
-        storeName:
-          type: string
-        inventorySlotId:
-          type: string
-        scheduleVersionId:
-          type: string
-        sellableUnitVersionId:
-          type: string
-        sellableUnitName:
-          type: string
-        date:
-          type: string
-          format: date
-        startTime:
-          type: string
-        endTime:
-          type: string
-        priceFen:
-          type: integer
-        contactName:
-          type: string
-        contactPhone:
-          type: string
-        orderStatus:
-          type: string
-          enum: [PENDING_PAYMENT, PAYMENT_PROCESSING, PAYMENT_UNKNOWN, CONFIRMED, CANCELLED, COMPLETED]
-        holdExpiresAt:
-          type: string
-        payTime:
-          type: string
-          nullable: true
-        cancelTime:
-          type: string
-          nullable: true
-        completedTime:
-          type: string
-          nullable: true
-        createTime:
-          type: string
-    BookingOrderResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/BookingOrderData'
-    BookingOrderPageData:
-      type: object
-      required: [current, size, total, records]
-      properties:
-        current:
-          type: string
-        size:
-          type: string
-        total:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/BookingOrderData'
-    BookingOrderPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              $ref: '#/components/schemas/BookingOrderPageData'
-    GenericResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              type: object
-              additionalProperties: true
-    GenericPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              type: object
-              required: [current, size, total, records]
-              properties:
-                current: { type: string }
-                size: { type: string }
-                total: { type: string }
-                records:
-                  type: array
-                  items:
-                    type: object
-                    additionalProperties: true
-    OrganizationData:
-      type: object
-      required: [organizationId, organizationNo, organizationName, organizationStatus, storeId, storeNo, storeName, storeStatus, serviceRateBasisPoints, createTime]
-      properties:
-        organizationId: { type: string }
-        organizationNo: { type: string }
-        organizationName: { type: string }
-        organizationStatus: { type: string, enum: [ACTIVE, PAUSED] }
-        storeId: { type: string }
-        storeNo: { type: string }
-        storeName: { type: string }
-        storeStatus: { type: string, enum: [ACTIVE, PAUSED] }
-        serviceRateBasisPoints: { type: integer }
-        adminAccountId: { type: string, nullable: true }
-        adminUsername: { type: string, nullable: true }
-        adminDisplayName: { type: string, nullable: true }
-        adminStatus: { type: string, nullable: true }
-        forcePasswordChange: { type: boolean, nullable: true }
-        createTime: { type: string }
-    OrganizationPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          required: [data]
-          properties:
-            data:
-              type: object
-              required: [current, size, total, records]
-              properties:
-                current: { type: string }
-                size: { type: string }
-                total: { type: string }
-                records:
-                  type: array
-                  items: { $ref: '#/components/schemas/OrganizationData' }
-    ResetVenueAdminPasswordRequest:
-      type: object
-      required: [newPassword]
-      properties:
-        newPassword: { type: string, format: password }
-    PaymentCreateRequest:
-      type: object
-      required: [orderId]
-      properties:
-        orderId: { type: string }
-    MockResultRequest:
-      type: object
-      required: [outcome, providerEventNo]
-      properties:
-        outcome: { type: string, enum: [SUCCESS, FAILED, UNKNOWN] }
-        providerEventNo: { type: string }
-    PaymentData:
-      type: object
-      required: [id, paymentNo, orderId, provider, amountFen, currency, paymentStatus, createTime]
-      properties:
-        id: { type: string }
-        paymentNo: { type: string }
-        orderId: { type: string }
-        provider: { type: string, enum: [MOCK] }
-        providerPaymentNo: { type: string, nullable: true }
-        amountFen: { type: integer }
-        currency: { type: string, enum: [CNY] }
-        paymentStatus: { type: string, enum: [CREATED, PROCESSING, SUCCEEDED, FAILED, CLOSED, UNKNOWN] }
-        providerStatus: { type: string, nullable: true }
-        providerResultAt: { type: string, nullable: true }
-        refundId: { type: string, nullable: true }
-        createTime: { type: string }
-    PaymentResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data: { $ref: '#/components/schemas/PaymentData' }
-    MockRefundResultRequest:
-      type: object
-      required: [outcome]
-      properties:
-        outcome: { type: string, enum: [SUCCESS, PROCESSING, UNKNOWN] }
-    RefundData:
-      type: object
-      required: [id, refundNo, orderId, paymentId, amountFen, currency, refundStatus, createTime]
-      properties:
-        id: { type: string }
-        refundNo: { type: string }
-        orderId: { type: string }
-        paymentId: { type: string }
-        sourceType: { type: string }
-        amountFen: { type: integer }
-        currency: { type: string, enum: [CNY] }
-        refundStatus: { type: string, enum: [REFUND_PENDING, REFUND_PROCESSING, REFUND_SUCCEEDED, REFUND_UNKNOWN] }
-        providerStatus: { type: string, nullable: true }
-        providerResultAt: { type: string, nullable: true }
-        createTime: { type: string }
-    RefundResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data: { $ref: '#/components/schemas/RefundData' }
-    ReasonRequest:
-      type: object
-      required: [reason]
-      properties:
-        reason: { type: string, maxLength: 255 }
-    EmployeeCreateRequest:
-      type: object
-      required: [employeeName]
-      properties:
-        employeeName: { type: string, maxLength: 64 }
-    EmployeeStatusRequest:
-      type: object
-      required: [employeeStatus]
-      properties:
-        employeeStatus: { type: string, enum: [ACTIVE, DISABLED] }
-    StaffBindingRequest:
-      type: object
-      required: [bindingCode, code]
-      properties:
-        bindingCode: { type: string }
-        code:
-          type: string
-          description: 开发测试环境使用 mock 前缀微信代码
-    RefreshTokenRequest:
-      type: object
-      required: [refreshToken]
-      properties:
-        refreshToken: { type: string }
-    StaffSessionData:
-      type: object
-      required: [employeeId, employeeName, organizationId, storeId, accessToken, refreshToken, accessExpiresAt]
-      properties:
-        employeeId: { type: string }
-        employeeName: { type: string }
-        organizationId: { type: string }
-        storeId: { type: string }
-        accessToken: { type: string }
-        refreshToken: { type: string }
-        accessExpiresAt: { type: string }
-    StaffSessionResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data: { $ref: '#/components/schemas/StaffSessionData' }
-    ShortCodePrecheckRequest:
-      type: object
-      required: [shortCode]
-      properties:
-        shortCode: { type: string, minLength: 6, maxLength: 6 }
-    QrPrecheckRequest:
-      type: object
-      required: [qrToken]
-      properties:
-        qrToken: { type: string }
-    VerificationConfirmRequest:
-      type: object
-      required: [verificationMethod]
-      properties:
-        verificationMethod: { type: string, enum: [QR, SHORT_CODE] }
-    VerificationPrecheckData:
-      type: object
-      required: [credentialId, verificationMethod, orderNo, storeName, sellableUnitName, date, startTime, endTime, contactName, contactPhone, validFrom, validTo]
-      properties:
-        credentialId: { type: string }
-        verificationMethod: { type: string, enum: [QR, SHORT_CODE] }
-        orderNo: { type: string }
-        storeName: { type: string }
-        sellableUnitName: { type: string }
-        date: { type: string }
-        startTime: { type: string }
-        endTime: { type: string }
-        contactName: { type: string }
-        contactPhone: { type: string }
-        validFrom: { type: string }
-        validTo: { type: string }
-    VerificationPrecheckResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data: { $ref: '#/components/schemas/VerificationPrecheckData' }
-    VerificationCredentialData:
-      type: object
-      required: [orderId, orderNo, qrToken, shortCode, validFrom, validTo]
-      properties:
-        orderId: { type: string }
-        orderNo: { type: string }
-        qrToken:
-          type: string
-          readOnly: true
-          description: 仅在签发响应中返回的动态二维码令牌
-        shortCode: { type: string }
-        validFrom: { type: string }
-        validTo: { type: string }
-        storeName: { type: string }
-        sellableUnitName: { type: string }
-        date: { type: string }
-        startTime: { type: string }
-        endTime: { type: string }
-    VerificationCredentialResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data: { $ref: '#/components/schemas/VerificationCredentialData' }
-    OrderResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data:
-              type: object
-              additionalProperties: true
-    OrderPageResponse:
-      allOf:
-        - $ref: '#/components/schemas/ResponseMeta'
-        - type: object
-          properties:
-            data:
-              type: object
-              required: [current, size, total, records]
-              properties:
-                current: { type: string }
-                size: { type: string }
-                total: { type: string }
-                records:
-                  type: array
-                  items: { type: object, additionalProperties: true }
-    BillingPeriodRequest:
-      type: object
-      required: [billingPeriod]
-      properties:
-        billingPeriod: { type: string, pattern: '^\\d{4}-\\d{2}$' }
-    IssueBillRequest:
-      type: object
-      required: [dueDate]
-      properties:
-        dueDate: { type: string, format: date }
-    BillPaymentRequest:
-      type: object
-      required: [amountFen, remark]
-      properties:
-        amountFen: { type: integer, minimum: 1 }
-        remark: { type: string, maxLength: 255 }
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+    Status:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status: { type: string }
+    Court:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, sportIds]
+            properties:
+              name: { type: string }
+              sportIds: { type: array, items: { type: integer, format: int64 } }
+              status: { type: string }
+    WeeklySlot:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [courtId, sportTypeId, dayOfWeek, startTime, endTime, priceFen]
+            properties:
+              courtId: { type: integer, format: int64 }
+              sportTypeId: { type: integer, format: int64 }
+              dayOfWeek: { type: integer, minimum: 1, maximum: 7 }
+              startTime: { type: string, format: time }
+              endTime: { type: string, format: time }
+              priceFen: { type: integer, minimum: 0 }
+  responses:
+    Success:
+      description: 成功
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, msg]
+            properties:
+              data: {}
+              code: { type: integer, example: 0 }
+              msg: { type: string, example: 成功 }

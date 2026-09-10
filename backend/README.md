@@ -1,24 +1,51 @@
-# Sports Booking Admin API
+# 约场后端
 
-已完成 Mock MVP 功能闭环：身份与租户、场馆供给、库存与排期、预约与 Mock 支付、取消退款、员工核销、自动完成、服务费账单，以及 PC 管理端和用户端。接口契约见 `../docs/openapi.yaml`。
+Spring Boot + MyBatis-Plus + MySQL/Redis 的本地 Mock MVP。
 
-## 本地启动
+## 代码分层
 
-1. 按 `../infra/.env.example` 配置并启动 MySQL 和 Redis。
-2. 在当前 shell 导出 `MYSQL_USER`、`MYSQL_PASSWORD`；如数据库地址不是默认值，再导出 `APP_DB_URL`。
-3. 首次启动时，同时导出 `APP_BOOTSTRAP_ADMIN_USERNAME`、`APP_BOOTSTRAP_ADMIN_PASSWORD`，用于创建唯一的平台管理员。应用不记录该密码；同名账号已存在时不执行任何覆盖。
-4. 执行 `./mvn-project -Dmaven.repo.local=target/m2 spring-boot:run`。该脚本只为当前命令使用项目专用 Java 17，不修改系统的 Java 8 环境变量。Flyway 会自动执行 V1 至 V11 迁移。
+后端参考 `jworker-app` 使用三个 Maven 模块，不提供 SDK：
 
-新建场馆管理员时，平台管理员在受控管理端设置临时密码并线下交接；接口响应、审计和普通日志均不包含该密码。
+- `sports-booking-base`：枚举、Mapper、PO、Mapper 查询 BO 和 Mapper XML。
+- `sports-booking-biz`：业务异常、常量、Request、VO 以及 `Service + ServiceImpl`。
+- `sports-booking-server`：启动类、统一响应、应用配置、Controller、认证拦截器和 Runner。
 
-## 验收
+依赖方向固定为 `server -> biz -> base`。Controller 只处理协议参数、身份上下文和响应转换；Mapper 只返回 base 的 PO/BO，Service 负责转换成 biz VO。
 
-在 `backend/` 运行以下命令可验证本地 MySQL 上的完整 Mock 闭环，脚本会创建独立的临时数据并在结束时停止应用：
+## 启动
 
 ```sh
-./mvn-project -Dmaven.repo.local=target/m2 test
-./mvn-project -Dmaven.repo.local=target/m2 package
-zsh scripts/verify-t06-runtime.zsh
+cd ../infra
+docker compose up -d
+
+cd ../backend
+set -a
+source ../infra/.env
+set +a
+./mvn-project package
+/Users/gjm/Library/Java/project-jdks/zulu17.66.19-ca-jdk17.0.19-macosx_aarch64/Contents/Home/bin/java \
+  -jar sports-booking-server/target/sports-booking-server.jar
 ```
 
-运行态脚本还会短暂停止并恢复本地 Redis，验证管理端登录、小程序/店员刷新、店员绑定和短码核销在 Redis 不可用时返回 503，恢复后主链路继续可用。
+接口基址：`http://127.0.0.1:8089/api`。
+
+Swagger 文档：
+
+- Swagger UI：`http://127.0.0.1:8089/api/swagger-ui/index.html`
+- OpenAPI JSON：`http://127.0.0.1:8089/api/v3/api-docs`
+
+本地默认账号：
+
+- 平台管理员：`admin / admin123`
+- 三个演示场馆管理员：`venue1`、`venue2`、`venue3`，密码均为 `venue123`
+
+生产环境必须覆盖后台密码、`APP_CREDENTIAL_SECRET`，并设置 `APP_DEMO_SEED_ENABLED=false`。
+
+## 验证
+
+```sh
+./mvn-project test
+./mvn-project package
+```
+
+真实微信能力不在当前范围；模拟支付和退款仅用于本地演示。
