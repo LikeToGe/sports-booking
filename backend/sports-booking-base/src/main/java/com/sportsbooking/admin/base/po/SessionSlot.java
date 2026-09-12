@@ -27,6 +27,10 @@ public class SessionSlot {
     public Long sportTypeId;
     /** 来源周场次模板 ID，临时加场时为空。 */
     public Long weeklySlotId;
+    /** 是否由场馆人工编辑，人工覆盖后不再跟随周场次同步。 */
+    public Boolean manualOverride;
+    /** 周场次原本生成的日期，人工改期后仍用于阻止模板重复生成。 */
+    public LocalDate templateSlotDate;
     /** 场次所属日期。 */
     public LocalDate slotDate;
     /** 场次开始时间。 */

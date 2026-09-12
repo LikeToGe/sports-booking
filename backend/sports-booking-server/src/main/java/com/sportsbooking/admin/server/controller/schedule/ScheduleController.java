@@ -140,6 +140,22 @@ public class ScheduleController {
     }
 
     /**
+     * 功能描述: 编辑任意状态的具体场次。
+     * 创建时间: 2026/09/11
+     *
+     * @param sessionSlotId 具体场次 ID
+     * @param body 场次保存请求
+     * @return 更新后的具体场次
+     * @author gjm
+     */
+    @PutMapping("/sessions/{sessionSlotId}")
+    public ApiResponse<SessionSlotResultVO> updateSession(
+            @PathVariable long sessionSlotId, @RequestBody ExtraSlotCreateRequest body) {
+        return ApiResponse.success(SessionSlotResultVO.from(scheduleService.updateSession(
+                venuePrincipal().getVenueId(), sessionSlotId, body)));
+    }
+
+    /**
      * 功能描述: 关闭未被占用的具体场次。
      * 创建时间: 2026/08/28 16:29
      *

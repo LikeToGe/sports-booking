@@ -252,7 +252,7 @@ onMounted(async () => {
 .service-fee-value {
   font-family: var(--font-numeric);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .report-summary {
@@ -261,7 +261,7 @@ onMounted(async () => {
   margin: 0;
   overflow: hidden;
   border: 1px solid var(--color-rule-2);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-panel);
   background: var(--color-surface);
 }
 
@@ -278,7 +278,7 @@ onMounted(async () => {
 .report-summary dt {
   color: var(--color-muted);
   font-size: var(--text-xs);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .report-summary dd {
@@ -287,10 +287,10 @@ onMounted(async () => {
   font-family: var(--font-numeric);
   font-size: var(--text-lg);
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-@media (max-width: 47.999rem) {
+@media (max-width: 59.999rem) {
   .report-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

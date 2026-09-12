@@ -13,6 +13,7 @@ const error = ref("");
 const formError = ref("");
 const createDialog = ref<HTMLDialogElement>();
 const cancelDialog = ref<HTMLDialogElement>();
+const editingBooking = ref<BookingView | null>(null);
 const cancelling = ref<BookingView | null>(null);
 const cancelReason = ref("");
 const sessions = ref<SessionView[]>([]);
@@ -46,24 +47,43 @@ async function load() {
   }
 }
 
-async function createOffline() {
+async function saveOffline() {
   formError.value = "";
   try {
-    await api("/venue-admin/bookings/create", {
-      method: "POST",
-      body: JSON.stringify({ sessionSlotId: offlineSlotId.value, contactName: offlineName.value, contactPhone: offlinePhone.value }),
-    });
+    if (editingBooking.value) {
+      await api(`/venue-admin/bookings/${editingBooking.value.id}/contact`, {
+        method: "PUT",
+        body: JSON.stringify({ contactName: offlineName.value, contactPhone: offlinePhone.value }),
+      });
+    } else {
+      await api("/venue-admin/bookings/create", {
+        method: "POST",
+        body: JSON.stringify({ sessionSlotId: offlineSlotId.value, contactName: offlineName.value, contactPhone: offlinePhone.value }),
+      });
+    }
     offlineName.value = "";
     offlinePhone.value = "";
     offlineSlotId.value = 0;
     createDialog.value?.close();
     await load();
   } catch (reason) {
-    formError.value = reason instanceof Error ? reason.message : "线下预约创建失败";
+    formError.value = reason instanceof Error ? reason.message : "线下预约保存失败";
   }
 }
 
 function openCreate() {
+  editingBooking.value = null;
+  offlineName.value = "";
+  offlinePhone.value = "";
+  offlineSlotId.value = sessions.value.find(session => session.status === "OPEN")?.id || 0;
+  formError.value = "";
+  createDialog.value?.showModal();
+}
+
+function openEdit(booking: BookingView) {
+  editingBooking.value = booking;
+  offlineName.value = booking.contactName;
+  offlinePhone.value = booking.contactPhone;
   formError.value = "";
   createDialog.value?.showModal();
 }
@@ -119,10 +139,11 @@ onMounted(load);
             <td data-label="金额">{{ money(booking.amountFen) }}</td>
             <td data-label="来源">{{ booking.source === "ONLINE" ? "小程序" : "线下" }}</td>
             <td data-label="状态"><span class="status" :data-tone="statusTone(booking.status)">{{ statusLabel(booking.status) }}</span></td>
-            <td data-label="操作">
+            <td data-label="操作"><div class="toolbar">
+              <button v-if="booking.source === 'OFFLINE'" class="button secondary" type="button" @click="openEdit(booking)">编辑联系人</button>
               <button v-if="booking.status === 'CONFIRMED'" class="button danger" type="button" @click="openCancel(booking)">取消预约</button>
-              <span v-else>—</span>
-            </td>
+              <span v-if="booking.source !== 'OFFLINE' && booking.status !== 'CONFIRMED'">—</span>
+            </div></td>
           </tr>
           </tbody>
         </table>
@@ -132,13 +153,13 @@ onMounted(load);
     </section>
 
     <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>新增线下预约</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="createOffline">
+      <form method="dialog" class="modal-head"><h2>{{ editingBooking ? "编辑线下预约联系人" : "新增线下预约" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="saveOffline">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}</p>
-        <label class="field"><span>开放场次</span><select v-model.number="offlineSlotId" required><option v-for="session in sessions.filter(item => item.status === 'OPEN')" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }}</option></select></label>
+        <label v-if="!editingBooking" class="field"><span>开放场次</span><select v-model.number="offlineSlotId" required><option v-for="session in sessions.filter(item => item.status === 'OPEN')" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }}</option></select></label>
         <label class="field"><span>联系人</span><input v-model.trim="offlineName" required></label>
         <label class="field"><span>手机号</span><input v-model.trim="offlinePhone" inputmode="tel" required></label>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="!offlineSlotId">创建预约</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="!editingBooking && !offlineSlotId">{{ editingBooking ? "保存修改" : "创建预约" }}</button></div>
       </form>
     </dialog>
 

@@ -2,4 +2,4 @@
 .summary { display: grid; gap: 14rpx; padding: 28rpx; }
 .total { margin-top: 8rpx; font-size: 46rpx; }
 .form-panel { display: grid; gap: 24rpx; padding: 28rpx; }
-.rule { display: grid; gap: 10rpx; padding: 22rpx 24rpx; border-radius: 12rpx; background: var(--signal-soft); font-size: 26rpx; }
+.rule { display: grid; gap: 10rpx; padding: 22rpx 24rpx; border-radius: 16rpx; background: var(--signal-soft); font-size: 26rpx; }

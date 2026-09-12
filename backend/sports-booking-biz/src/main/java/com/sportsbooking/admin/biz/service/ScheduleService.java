@@ -83,6 +83,18 @@ public interface ScheduleService {
     SessionSlot createExtra(long venueId, ExtraSlotCreateRequest body);
 
     /**
+     * 功能描述: 编辑任意状态的具体场次，不改写已有预约快照。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param sessionSlotId 具体场次 ID
+     * @param body 场次保存请求
+     * @return 更新后的具体场次
+     * @author gjm
+     */
+    SessionSlot updateSession(long venueId, long sessionSlotId, ExtraSlotCreateRequest body);
+
+    /**
      * 功能描述: 关闭一条未被占用的具体场次。
      * 创建时间: 2026/08/28 16:29
      *

@@ -13,14 +13,14 @@
   ],
   "window": {
     "navigationBarTitleText": "约场",
-    "navigationBarBackgroundColor": "#f7f8fa",
-    "navigationBarTextStyle": "black",
-    "backgroundColor": "#f2f4f7",
+    "navigationBarBackgroundColor": "#111111",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5",
     "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#68726d",
-    "selectedColor": "#147a43",
+    "color": "#707072",
+    "selectedColor": "#007d48",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [

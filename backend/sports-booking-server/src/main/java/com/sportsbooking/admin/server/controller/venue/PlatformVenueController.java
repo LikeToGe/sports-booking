@@ -3,8 +3,11 @@ package com.sportsbooking.admin.server.controller.venue;
 import com.sportsbooking.admin.server.api.ApiResponse;
 import com.sportsbooking.admin.biz.pojo.request.EnableStatusUpdateRequest;
 import com.sportsbooking.admin.biz.pojo.request.NameRequest;
+import com.sportsbooking.admin.biz.pojo.request.PasswordResetRequest;
 import com.sportsbooking.admin.biz.pojo.request.VenueCreateRequest;
+import com.sportsbooking.admin.biz.pojo.request.VenueAdminUpdateRequest;
 import com.sportsbooking.admin.biz.pojo.request.ServiceFeeRateUpdateRequest;
+import com.sportsbooking.admin.biz.pojo.request.VenueSaveRequest;
 import com.sportsbooking.admin.biz.pojo.request.VenueStatusUpdateRequest;
 import com.sportsbooking.admin.biz.pojo.vo.PlatformVenueVO;
 import com.sportsbooking.admin.biz.service.VenueCatalogService;
@@ -13,6 +16,7 @@ import com.sportsbooking.admin.server.support.Principals;
 import com.sportsbooking.admin.biz.pojo.vo.SportTypeVO;
 import com.sportsbooking.admin.biz.pojo.vo.VenueVO;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,7 +51,9 @@ public class PlatformVenueController {
     @GetMapping("/venues/list")
     public ApiResponse<List<PlatformVenueVO>> listVenues() {
         Principals.platform();
-        return ApiResponse.success(venueService.listPlatformVenues().stream().map(PlatformVenueVO::from).toList());
+        Map<Long, String> adminUsernames = venueService.listVenueAdminUsernames();
+        return ApiResponse.success(venueService.listPlatformVenues().stream()
+                .map(venue -> PlatformVenueVO.from(venue, adminUsernames.get(venue.id))).toList());
     }
 
     /**
@@ -63,6 +70,55 @@ public class PlatformVenueController {
         return ApiResponse.success(VenueVO.from(venueService.createVenue(
                 body.getVenue(), body.getAdminUsername(), body.getAdminPassword()
         )));
+    }
+
+    /**
+     * 功能描述: 平台更新指定场馆资料和预约规则。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param body 场馆保存请求
+     * @return 更新后的场馆
+     * @author gjm
+     */
+    @PutMapping("/venues/{venueId}/update")
+    public ApiResponse<VenueVO> updateVenue(@PathVariable long venueId, @RequestBody VenueSaveRequest body) {
+        Principals.platform();
+        return ApiResponse.success(VenueVO.from(venueService.updateVenue(venueId, body)));
+    }
+
+    /**
+     * 功能描述: 平台重置指定场馆管理员的登录密码。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param body 新密码请求
+     * @return 是否重置成功
+     * @author gjm
+     */
+    @PatchMapping("/venues/{venueId}/admin-password")
+    public ApiResponse<Boolean> resetAdminPassword(
+            @PathVariable long venueId, @RequestBody PasswordResetRequest body) {
+        Principals.platform();
+        venueService.resetAdminPassword(venueId, body.getPassword());
+        return ApiResponse.success(true);
+    }
+
+    /**
+     * 功能描述: 平台更新指定场馆管理员账号。
+     * 创建时间: 2026/09/12
+     *
+     * @param venueId 场馆 ID
+     * @param body 管理员账号请求
+     * @return 是否更新成功
+     * @author gjm
+     */
+    @PutMapping("/venues/{venueId}/admin")
+    public ApiResponse<Boolean> updateVenueAdmin(
+            @PathVariable long venueId, @RequestBody VenueAdminUpdateRequest body) {
+        Principals.platform();
+        venueService.updateVenueAdmin(venueId, body.getUsername(), body.getPassword());
+        return ApiResponse.success(true);
     }
 
     /**
@@ -122,6 +178,23 @@ public class PlatformVenueController {
     public ApiResponse<SportTypeVO> createSport(@RequestBody NameRequest body) {
         Principals.platform();
         return ApiResponse.success(SportTypeVO.from(venueCatalogService.createGlobalSport(body.getName())));
+    }
+
+    /**
+     * 功能描述: 更新平台全局运动类型名称。
+     * 创建时间: 2026/09/11
+     *
+     * @param sportTypeId 运动类型 ID
+     * @param body 新名称请求
+     * @return 更新后的运动类型
+     * @author gjm
+     */
+    @PutMapping("/sports/{sportTypeId}")
+    public ApiResponse<SportTypeVO> updateSportName(
+            @PathVariable long sportTypeId, @RequestBody NameRequest body) {
+        Principals.platform();
+        return ApiResponse.success(SportTypeVO.from(
+                venueCatalogService.updateGlobalSportName(sportTypeId, body.getName())));
     }
 
     /**

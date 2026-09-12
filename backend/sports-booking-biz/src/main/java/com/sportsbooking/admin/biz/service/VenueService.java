@@ -9,6 +9,7 @@ import com.sportsbooking.admin.biz.pojo.vo.PublicVenueVO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -27,6 +28,15 @@ public interface VenueService {
      * @author gjm
      */
     List<Venue> listPlatformVenues();
+
+    /**
+     * 功能描述: 批量查询各场馆首个管理员用户名。
+     * 创建时间: 2026/09/12
+     *
+     * @return 场馆 ID 与管理员用户名映射
+     * @author gjm
+     */
+    Map<Long, String> listVenueAdminUsernames();
 
     /**
      * 功能描述: 创建场馆及其首个管理员。
@@ -60,6 +70,27 @@ public interface VenueService {
      * @author gjm
      */
     Venue updateVenue(long venueId, VenueSaveRequest body);
+
+    /**
+     * 功能描述: 重置场馆首个管理员账号的登录密码。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param password 新登录密码
+     * @author gjm
+     */
+    void resetAdminPassword(long venueId, String password);
+
+    /**
+     * 功能描述: 更新场馆管理员用户名及可选新密码。
+     * 创建时间: 2026/09/12
+     *
+     * @param venueId 场馆 ID
+     * @param username 登录用户名
+     * @param password 新密码，留空时不修改
+     * @author gjm
+     */
+    void updateVenueAdmin(long venueId, String username, String password);
 
     /**
      * 功能描述: 更新场馆上架状态。

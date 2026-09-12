@@ -22,6 +22,7 @@ import com.sportsbooking.admin.biz.service.CredentialService;
 import com.sportsbooking.admin.biz.service.PaymentService;
 import com.sportsbooking.admin.biz.service.impl.BookingServiceImpl;
 import com.sportsbooking.admin.base.enums.BookingSource;
+import com.sportsbooking.admin.base.enums.BookingStatus;
 import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
@@ -136,6 +137,36 @@ class BookingServiceImplTest {
         verify(bookingMapper).insert(bookingCaptor.capture());
         assertThat(bookingCaptor.getValue().source).isEqualTo(BookingSource.OFFLINE);
         assertThat(bookingCaptor.getValue().serviceFeeRateBasisPoints).isZero();
+    }
+
+    @Test
+    void updatesContactForCompletedOfflineBooking() {
+        Booking booking = new Booking();
+        booking.id = 7L;
+        booking.venueId = 21L;
+        booking.source = BookingSource.OFFLINE;
+        booking.status = BookingStatus.COMPLETED;
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        Booking result = service.updateOfflineContact(21L, 7L, " 新联系人 ", " 13800000009 ");
+
+        assertThat(result.contactName).isEqualTo("新联系人");
+        assertThat(result.contactPhone).isEqualTo("13800000009");
+        verify(bookingMapper).updateById(booking);
+    }
+
+    @Test
+    void rejectsContactUpdateForOnlineBooking() {
+        Booking booking = new Booking();
+        booking.id = 7L;
+        booking.venueId = 21L;
+        booking.source = BookingSource.ONLINE;
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.updateOfflineContact(21L, 7L, "联系人", "13800000009"))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.NOT_FOUND.getDescription());
+        verify(bookingMapper, never()).updateById(booking);
     }
 
     @Test

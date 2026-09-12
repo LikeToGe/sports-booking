@@ -109,6 +109,45 @@ paths:
       requestBody: { $ref: '#/components/requestBodies/Status' }
       responses:
         '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/{venueId}/update:
+    put:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 更新场馆资料和预约规则
+      parameters: [{ $ref: '#/components/parameters/VenueId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VenueWrite' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/{venueId}/admin-password:
+    patch:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 重置场馆管理员密码
+      parameters: [{ $ref: '#/components/parameters/VenueId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/venues/{venueId}/admin:
+    put:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 更新场馆管理员用户名及可选新密码
+      parameters: [{ $ref: '#/components/parameters/VenueId' }]
+      requestBody: { $ref: '#/components/requestBodies/VenueAdmin' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
   /platform/venues/{venueId}/service-fee-rate:
     patch:
       tags: [Platform]
@@ -140,6 +179,19 @@ paths:
     post:
       tags: [Platform]
       security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /platform/sports/{sportTypeId}:
+    put:
+      tags: [Platform]
+      security: [{ AdminToken: [] }]
+      summary: 更新平台运动类型名称
+      parameters:
+        - name: sportTypeId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
       requestBody: { $ref: '#/components/requestBodies/Name' }
       responses:
         '200': { $ref: '#/components/responses/Success' }
@@ -218,6 +270,19 @@ paths:
     post:
       tags: [VenueAdmin]
       security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sports/{sportTypeId}:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 更新本场馆运动类型名称
+      parameters:
+        - name: sportTypeId
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
       requestBody: { $ref: '#/components/requestBodies/Name' }
       responses:
         '200': { $ref: '#/components/responses/Success' }
@@ -321,6 +386,16 @@ paths:
     post:
       tags: [VenueAdmin]
       security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/SessionSlot' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/sessions/{sessionSlotId}:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 编辑任意状态的具体场次，不改写预约快照
+      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
+      requestBody: { $ref: '#/components/requestBodies/SessionSlot' }
       responses:
         '200': { $ref: '#/components/responses/Success' }
   /venue-admin/sessions/{sessionSlotId}/open:
@@ -378,6 +453,15 @@ paths:
       summary: 创建线下预约
       responses:
         '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/bookings/{bookingId}/contact:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 修改任意状态线下预约的联系人资料
+      parameters: [{ $ref: '#/components/parameters/BookingId' }]
+      requestBody: { $ref: '#/components/requestBodies/BookingContact' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
   /venue-admin/bookings/{bookingId}/cancel:
     post:
       tags: [VenueAdmin]
@@ -395,6 +479,15 @@ paths:
     post:
       tags: [VenueAdmin]
       security: [{ AdminToken: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Name' }
+      responses:
+        '200': { $ref: '#/components/responses/Success' }
+  /venue-admin/employees/{employeeId}:
+    put:
+      tags: [VenueAdmin]
+      security: [{ AdminToken: [] }]
+      summary: 更新员工姓名
+      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
       requestBody: { $ref: '#/components/requestBodies/Name' }
       responses:
         '200': { $ref: '#/components/responses/Success' }
@@ -615,6 +708,40 @@ components:
               startTime: { type: string, format: time }
               endTime: { type: string, format: time }
               priceFen: { type: integer, minimum: 0 }
+    SessionSlot:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [courtId, sportTypeId, date, startTime, endTime, priceFen]
+            properties:
+              courtId: { type: integer, format: int64 }
+              sportTypeId: { type: integer, format: int64 }
+              date: { type: string, format: date }
+              startTime: { type: string, format: time }
+              endTime: { type: string, format: time }
+              priceFen: { type: integer, minimum: 0 }
+    BookingContact:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [contactName, contactPhone]
+            properties:
+              contactName: { type: string }
+              contactPhone: { type: string }
+    VenueAdmin:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [username]
+            properties:
+              username: { type: string }
+              password: { type: string, description: 留空时不修改 }
   responses:
     Success:
       description: 成功

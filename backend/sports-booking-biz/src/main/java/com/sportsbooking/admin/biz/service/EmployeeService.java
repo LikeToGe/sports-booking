@@ -35,6 +35,18 @@ public interface EmployeeService {
     EmployeeBindingVO createEmployee(long venueId, String name);
 
     /**
+     * 功能描述: 更新员工姓名。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param employeeId 员工 ID
+     * @param name 新姓名
+     * @return 更新后的员工
+     * @author gjm
+     */
+    Employee updateEmployeeName(long venueId, long employeeId, String name);
+
+    /**
      * 功能描述: 为指定员工重新签发一次性绑定码。
      * 创建时间: 2026/08/28 16:29
      *

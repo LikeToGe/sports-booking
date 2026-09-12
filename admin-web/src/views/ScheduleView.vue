@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
-import { Copy, Plus, Trash2, X } from "@lucide/vue";
+import { Copy, Plus, X } from "@lucide/vue";
 import { api, money } from "../api";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
@@ -15,6 +15,7 @@ const error = ref("");
 const createError = ref("");
 const loading = ref(false);
 const createDialog = ref<HTMLDialogElement>();
+const editingSlot = ref<WeeklySlot | null>(null);
 const form = reactive({ courtId: 0, sportTypeId: 0, startTime: "09:00", endTime: "10:00", priceYuan: 60 });
 const courtId = ref("");
 const sportId = ref("");
@@ -38,24 +39,47 @@ async function load() {
   }
 }
 
-async function create() {
+async function save() {
   createError.value = "";
   loading.value = true;
   try {
-    await api("/venue-admin/weekly-slots/create", {
-      method: "POST",
+    await api(editingSlot.value
+      ? `/venue-admin/weekly-slots/${editingSlot.value.id}/update`
+      : "/venue-admin/weekly-slots/create", {
+      method: editingSlot.value ? "PUT" : "POST",
       body: JSON.stringify({ ...form, dayOfWeek: activeDay.value, priceFen: Math.round(form.priceYuan * 100) }),
     });
     createDialog.value?.close();
     await load();
   } catch (reason) {
-    createError.value = reason instanceof Error ? reason.message : "排期创建失败";
+    createError.value = reason instanceof Error ? reason.message : "排期保存失败";
   } finally {
     loading.value = false;
   }
 }
 
 function openCreate() {
+  editingSlot.value = null;
+  Object.assign(form, {
+    courtId: courts.value[0]?.id || 0,
+    sportTypeId: sports.value[0]?.id || 0,
+    startTime: "09:00",
+    endTime: "10:00",
+    priceYuan: 60,
+  });
+  createError.value = "";
+  createDialog.value?.showModal();
+}
+
+function openEdit(slot: WeeklySlot) {
+  editingSlot.value = slot;
+  Object.assign(form, {
+    courtId: slot.courtId,
+    sportTypeId: slot.sportTypeId,
+    startTime: slot.startTime.slice(0, 5),
+    endTime: slot.endTime.slice(0, 5),
+    priceYuan: slot.priceFen / 100,
+  });
   createError.value = "";
   createDialog.value?.showModal();
 }
@@ -87,6 +111,16 @@ function nameOf(items: Array<{ id: number; name: string }>, id: number) {
   return items.find(item => item.id === id)?.name || "—";
 }
 
+function sportName(id: number) {
+  const activeName = sports.value.find(sport => sport.id === id)?.name;
+  if (activeName) return activeName;
+  for (const court of courts.value) {
+    const index = court.sportIds.split(",").indexOf(String(id));
+    if (index >= 0) return `${court.sportNames.split(",")[index] || id}（已停用）`;
+  }
+  return "—";
+}
+
 onMounted(load);
 </script>
 
@@ -116,9 +150,9 @@ onMounted(load);
           <tr v-for="slot in pagedItems" :key="slot.id">
             <td data-label="时间"><strong>{{ slot.startTime.slice(0, 5) }}–{{ slot.endTime.slice(0, 5) }}</strong></td>
             <td data-label="场地">{{ nameOf(courts, slot.courtId) }}</td>
-            <td data-label="运动">{{ nameOf(sports, slot.sportTypeId) }}</td>
+            <td data-label="运动">{{ sportName(slot.sportTypeId) }}</td>
             <td data-label="价格">{{ money(slot.priceFen) }}</td>
-            <td data-label="操作"><button class="icon-button" type="button" aria-label="停用场次" title="停用场次" @click="remove(slot)"><Trash2 :size="18" aria-hidden="true" /></button></td>
+            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="openEdit(slot)">编辑</button><button class="button secondary" type="button" @click="remove(slot)">停用</button></div></td>
           </tr>
           </tbody>
         </table>
@@ -128,18 +162,18 @@ onMounted(load);
     </section>
 
     <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>新增排期</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="create">
+      <form method="dialog" class="modal-head"><h2>{{ editingSlot ? "编辑排期" : "新增排期" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>星期</span><input :value="dayNames[activeDay - 1]" disabled></label>
         <div class="form-grid">
           <label class="field"><span>场地</span><select v-model.number="form.courtId" required><option v-for="court in courts" :key="court.id" :value="court.id">{{ court.name }}</option></select></label>
-          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option v-for="sport in sports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
+          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option v-if="editingSlot && !sports.some(sport => sport.id === editingSlot?.sportTypeId)" :value="editingSlot.sportTypeId">{{ sportName(editingSlot.sportTypeId) }}</option><option v-for="sport in sports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
           <label class="field"><span>开始</span><input v-model="form.startTime" type="time" required></label>
           <label class="field"><span>结束</span><input v-model="form.endTime" type="time" required></label>
           <label class="field"><span>价格（元）</span><input v-model.number="form.priceYuan" type="number" min="0" step="1" required></label>
         </div>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在创建" : "创建排期" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingSlot ? "保存修改" : "创建排期" }}</button></div>
       </form>
     </dialog>
   </section>

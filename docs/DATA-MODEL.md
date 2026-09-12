@@ -10,7 +10,7 @@
 | `s_sport_type` | 平台类型 `owner_venue_id IS NULL`；场馆类型保存所属场馆 |
 | `s_court` / `s_court_sport` | 独占场地、主图及其支持的运动 |
 | `s_weekly_slot` | 星期、开始/结束、运动和价格模板 |
-| `s_session_slot` | 具体日期的可预约场次及 OPEN/HELD/BOOKED/CLOSED 状态 |
+| `s_session_slot` | 具体日期的可预约场次、OPEN/HELD/BOOKED/CLOSED 状态及人工覆盖标记 |
 | `s_booking` | 预约主体和场馆/场地/运动/时间/价格/服务费率快照 |
 | `s_payment` / `s_refund` | 当前 Mock、未来可替换真实微信单号的支付和全额退款记录 |
 | `s_employee` | 场馆员工及一次性绑定码 |
@@ -42,6 +42,9 @@ OPEN ──创建线上预约──> HELD ──支付──> BOOKED
 - 创建预约前使用 `SELECT ... FOR UPDATE` 锁定 `s_session_slot`。
 - 预约写入后更新同一行状态和 `hold_booking_id`，整个操作在同一事务内。
 - 订单快照不被场馆资料、价格或周场次后续修改覆盖。
+- 任意状态的具体场次均可人工编辑；编辑后 `manual_override = 1`，并以 `template_slot_date` 保留原模板日期，周场次同步不再覆盖、重复生成或随模板停用关闭该记录。
+- 修改具体场次不改写已有预约的场馆、场地、运动、时间或价格快照。
+- 任意状态的线下预约可修改联系人姓名和手机号，线上预约联系人不允许由场馆后台修改。
 - 服务端从后台会话或小程序会话推导场馆、用户和员工归属，不接受客户端传入归属范围。
 - 所有具体时间以 UTC 存储和传输，`slot_date`、周场次和页面展示使用 `Asia/Shanghai`。
 

@@ -14,6 +14,7 @@ import com.sportsbooking.admin.biz.service.VenueService;
 import com.sportsbooking.admin.biz.pojo.vo.CourtVO;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +90,17 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
     }
 
     /**
+     * 功能描述: 更新平台全局运动类型名称，不改写历史预约快照。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Override
+    public SportType updateGlobalSportName(long sportTypeId, String name) {
+        return updateSportName(null, sportTypeId, name);
+    }
+
+    /**
      * 功能描述: 更新平台全局运动类型启停状态。
      * 创建时间: 2026/09/05
      *
@@ -122,6 +134,18 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
     }
 
     /**
+     * 功能描述: 更新当前场馆私有运动类型名称。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Override
+    public SportType updateVenueSportName(long venueId, long sportTypeId, String name) {
+        venueService.getVenue(venueId);
+        return updateSportName(venueId, sportTypeId, name);
+    }
+
+    /**
      * 功能描述: 查询指定场馆的物理场地及关联运动。
      * 创建时间: 2026/08/28 16:29
      *
@@ -142,7 +166,7 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
     @Override
     @Transactional
     public Court createCourt(long venueId, String name, List<Long> sportIds) {
-        validateSports(venueId, sportIds);
+        validateSports(venueId, sportIds, List.of());
         Court court = new Court();
         court.venueId = venueId;
         court.name = requireText(name);
@@ -164,7 +188,8 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
     @Transactional
     public Court updateCourt(long venueId, long courtId, String name, List<Long> sportIds, EnableStatus status) {
         Court court = requireCourt(venueId, courtId);
-        validateSports(venueId, sportIds);
+        List<Long> existingSportIds = courtMapper.selectSportIds(court.id);
+        validateSports(venueId, sportIds, existingSportIds);
         if (status == null) {
             throw badRequest();
         }
@@ -190,14 +215,7 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
     private SportType createSport(Long ownerVenueId, String name) {
         String displayName = requireText(name);
         String normalizedName = displayName.replaceAll("\\s+", "");
-        // 场馆私有类型同时检查全局类型和本场馆类型，其他场馆的同名私有类型不互相影响。
-        Long duplicateCount = sportTypeMapper.selectCount(new QueryWrapper<SportType>()
-                .eq("normalized_name", normalizedName)
-                .and(wrapper -> wrapper.isNull("owner_venue_id")
-                        .or(ownerVenueId != null, child -> child.eq("owner_venue_id", ownerVenueId))));
-        if (duplicateCount > 0) {
-            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SPORT_EXISTS);
-        }
+        ensureSportNameAvailable(ownerVenueId, normalizedName, null);
         SportType sport = new SportType();
         sport.ownerVenueId = ownerVenueId;
         sport.name = displayName;
@@ -206,6 +224,49 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
         sport.createdAt = LocalDateTime.now();
         sportTypeMapper.insert(sport);
         return sport;
+    }
+
+    /**
+     * 功能描述: 更新指定作用域内的运动类型名称和判重字段。
+     *
+     * @param ownerVenueId 私有类型所属场馆，平台类型为空
+     * @param sportTypeId 运动类型 ID
+     * @param name 新名称
+     * @return 更新后的运动类型
+     * @author gjm
+     */
+    private SportType updateSportName(Long ownerVenueId, long sportTypeId, String name) {
+        SportType sport = sportTypeMapper.selectById(sportTypeId);
+        if (sport == null || !Objects.equals(sport.ownerVenueId, ownerVenueId)) {
+            throw notFound();
+        }
+        String displayName = requireText(name);
+        String normalizedName = displayName.replaceAll("\\s+", "");
+        ensureSportNameAvailable(ownerVenueId, normalizedName, sportTypeId);
+        sport.name = displayName;
+        sport.normalizedName = normalizedName;
+        sportTypeMapper.updateById(sport);
+        return sport;
+    }
+
+    /**
+     * 功能描述: 校验平台或场馆作用域内不存在同名运动类型。
+     *
+     * @param ownerVenueId 私有类型所属场馆，平台类型为空
+     * @param normalizedName 标准化名称
+     * @param excludedId 编辑时排除的当前类型 ID
+     * @author gjm
+     */
+    private void ensureSportNameAvailable(Long ownerVenueId, String normalizedName, Long excludedId) {
+        // 场馆私有类型同时检查全局类型和本场馆类型，其他场馆的同名私有类型不互相影响。
+        Long duplicateCount = sportTypeMapper.selectCount(new QueryWrapper<SportType>()
+                .eq("normalized_name", normalizedName)
+                .ne(excludedId != null, "id", excludedId)
+                .and(wrapper -> wrapper.isNull("owner_venue_id")
+                        .or(ownerVenueId != null, child -> child.eq("owner_venue_id", ownerVenueId))));
+        if (duplicateCount > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SPORT_EXISTS);
+        }
     }
 
     /**
@@ -233,12 +294,14 @@ public class VenueCatalogServiceImpl implements VenueCatalogService {
      * @param sportIds 运动类型 ID 列表
      * @author gjm
      */
-    private void validateSports(long venueId, List<Long> sportIds) {
+    private void validateSports(long venueId, List<Long> sportIds, List<Long> existingSportIds) {
         if (sportIds == null || sportIds.isEmpty()) {
             throw badRequest();
         }
         Long allowedCount = sportTypeMapper.selectCount(new QueryWrapper<SportType>()
-                .in("id", sportIds).eq("status", EnableStatus.ACTIVE)
+                .in("id", sportIds)
+                .and(wrapper -> wrapper.eq("status", EnableStatus.ACTIVE)
+                        .or(!existingSportIds.isEmpty(), child -> child.in("id", existingSportIds)))
                 .and(wrapper -> wrapper.isNull("owner_venue_id").or().eq("owner_venue_id", venueId)));
         if (allowedCount != sportIds.stream().distinct().count()) {
             throw badRequest();

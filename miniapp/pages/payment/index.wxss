@@ -1,5 +1,5 @@
 .payment-page { display: grid; align-content: start; gap: 24rpx; }
 .payment-card { display: grid; justify-items: center; gap: 20rpx; padding: 48rpx 28rpx; text-align: center; }
-.amount { font-size: 76rpx; font-weight: 700; font-variant-numeric: tabular-nums; }
-.countdown { color: var(--signal); font-variant-numeric: tabular-nums; }
+.amount { font-size: 76rpx; font-weight: 600; font-variant-numeric: tabular-nums; }
+.countdown { color: var(--warning-strong); font-variant-numeric: tabular-nums; }
 .payment-order { display: grid; width: 100%; gap: 8rpx; padding-top: 24rpx; border-top: 2rpx solid var(--rule-2); }

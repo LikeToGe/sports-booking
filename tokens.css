@@ -1,32 +1,39 @@
-/* Hallmark · designed-as-app · macrostructures: Ecosystem Index + Index-First
- * theme: custom · vibe: "明亮运动、清爽克制、任务优先" · paper: oklch(98% 0.008 150) · accent: oklch(52% 0.155 145)
- * display: Songti SC · body: PingFang SC · axes: light / system-native / chromatic-green
- * studied: no · context: explicit · pre-emit critique: P5 H5 E5 S5 R5 V5
+/* Hallmark · designed-as-app · macrostructures: Ecosystem Index + Workbench
+ * theme: Nike-design-analysis · paper: oklch(100% 0 0) · accent: oklch(17.76% 0 0)
+ * display: Nike Futura ND · body: Helvetica Now Text · axes: light / athletic-display / chromatic-green
+ * source: https://getdesign.md/nike/design-md · pre-emit critique: P5 H5 E5 S5 R5 V5
  * contrast: pass (40–41) · slop: pass (42–49) · mobile: pass (34, 49, 50–57) · icons: pass (30)
  */
 :root {
   color-scheme: light;
-  --color-paper: oklch(98% 0.004 250);
-  --color-paper-2: oklch(95% 0.006 250);
-  --color-surface: oklch(99% 0.002 250);
-  --color-ink: oklch(21% 0.018 250);
-  --color-ink-2: oklch(35% 0.016 250);
-  --color-muted: oklch(47% 0.012 250);
-  --color-rule: oklch(84% 0.01 250);
-  --color-rule-2: oklch(90% 0.008 250);
-  --color-accent: oklch(52% 0.155 145);
-  --color-accent-strong: oklch(44% 0.145 145);
-  --color-accent-ink: oklch(98% 0.004 250);
-  --color-signal: oklch(53% 0.17 31);
-  --color-signal-soft: oklch(94% 0.035 31);
-  --color-info: oklch(53% 0.13 245);
-  --color-warning: oklch(48% 0.14 72);
-  --color-danger: oklch(53% 0.18 25);
-  --color-danger-soft: oklch(95% 0.03 25);
-  --color-focus: oklch(16% 0.08 250);
-  --font-display: "Songti SC", "STSong", serif;
-  --font-body: "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-numeric: "SF Pro Text", "Segoe UI", sans-serif;
+  --color-paper: oklch(100% 0 0);
+  --color-paper-2: oklch(97.02% 0 0);
+  --color-surface: oklch(100% 0 0);
+  --color-ink: oklch(17.76% 0 0);
+  --color-ink-2: oklch(34.53% 0.0034 286.2);
+  --color-muted: oklch(54.58% 0.0031 286.3);
+  --color-rule: oklch(83.93% 0.0014 286.4);
+  --color-rule-2: oklch(92.19% 0 0);
+  --color-accent: oklch(17.76% 0 0);
+  --color-accent-strong: oklch(26.03% 0 0);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-signal: oklch(52.84% 0.2624 263.8);
+  --color-signal-strong: oklch(45.37% 0.2602 264);
+  --color-signal-soft: oklch(95.75% 0.0202 264.1);
+  --color-success: oklch(51.84% 0.1261 155.8);
+  --color-success-strong: oklch(51.84% 0.1261 155.8);
+  --color-success-soft: oklch(96% 0.025 155.8);
+  --color-info: oklch(52.84% 0.2624 263.8);
+  --color-warning: oklch(76.86% 0.1647 70.1);
+  --color-warning-strong: oklch(47.32% 0.1247 46.2);
+  --color-danger: oklch(54.45% 0.2231 28.8);
+  --color-danger-strong: oklch(36.33% 0.1441 30.4);
+  --color-danger-soft: oklch(96% 0.025 25.3);
+  --color-focus: oklch(52.84% 0.2624 263.8);
+  --color-scrim: oklch(17.76% 0 0 / 58%);
+  --font-display: "Nike Futura ND", "Arial Black", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Helvetica Now Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-numeric: "Helvetica Now Display", "DIN Condensed", "Arial Narrow", sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
@@ -40,12 +47,14 @@
   --space-sm: 0.75rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
-  --space-xl: 2.5rem;
-  --space-2xl: 4rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
   --space-3xl: 6rem;
   --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-panel: 0;
+  --radius-control: 9999px;
   --control-height: 2.75rem;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);

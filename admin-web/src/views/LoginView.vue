@@ -34,7 +34,7 @@ async function login() {
   <main class="login-page">
     <section class="login-copy">
       <span class="wordmark">约场</span>
-      <h1>今天的场次，直接处理。</h1>
+      <h1>场次就绪，直接开打。</h1>
       <p>场馆、排期、预约与核销集中在一处。</p>
     </section>
     <form class="login-form" aria-labelledby="login-title" @submit.prevent="login">
@@ -75,18 +75,32 @@ async function login() {
 }
 
 .login-copy {
+  position: relative;
+  isolation: isolate;
   min-height: 18rem;
-  background: var(--color-ink);
+  overflow: hidden;
+  border-block-start: var(--space-xs) solid var(--color-success);
+  background: var(--color-ink) url("/venue-1.jpg") center / cover no-repeat;
   color: var(--color-paper);
 }
 
+.login-copy::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-scrim);
+  content: "";
+}
+
 .login-copy h1 {
-  max-width: 12ch;
-  font-size: var(--text-2xl);
+  max-width: 10ch;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .login-copy p {
-  color: var(--color-rule);
+  color: var(--color-paper);
 }
 
 .login-form {
@@ -102,6 +116,11 @@ async function login() {
   .login-copy,
   .login-form {
     padding: var(--space-2xl);
+  }
+
+  .login-copy h1 {
+    max-width: 9ch;
+    font-size: 3.5rem;
   }
 }
 </style>

@@ -15,7 +15,11 @@ const error = ref("");
 const createError = ref("");
 const loading = ref(false);
 const createDialog = ref<HTMLDialogElement>();
-const form = reactive({ courtId: 0, sportTypeId: 0, startTime: "09:00", endTime: "10:00", priceYuan: 60 });
+const editingSession = ref<SessionView | null>(null);
+const form = reactive({
+  courtId: 0, sportTypeId: 0, date: selectedDate.value,
+  startTime: "09:00", endTime: "10:00", priceYuan: 60,
+});
 const courtId = ref("");
 const sportId = ref("");
 const status = ref("");
@@ -41,29 +45,55 @@ async function load() {
 }
 
 function openCreate() {
+  editingSession.value = null;
+  Object.assign(form, {
+    courtId: courts.value[0]?.id || 0,
+    sportTypeId: sports.value[0]?.id || 0,
+    date: selectedDate.value,
+    startTime: "09:00",
+    endTime: "10:00",
+    priceYuan: 60,
+  });
   createError.value = "";
   createDialog.value?.showModal();
 }
 
-async function create() {
+function openEdit(session: SessionView) {
+  editingSession.value = session;
+  Object.assign(form, {
+    courtId: session.courtId,
+    sportTypeId: session.sportTypeId,
+    date: session.startAt.slice(0, 10),
+    startTime: session.startAt.slice(11, 16),
+    endTime: session.endAt.slice(11, 16),
+    priceYuan: session.priceFen / 100,
+  });
+  createError.value = "";
+  createDialog.value?.showModal();
+}
+
+async function save() {
   createError.value = "";
   loading.value = true;
   try {
-    await api("/venue-admin/sessions/create", {
-      method: "POST",
+    await api(editingSession.value
+      ? `/venue-admin/sessions/${editingSession.value.id}`
+      : "/venue-admin/sessions/create", {
+      method: editingSession.value ? "PUT" : "POST",
       body: JSON.stringify({
         courtId: form.courtId,
         sportTypeId: form.sportTypeId,
-        date: selectedDate.value,
+        date: form.date,
         startTime: form.startTime,
         endTime: form.endTime,
         priceFen: Math.round(form.priceYuan * 100),
       }),
     });
+    selectedDate.value = form.date;
     createDialog.value?.close();
     await load();
   } catch (reason) {
-    createError.value = reason instanceof Error ? reason.message : "临时场次创建失败";
+    createError.value = reason instanceof Error ? reason.message : "场次保存失败";
   } finally {
     loading.value = false;
   }
@@ -136,11 +166,11 @@ onMounted(load);
             <td data-label="运动">{{ session.sportName }}</td>
             <td data-label="价格">{{ money(session.priceFen) }}</td>
             <td data-label="状态"><span class="status" :data-tone="statusTone(session.status)">{{ statusLabel(session.status) }}</span></td>
-            <td data-label="操作">
+            <td data-label="操作"><div class="toolbar">
+              <button class="button secondary" type="button" @click="openEdit(session)">编辑</button>
               <button v-if="session.status === 'OPEN'" class="button secondary" type="button" @click="closeSession(session)">关闭</button>
               <button v-else-if="canOpen(session)" class="button secondary" type="button" @click="openSession(session)">开启</button>
-              <span v-else>—</span>
-            </td>
+            </div></td>
           </tr>
           </tbody>
         </table>
@@ -150,18 +180,18 @@ onMounted(load);
     </section>
 
     <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>新增场次</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="create">
+      <form method="dialog" class="modal-head"><h2>{{ editingSession ? "编辑场次" : "新增场次" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
-        <label class="field"><span>日期</span><input :value="selectedDate" disabled></label>
+        <label class="field"><span>日期</span><input v-model="form.date" type="date" required></label>
         <div class="form-grid">
           <label class="field"><span>场地</span><select v-model.number="form.courtId" required><option v-for="court in courts" :key="court.id" :value="court.id">{{ court.name }}</option></select></label>
-          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option v-for="sport in sports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
+          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option v-if="editingSession && !sports.some(sport => sport.id === editingSession?.sportTypeId)" :value="editingSession.sportTypeId">{{ editingSession.sportName }}（已停用）</option><option v-for="sport in sports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
           <label class="field"><span>开始</span><input v-model="form.startTime" type="time" required></label>
           <label class="field"><span>结束</span><input v-model="form.endTime" type="time" required></label>
           <label class="field"><span>价格（元）</span><input v-model.number="form.priceYuan" type="number" min="0" step="1" required></label>
         </div>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在创建" : "创建场次" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingSession ? "保存修改" : "创建场次" }}</button></div>
       </form>
     </dialog>
   </section>

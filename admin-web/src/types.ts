@@ -25,6 +25,7 @@ export interface Venue {
 export interface PlatformVenue {
   venue: Venue;
   serviceFeeRateBasisPoints: number;
+  adminUsername: string;
 }
 
 export interface SportType {

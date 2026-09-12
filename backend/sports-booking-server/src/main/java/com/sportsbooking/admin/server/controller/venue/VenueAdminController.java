@@ -113,6 +113,22 @@ public class VenueAdminController {
     }
 
     /**
+     * 功能描述: 更新当前场馆私有运动类型名称。
+     * 创建时间: 2026/09/11
+     *
+     * @param sportTypeId 运动类型 ID
+     * @param body 新名称请求
+     * @return 更新后的运动类型
+     * @author gjm
+     */
+    @PutMapping("/sports/{sportTypeId}")
+    public ApiResponse<SportTypeVO> updateSportName(
+            @PathVariable long sportTypeId, @RequestBody NameRequest body) {
+        return ApiResponse.success(SportTypeVO.from(venueCatalogService.updateVenueSportName(
+                venuePrincipal().getVenueId(), sportTypeId, body.getName())));
+    }
+
+    /**
      * 功能描述: 查询当前场馆物理场地。
      * 创建时间: 2026/08/28 16:29
      *
@@ -196,6 +212,22 @@ public class VenueAdminController {
     @PostMapping("/employees/create")
     public ApiResponse<EmployeeBindingVO> createEmployee(@RequestBody NameRequest body) {
         return ApiResponse.success(employeeService.createEmployee(venuePrincipal().getVenueId(), body.getName()));
+    }
+
+    /**
+     * 功能描述: 更新当前场馆员工姓名。
+     * 创建时间: 2026/09/11
+     *
+     * @param employeeId 员工 ID
+     * @param body 新姓名请求
+     * @return 更新后的员工
+     * @author gjm
+     */
+    @PutMapping("/employees/{employeeId}")
+    public ApiResponse<EmployeeVO> updateEmployeeName(
+            @PathVariable long employeeId, @RequestBody NameRequest body) {
+        return ApiResponse.success(EmployeeVO.from(employeeService.updateEmployeeName(
+                venuePrincipal().getVenueId(), employeeId, body.getName())));
     }
 
     /**

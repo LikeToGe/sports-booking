@@ -7,10 +7,10 @@
 
     <insert id="insertIgnore" useGeneratedKeys="true" keyProperty="id">
         INSERT IGNORE INTO s_session_slot (
-            venue_id, court_id, sport_type_id, weekly_slot_id, slot_date,
+            venue_id, court_id, sport_type_id, weekly_slot_id, manual_override, template_slot_date, slot_date,
             start_at, end_at, price_fen, status, created_at, updated_at
         ) VALUES (
-            #{venueId}, #{courtId}, #{sportTypeId}, #{weeklySlotId}, #{slotDate},
+            #{venueId}, #{courtId}, #{sportTypeId}, #{weeklySlotId}, #{manualOverride}, #{templateSlotDate}, #{slotDate},
             #{startAt}, #{endAt}, #{priceFen}, #{status}, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3)
         )
     </insert>
@@ -23,9 +23,18 @@
             price_fen = #{priceFen},
             updated_at = UTC_TIMESTAMP(3)
         WHERE weekly_slot_id = #{weeklySlotId}
-          AND slot_date = #{slotDate}
+          AND template_slot_date = #{slotDate}
           AND status = 'OPEN'
+          AND manual_override = 0
     </update>
+
+    <select id="countManualOverride" resultType="int">
+        SELECT COUNT(*)
+        FROM s_session_slot
+        WHERE weekly_slot_id = #{weeklySlotId}
+          AND template_slot_date = #{templateSlotDate}
+          AND manual_override = 1
+    </select>
 
     <select id="countOverlapping" resultType="int">
         SELECT COUNT(*)
@@ -39,12 +48,23 @@
         </if>
     </select>
 
+    <select id="countOverlappingExcludingSlot" resultType="int">
+        SELECT COUNT(*)
+        FROM s_session_slot
+        WHERE court_id = #{courtId}
+          AND id != #{excludedSlotId}
+          AND status IN ('OPEN', 'HELD', 'BOOKED')
+          AND start_at &lt; #{endAt}
+          AND end_at &gt; #{startAt}
+    </select>
+
     <update id="closeOpenForTemplate">
         UPDATE s_session_slot
         SET status = 'CLOSED', updated_at = UTC_TIMESTAMP(3)
         WHERE weekly_slot_id = #{weeklySlotId}
           AND status = 'OPEN'
           AND start_at &gt;= #{now}
+          AND manual_override = 0
     </update>
 
     <select id="countBusyForDate" resultType="int">

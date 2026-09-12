@@ -77,8 +77,9 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @Override
     public WeeklySlot saveWeekly(long venueId, Long weeklySlotId, WeeklySlotSaveRequest body) {
+        WeeklySlot weekly = weeklySlotId == null ? new WeeklySlot() : requiredWeekly(venueId, weeklySlotId);
         Court court = requiredCourt(venueId, body.getCourtId());
-        SportType sport = requiredSport(venueId, body.getSportTypeId());
+        SportType sport = requiredSport(venueId, body.getSportTypeId(), weeklySlotId == null ? null : weekly.sportTypeId);
         if (body.getDayOfWeek() == null || body.getDayOfWeek() < 1 || body.getDayOfWeek() > 7) {
             throw badRequest();
         }
@@ -98,7 +99,6 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
         }
 
-        WeeklySlot weekly = weeklySlotId == null ? new WeeklySlot() : requiredWeekly(venueId, weeklySlotId);
         weekly.courtId = court.id;
         weekly.sportTypeId = sport.id;
         weekly.dayOfWeek = body.getDayOfWeek();
@@ -219,7 +219,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public SessionSlot createExtra(long venueId, ExtraSlotCreateRequest body) {
         Court court = requiredCourt(venueId, body.getCourtId());
-        SportType sport = requiredSport(venueId, body.getSportTypeId());
+        SportType sport = requiredSport(venueId, body.getSportTypeId(), null);
         if (body.getDate() == null || body.getStartTime() == null || body.getEndTime() == null
                 || !body.getStartTime().isBefore(body.getEndTime())) {
             throw badRequest();
@@ -235,6 +235,52 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (sessionSlotMapper.insertIgnore(slot) == 0) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
         }
+        return slot;
+    }
+
+    /**
+     * 功能描述: 编辑任意库存状态的具体场次并保留状态及预约关联。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Transactional
+    @Override
+    public SessionSlot updateSession(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
+        SessionSlot slot = sessionSlotMapper.selectForUpdate(sessionSlotId);
+        if (slot == null || slot.venueId != venueId) {
+            throw notFound();
+        }
+        Court court = courtMapper.selectById(body.getCourtId());
+        if (court == null || court.venueId != venueId
+                || (court.status != EnableStatus.ACTIVE && !court.id.equals(slot.courtId))) {
+            throw notFound();
+        }
+        SportType sport = requiredSport(venueId, body.getSportTypeId(), slot.sportTypeId);
+        if (body.getDate() == null || body.getStartTime() == null || body.getEndTime() == null
+                || !body.getStartTime().isBefore(body.getEndTime())
+                || body.getPriceFen() == null || body.getPriceFen() < 0
+                || !courtMapper.selectSportIds(court.id).contains(sport.id)) {
+            throw badRequest();
+        }
+        courtMapper.selectForUpdate(court.id);
+        Instant startAt = body.getDate().atTime(body.getStartTime())
+                .atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
+        Instant endAt = body.getDate().atTime(body.getEndTime())
+                .atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
+        if (sessionSlotMapper.countOverlappingExcludingSlot(court.id, startAt, endAt, slot.id) > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+        }
+        // 人工编辑保留库存状态和预约关联，但不再允许后续周模板同步覆盖。
+        slot.courtId = court.id;
+        slot.sportTypeId = sport.id;
+        slot.manualOverride = true;
+        slot.slotDate = body.getDate();
+        slot.startAt = startAt;
+        slot.endAt = endAt;
+        slot.priceFen = body.getPriceFen();
+        slot.updatedAt = LocalDateTime.now();
+        sessionSlotMapper.updateById(slot);
         return slot;
     }
 
@@ -284,13 +330,16 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (!slot.startAt.isAfter(Instant.now())) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
         }
-        if (slot.weeklySlotId != null) {
+        if (slot.weeklySlotId != null && !Boolean.TRUE.equals(slot.manualOverride)) {
             WeeklySlot weekly = weeklySlotMapper.selectById(slot.weeklySlotId);
             if (weekly == null || weekly.status != EnableStatus.ACTIVE) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
             }
         }
-        requireNoOverlap(slot);
+        if (sessionSlotMapper.countOverlappingExcludingSlot(
+                slot.courtId, slot.startAt, slot.endAt, slot.id) > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+        }
         slot.status = SessionSlotStatus.OPEN;
         slot.updatedAt = LocalDateTime.now();
         sessionSlotMapper.updateById(slot);
@@ -356,8 +405,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (slot == null) {
             return;
         }
-        boolean templateActive = slot.weeklySlotId == null;
-        if (slot.weeklySlotId != null) {
+        boolean templateActive = slot.weeklySlotId == null || Boolean.TRUE.equals(slot.manualOverride);
+        if (slot.weeklySlotId != null && !Boolean.TRUE.equals(slot.manualOverride)) {
             WeeklySlot weekly = weeklySlotMapper.selectById(slot.weeklySlotId);
             templateActive = weekly != null && weekly.status == EnableStatus.ACTIVE;
         }
@@ -381,6 +430,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         LocalDate lastDate = firstDate.plusDays(venue.bookingDaysAhead - 1L);
         for (LocalDate date = firstDate; !date.isAfter(lastDate); date = date.plusDays(1)) {
             if (date.getDayOfWeek().getValue() != weekly.dayOfWeek) {
+                continue;
+            }
+            if (sessionSlotMapper.countManualOverride(weekly.id, date) > 0) {
                 continue;
             }
             SessionSlot slot = session(venue.id, weekly.id, weekly.courtId, weekly.sportTypeId, date,
@@ -422,6 +474,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         slot.courtId = courtId;
         slot.sportTypeId = sportId;
         slot.weeklySlotId = weeklyId;
+        slot.manualOverride = false;
+        slot.templateSlotDate = weeklyId == null ? null : date;
         slot.slotDate = date;
         slot.startAt = date.atTime(startTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
         slot.endAt = date.atTime(endTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
@@ -465,9 +519,9 @@ public class ScheduleServiceImpl implements ScheduleService {
      *
      * @author gjm
      */
-    private SportType requiredSport(long venueId, long sportId) {
+    private SportType requiredSport(long venueId, long sportId, Long existingSportId) {
         SportType sport = sportTypeMapper.selectById(sportId);
-        if (sport == null || sport.status != EnableStatus.ACTIVE
+        if (sport == null || (sport.status != EnableStatus.ACTIVE && !sport.id.equals(existingSportId))
                 || sport.ownerVenueId != null && sport.ownerVenueId != venueId) {
             throw notFound();
         }

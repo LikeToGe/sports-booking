@@ -8,18 +8,18 @@
 .map-button { flex: 0 0 auto; min-width: 112rpx; }
 .facility-line { padding-top: 20rpx; border-top: 2rpx solid var(--rule-2); color: var(--ink-2); }
 .booking-panel { display: grid; gap: 22rpx; padding: 28rpx; }
-.date-button { min-height: 64rpx; padding: 12rpx 18rpx; border: 2rpx solid var(--rule); border-radius: 10rpx; background: var(--paper); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.date-button { min-height: 88rpx; padding: 12rpx 18rpx; border: 2rpx solid var(--rule); border-radius: 999rpx; background: var(--paper); font-size: 24rpx; font-variant-numeric: tabular-nums; }
 .sport-strip { width: 100%; white-space: nowrap; }
-.sport-chip { display: inline-flex; min-height: 64rpx; margin-right: 12rpx; padding: 0 22rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); line-height: 60rpx; }
+.sport-chip { display: inline-flex; min-height: 88rpx; margin-right: 12rpx; padding: 0 22rpx; border: 2rpx solid var(--rule); border-radius: 999rpx; background: var(--surface); color: var(--ink-2); line-height: 84rpx; }
 .sport-chip.is-active { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
 .court-groups { display: grid; gap: 28rpx; }
 .court-group { display: grid; gap: 12rpx; }
-.court-head { align-items: baseline; padding-bottom: 12rpx; border-bottom: 2rpx solid var(--rule-2); font-weight: 700; }
+.court-head { align-items: baseline; padding-bottom: 12rpx; border-bottom: 2rpx solid var(--rule-2); font-weight: 600; }
 .court-title { display: flex; align-items: center; gap: 14rpx; min-width: 0; }
-.court-image { width: 72rpx; height: 56rpx; border-radius: 8rpx; background: var(--paper-2); }
+.court-image { width: 72rpx; height: 56rpx; border-radius: 0; background: var(--paper-2); }
 .court-head .muted { font-size: 24rpx; font-weight: 400; }
 .slot-list { display: grid; }
 .slot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18rpx; width: 100%; min-height: 88rpx; padding: 0; border-bottom: 2rpx solid var(--rule-2); background: transparent; color: var(--ink); text-align: left; }
 .slot-time { font-variant-numeric: tabular-nums; font-weight: 600; }
-.book-label { color: var(--accent-strong); font-size: 24rpx; }
+.book-label { color: var(--signal-strong); font-size: 24rpx; }
 .notice { display: grid; gap: 12rpx; padding: 28rpx; }

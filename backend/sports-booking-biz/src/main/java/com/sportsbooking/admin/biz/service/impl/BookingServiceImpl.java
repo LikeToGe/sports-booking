@@ -196,6 +196,26 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
+     * 功能描述: 修改任意状态线下预约的联系人资料。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Transactional
+    @Override
+    public Booking updateOfflineContact(long venueId, long bookingId, String contactName, String contactPhone) {
+        Booking booking = requiredLockedBooking(bookingId);
+        if (booking.venueId != venueId || booking.source != BookingSource.OFFLINE) {
+            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
+        }
+        booking.contactName = requireText(contactName);
+        booking.contactPhone = requireText(contactPhone);
+        booking.updatedAt = LocalDateTime.now();
+        bookingMapper.updateById(booking);
+        return booking;
+    }
+
+    /**
      * 功能描述: 校验取消截止时间后取消用户预约。
      * 创建时间: 2026/08/28 16:29
      *

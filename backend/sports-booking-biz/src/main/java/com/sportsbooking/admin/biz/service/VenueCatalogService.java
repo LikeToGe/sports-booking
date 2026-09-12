@@ -53,6 +53,17 @@ public interface VenueCatalogService {
     SportType createGlobalSport(String name);
 
     /**
+     * 功能描述: 更新平台全局运动类型名称。
+     * 创建时间: 2026/09/11
+     *
+     * @param sportTypeId 运动类型 ID
+     * @param name 新名称
+     * @return 更新后的运动类型
+     * @author gjm
+     */
+    SportType updateGlobalSportName(long sportTypeId, String name);
+
+    /**
      * 功能描述: 更新平台全局运动类型启停状态。
      * 创建时间: 2026/09/05
      *
@@ -73,6 +84,18 @@ public interface VenueCatalogService {
      * @author gjm
      */
     SportType createVenueSport(long venueId, String name);
+
+    /**
+     * 功能描述: 更新当前场馆私有运动类型名称。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param sportTypeId 运动类型 ID
+     * @param name 新名称
+     * @return 更新后的运动类型
+     * @author gjm
+     */
+    SportType updateVenueSportName(long venueId, long sportTypeId, String name);
 
     /**
      * 功能描述: 查询场馆物理场地及其关联运动。

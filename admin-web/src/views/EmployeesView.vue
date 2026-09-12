@@ -12,6 +12,7 @@ const error = ref("");
 const createError = ref("");
 const loading = ref(false);
 const createDialog = ref<HTMLDialogElement>();
+const editingEmployee = ref<Employee | null>(null);
 const bindingCode = ref("");
 const bindingExpiry = ref("");
 const keyword = ref("");
@@ -34,25 +35,40 @@ async function load() {
   }
 }
 
-async function create() {
+async function save() {
   createError.value = "";
   loading.value = true;
   try {
-    const result = await api<{ bindingCode: string; expiresAt: string }>("/venue-admin/employees/create", {
-      method: "POST", body: JSON.stringify({ name: name.value }),
-    });
+    if (editingEmployee.value) {
+      await api(`/venue-admin/employees/${editingEmployee.value.id}`, {
+        method: "PUT", body: JSON.stringify({ name: name.value }),
+      });
+    } else {
+      const result = await api<{ bindingCode: string; expiresAt: string }>("/venue-admin/employees/create", {
+        method: "POST", body: JSON.stringify({ name: name.value }),
+      });
+      showCode(result);
+    }
     name.value = "";
     createDialog.value?.close();
-    showCode(result);
     await load();
   } catch (reason) {
-    createError.value = reason instanceof Error ? reason.message : "员工创建失败";
+    createError.value = reason instanceof Error ? reason.message : "员工保存失败";
   } finally {
     loading.value = false;
   }
 }
 
 function openCreate() {
+  editingEmployee.value = null;
+  name.value = "";
+  createError.value = "";
+  createDialog.value?.showModal();
+}
+
+function openEdit(employee: Employee) {
+  editingEmployee.value = employee;
+  name.value = employee.name;
   createError.value = "";
   createDialog.value?.showModal();
 }
@@ -107,7 +123,7 @@ onMounted(load);
             <td data-label="员工"><strong>{{ employee.name }}</strong></td>
             <td data-label="微信绑定">{{ employee.userId ? "已绑定" : "未绑定" }}</td>
             <td data-label="状态"><span class="status" :data-tone="employee.status === 'ACTIVE' ? 'active' : 'danger'">{{ employee.status === "ACTIVE" ? "启用" : "停用" }}</span></td>
-            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="issue(employee)"><KeyRound :size="17" aria-hidden="true" />绑定码</button><button class="button secondary" type="button" @click="toggle(employee)">{{ employee.status === "ACTIVE" ? "停用" : "启用" }}</button></div></td>
+            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="openEdit(employee)">编辑</button><button class="button secondary" type="button" @click="issue(employee)"><KeyRound :size="17" aria-hidden="true" />绑定码</button><button class="button secondary" type="button" @click="toggle(employee)">{{ employee.status === "ACTIVE" ? "停用" : "启用" }}</button></div></td>
           </tr>
           </tbody>
         </table>
@@ -117,11 +133,11 @@ onMounted(load);
     </section>
 
     <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>新增员工</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="create">
+      <form method="dialog" class="modal-head"><h2>{{ editingEmployee ? "编辑员工" : "新增员工" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>员工姓名</span><input v-model.trim="name" required></label>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在创建" : "创建员工" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingEmployee ? "保存修改" : "创建员工" }}</button></div>
       </form>
     </dialog>
   </section>

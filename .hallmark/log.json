@@ -1,5 +1,23 @@
 [
   {
+    "date": "2026-09-10",
+    "scope": "app",
+    "macrostructure": "Ecosystem Index + Workbench",
+    "theme": "Nike-design-analysis",
+    "theme_axes": "light / athletic-display / chromatic-green",
+    "enrichment": "venue photography",
+    "brief": "纠正 Cal 工具感，改为运动场馆视觉系统"
+  },
+  {
+    "date": "2026-09-10",
+    "scope": "app",
+    "macrostructure": "Ecosystem Index + Workbench",
+    "theme": "Cal.com-design-analysis",
+    "theme_axes": "light / geometric-sans / neutral",
+    "enrichment": "venue photography",
+    "brief": "用 getdesign.md 的 Cal.com DESIGN.md 重构约场双端界面"
+  },
+  {
     "date": "2026-09-03",
     "scope": "app",
     "macrostructure": "Ecosystem Index",

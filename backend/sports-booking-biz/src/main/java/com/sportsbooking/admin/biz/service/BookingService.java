@@ -41,6 +41,19 @@ public interface BookingService {
      * @author gjm
      */
     Booking createOffline(long venueId, long sessionSlotId, String contactName, String contactPhone);
+
+    /**
+     * 功能描述: 修改任意状态线下预约的联系人资料。
+     * 创建时间: 2026/09/11
+     *
+     * @param venueId 场馆 ID
+     * @param bookingId 预约 ID
+     * @param contactName 联系人
+     * @param contactPhone 联系电话
+     * @return 更新后的预约
+     * @author gjm
+     */
+    Booking updateOfflineContact(long venueId, long bookingId, String contactName, String contactPhone);
     /**
      * 功能描述: 用户在取消截止时间前取消预约。
      * 创建时间: 2026/08/28 16:29

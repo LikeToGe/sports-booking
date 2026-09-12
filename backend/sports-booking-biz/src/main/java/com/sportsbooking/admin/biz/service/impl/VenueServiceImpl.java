@@ -30,7 +30,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -76,6 +78,23 @@ public class VenueServiceImpl implements VenueService {
     @Override
     public List<Venue> listPlatformVenues() {
         return venueMapper.selectList(new QueryWrapper<Venue>().orderByDesc("created_at"));
+    }
+
+    /**
+     * 功能描述: 批量查询各场馆首个管理员用户名。
+     * 创建时间: 2026/09/12
+     *
+     * @author gjm
+     */
+    @Override
+    public Map<Long, String> listVenueAdminUsernames() {
+        List<AdminAccount> admins = adminAccountMapper.selectList(new QueryWrapper<AdminAccount>()
+                .eq("role", AdminRole.VENUE_ADMIN).orderByAsc("id"));
+        Map<Long, String> usernames = new LinkedHashMap<>();
+        for (AdminAccount admin : admins) {
+            usernames.putIfAbsent(admin.venueId, admin.username);
+        }
+        return usernames;
     }
 
     /**
@@ -138,6 +157,37 @@ public class VenueServiceImpl implements VenueService {
         venue.updatedAt = LocalDateTime.now();
         venueMapper.updateById(venue);
         return venue;
+    }
+
+    /**
+     * 功能描述: 重置场馆首个管理员账号的登录密码。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Override
+    public void resetAdminPassword(long venueId, String password) {
+        AdminAccount admin = requireVenueAdmin(venueId);
+        admin.passwordHash = passwordEncoder.encode(requireText(password));
+        admin.updatedAt = LocalDateTime.now();
+        adminAccountMapper.updateById(admin);
+    }
+
+    /**
+     * 功能描述: 更新场馆管理员用户名及可选新密码。
+     * 创建时间: 2026/09/12
+     *
+     * @author gjm
+     */
+    @Override
+    public void updateVenueAdmin(long venueId, String username, String password) {
+        AdminAccount admin = requireVenueAdmin(venueId);
+        admin.username = requireText(username);
+        if (password != null && !password.isBlank()) {
+            admin.passwordHash = passwordEncoder.encode(password.trim());
+        }
+        admin.updatedAt = LocalDateTime.now();
+        adminAccountMapper.updateById(admin);
     }
 
     /**
@@ -346,6 +396,26 @@ public class VenueServiceImpl implements VenueService {
      */
     private String emptyIfNull(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    /**
+     * 功能描述: 查询场馆首个管理员账号。
+     *
+     * @param venueId 场馆 ID
+     * @return 场馆管理员账号
+     * @author gjm
+     */
+    private AdminAccount requireVenueAdmin(long venueId) {
+        // ponytail: 当前每馆只创建一个管理员；支持多管理员后改为按账号选择维护。
+        AdminAccount admin = adminAccountMapper.selectOne(new QueryWrapper<AdminAccount>()
+                .eq("venue_id", venueId)
+                .eq("role", AdminRole.VENUE_ADMIN)
+                .orderByAsc("id")
+                .last("LIMIT 1"));
+        if (admin == null) {
+            throw notFound();
+        }
+        return admin;
     }
 
     /**

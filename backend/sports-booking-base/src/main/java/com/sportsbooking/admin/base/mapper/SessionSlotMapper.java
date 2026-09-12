@@ -46,6 +46,18 @@ public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
     int updateOpenForTemplate(SessionSlot slot);
 
     /**
+     * 功能描述: 判断模板在原生成日期是否已有人工覆盖场次。
+     * 创建时间: 2026/09/11
+     *
+     * @param weeklySlotId 周场次 ID
+     * @param templateSlotDate 原生成日期
+     * @return 人工覆盖场次数量
+     * @author gjm
+     */
+    int countManualOverride(@Param("weeklySlotId") long weeklySlotId,
+                            @Param("templateSlotDate") LocalDate templateSlotDate);
+
+    /**
      * 功能描述: 统计同一物理场地的重叠可售库存。
      * 创建时间: 2026/08/28 16:29
      *
@@ -58,6 +70,21 @@ public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
      */
     int countOverlapping(@Param("courtId") long courtId, @Param("startAt") Instant startAt,
                          @Param("endAt") Instant endAt, @Param("weeklySlotId") Long weeklySlotId);
+
+    /**
+     * 功能描述: 编辑具体场次时统计除自身外的重叠可售库存。
+     * 创建时间: 2026/09/11
+     *
+     * @param courtId 场地 ID
+     * @param startAt 开始时间
+     * @param endAt 结束时间
+     * @param excludedSlotId 当前具体场次 ID
+     * @return 重叠场次数量
+     * @author gjm
+     */
+    int countOverlappingExcludingSlot(@Param("courtId") long courtId, @Param("startAt") Instant startAt,
+                                      @Param("endAt") Instant endAt,
+                                      @Param("excludedSlotId") long excludedSlotId);
 
     /**
      * 功能描述: 关闭模板对应且未被占用的未来具体场次。

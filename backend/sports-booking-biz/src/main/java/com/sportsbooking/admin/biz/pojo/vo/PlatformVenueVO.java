@@ -33,6 +33,13 @@ public class PlatformVenueVO {
     private Integer serviceFeeRateBasisPoints;
 
     /**
+     * 场馆管理员登录用户名
+     */
+    @Schema(description = "场馆管理员登录用户名")
+    @ApiModelProperty(value = "场馆管理员登录用户名")
+    private String adminUsername;
+
+    /**
      * 功能描述: 将场馆实体转换为平台列表项。
      *
      * @param venue 场馆实体
@@ -40,6 +47,18 @@ public class PlatformVenueVO {
      * @author gjm
      */
     public static PlatformVenueVO from(Venue venue) {
-        return new PlatformVenueVO(VenueVO.from(venue), venue.serviceFeeRateBasisPoints);
+        return from(venue, null);
+    }
+
+    /**
+     * 功能描述: 将场馆实体和管理员用户名转换为平台列表项。
+     *
+     * @param venue 场馆实体
+     * @param adminUsername 场馆管理员登录用户名
+     * @return 平台场馆列表项
+     * @author gjm
+     */
+    public static PlatformVenueVO from(Venue venue, String adminUsername) {
+        return new PlatformVenueVO(VenueVO.from(venue), venue.serviceFeeRateBasisPoints, adminUsername);
     }
 }

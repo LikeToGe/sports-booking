@@ -10,9 +10,11 @@ const sports = ref<SportType[]>([]);
 const name = ref("");
 const error = ref("");
 const createError = ref("");
+const message = ref("");
 const loading = ref(false);
 const statusChangingId = ref<number | null>(null);
 const createDialog = ref<HTMLDialogElement>();
+const editingSport = ref<SportType | null>(null);
 const keyword = ref("");
 const filteredSports = computed(() => {
   const query = keyword.value.trim().toLowerCase();
@@ -28,22 +30,40 @@ async function load() {
   }
 }
 
-async function create() {
+async function save() {
   loading.value = true;
   createError.value = "";
+  message.value = "";
   try {
-    await api("/platform/sports/create", { method: "POST", body: JSON.stringify({ name: name.value }) });
+    if (editingSport.value) {
+      await api(`/platform/sports/${editingSport.value.id}`, {
+        method: "PUT", body: JSON.stringify({ name: name.value }),
+      });
+      message.value = "运动类型已更新";
+    } else {
+      await api("/platform/sports/create", { method: "POST", body: JSON.stringify({ name: name.value }) });
+      message.value = "运动类型已创建";
+    }
     name.value = "";
     createDialog.value?.close();
     await load();
   } catch (reason) {
-    createError.value = reason instanceof Error ? reason.message : "运动类型创建失败";
+    createError.value = reason instanceof Error ? reason.message : "运动类型保存失败";
   } finally {
     loading.value = false;
   }
 }
 
 function openCreate() {
+  editingSport.value = null;
+  name.value = "";
+  createError.value = "";
+  createDialog.value?.showModal();
+}
+
+function openEdit(sport: SportType) {
+  editingSport.value = sport;
+  name.value = sport.name;
   createError.value = "";
   createDialog.value?.showModal();
 }
@@ -77,6 +97,7 @@ onMounted(load);
       <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增类型</button>
     </header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+    <p v-if="message" class="saved-message" aria-live="polite">{{ message }}</p>
     <div class="filter-bar" aria-label="运动类型筛选">
       <label class="field filter-search"><span>搜索</span><input v-model="keyword" type="search" placeholder="运动类型名称"></label>
     </div>
@@ -90,7 +111,7 @@ onMounted(load);
             <td data-label="名称"><strong>{{ sport.name }}</strong></td>
             <td data-label="范围">全平台</td>
             <td data-label="状态"><span class="status" :data-tone="sport.status === 'ACTIVE' ? 'active' : 'danger'">{{ sport.status === "ACTIVE" ? "启用" : "停用" }}</span></td>
-            <td data-label="操作"><button class="button secondary sport-status-action" type="button" :disabled="statusChangingId === sport.id" :aria-busy="statusChangingId === sport.id" @click="toggleStatus(sport)">{{ sport.status === "ACTIVE" ? "停用" : "启用" }}</button></td>
+            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="openEdit(sport)">编辑</button><button class="button secondary sport-status-action" type="button" :disabled="statusChangingId === sport.id" :aria-busy="statusChangingId === sport.id" @click="toggleStatus(sport)">{{ sport.status === "ACTIVE" ? "停用" : "启用" }}</button></div></td>
           </tr>
           </tbody>
         </table>
@@ -100,11 +121,11 @@ onMounted(load);
     </section>
 
     <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>新增运动类型</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="create">
+      <form method="dialog" class="modal-head"><h2>{{ editingSport ? "编辑运动类型" : "新增运动类型" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>类型名称</span><input v-model.trim="name" required></label>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在创建" : "创建类型" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingSport ? "保存修改" : "创建类型" }}</button></div>
       </form>
     </dialog>
   </section>

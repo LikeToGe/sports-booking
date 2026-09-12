@@ -2,6 +2,7 @@ package com.sportsbooking.admin.server.controller.booking;
 
 import com.sportsbooking.admin.server.api.ApiResponse;
 import com.sportsbooking.admin.biz.pojo.request.BookingCancelRequest;
+import com.sportsbooking.admin.biz.pojo.request.BookingContactUpdateRequest;
 import com.sportsbooking.admin.biz.pojo.request.OfflineBookingCreateRequest;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.biz.service.BookingService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +61,22 @@ public class VenueBookingController {
         return ApiResponse.success(BookingVO.from(bookingService.createOffline(
                 venuePrincipal().getVenueId(), body.getSessionSlotId(), body.getContactName(), body.getContactPhone()
         )));
+    }
+
+    /**
+     * 功能描述: 修改任意状态线下预约的联系人资料。
+     * 创建时间: 2026/09/11
+     *
+     * @param bookingId 预约 ID
+     * @param body 联系人请求
+     * @return 更新后的预约
+     * @author gjm
+     */
+    @PutMapping("/bookings/{bookingId}/contact")
+    public ApiResponse<BookingVO> updateOfflineContact(
+            @PathVariable long bookingId, @RequestBody BookingContactUpdateRequest body) {
+        return ApiResponse.success(BookingVO.from(bookingService.updateOfflineContact(
+                venuePrincipal().getVenueId(), bookingId, body.getContactName(), body.getContactPhone())));
     }
 
     /**

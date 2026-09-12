@@ -71,6 +71,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     /**
+     * 功能描述: 更新当前场馆员工姓名。
+     * 创建时间: 2026/09/11
+     *
+     * @author gjm
+     */
+    @Override
+    public Employee updateEmployeeName(long venueId, long employeeId, String name) {
+        Employee employee = requireEmployee(venueId, employeeId);
+        employee.name = requireText(name);
+        employee.updatedAt = LocalDateTime.now();
+        employeeMapper.updateById(employee);
+        return employee;
+    }
+
+    /**
      * 功能描述: 为指定员工签发一次性绑定码。
      * 创建时间: 2026/08/28 16:29
      *
