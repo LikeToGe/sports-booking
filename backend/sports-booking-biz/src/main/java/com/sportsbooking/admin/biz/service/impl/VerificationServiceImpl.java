@@ -9,17 +9,19 @@ import com.sportsbooking.admin.biz.service.CredentialService;
 import com.sportsbooking.admin.biz.service.VerificationService;
 import com.sportsbooking.admin.biz.pojo.vo.StaffVerificationRecordVO;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
+import com.sportsbooking.admin.biz.constants.RedisLockType;
 import com.sportsbooking.admin.base.enums.BookingStatus;
+import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.VerificationMethod;
 import com.sportsbooking.admin.base.po.Employee;
 import com.sportsbooking.admin.biz.service.EmployeeService;
+import com.sportsbooking.admin.biz.service.RedisLockService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 功能描述: 场馆员工核销与本人核销记录业务实现。
@@ -33,13 +35,16 @@ public class VerificationServiceImpl implements VerificationService {
     private final VerificationMapper verificationMapper;
     private final CredentialService credentialService;
     private final EmployeeService employeeService;
+    private final RedisLockService redisLockService;
 
     public VerificationServiceImpl(BookingMapper bookingMapper, VerificationMapper verificationMapper,
-                                   CredentialService credentialService, EmployeeService employeeService) {
+                                   CredentialService credentialService, EmployeeService employeeService,
+                                   RedisLockService redisLockService) {
         this.bookingMapper = bookingMapper;
         this.verificationMapper = verificationMapper;
         this.credentialService = credentialService;
         this.employeeService = employeeService;
+        this.redisLockService = redisLockService;
     }
 
     /**
@@ -49,34 +54,46 @@ public class VerificationServiceImpl implements VerificationService {
      * @author gjm
      */
     @Override
-    @Transactional
     public Booking verify(long staffUserId, String credential, VerificationMethod method) {
         Employee employee = employeeService.getActiveEmployee(staffUserId);
+        return verify(employee, credential, method);
+    }
+
+    @Override
+    public Booking verify(long staffUserId, long venueId, String credential, VerificationMethod method) {
+        return verify(employeeService.getActiveEmployee(staffUserId, venueId), credential, method);
+    }
+
+    private Booking verify(Employee employee, String credential, VerificationMethod method) {
         Booking candidate = resolveCredential(employee.venueId, credential, method);
-        Booking booking = bookingMapper.selectForUpdate(candidate.id);
-        if (booking == null || booking.venueId != employee.venueId
-                || !BookingStatus.CONFIRMED.equals(booking.status)) {
-            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.NOT_VERIFIABLE);
-        }
-        Instant now = Instant.now();
-        if (now.isBefore(booking.startAt.minus(BusinessConstants.VERIFICATION_EARLY_WINDOW))
-                || now.isAfter(booking.endAt)) {
-            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OUTSIDE_VERIFY_WINDOW);
-        }
+        return redisLockService.execute(List.of(
+                RedisLockType.BOOKING.key(candidate.id), RedisLockType.SESSION_SLOT.key(candidate.sessionSlotId)), () -> {
+            Booking booking = bookingMapper.selectForUpdate(candidate.id);
+            if (booking == null || booking.venueId != employee.venueId
+                    || booking.source != BookingSource.ONLINE
+                    || !BookingStatus.CONFIRMED.equals(booking.status)) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.NOT_VERIFIABLE);
+            }
+            Instant now = Instant.now();
+            if (now.isBefore(booking.startAt.minus(BusinessConstants.VERIFICATION_EARLY_WINDOW))
+                    || now.isAfter(booking.endAt)) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OUTSIDE_VERIFY_WINDOW);
+            }
 
-        Verification verification = new Verification();
-        verification.bookingId = booking.id;
-        verification.employeeId = employee.id;
-        verification.method = method;
-        verification.verifiedAt = now;
-        verificationMapper.insert(verification);
+            Verification verification = new Verification();
+            verification.bookingId = booking.id;
+            verification.employeeId = employee.id;
+            verification.method = method;
+            verification.verifiedAt = now;
+            verificationMapper.insert(verification);
 
-        // 核销记录和预约完成状态在同一事务提交，唯一约束使重复核销整体回滚。
-        booking.status = BookingStatus.COMPLETED;
-        booking.completedAt = now;
-        booking.updatedAt = LocalDateTime.now();
-        bookingMapper.updateById(booking);
-        return booking;
+            // 核销记录和预约完成状态在同一事务提交，唯一约束使重复核销整体回滚。
+            booking.status = BookingStatus.COMPLETED;
+            booking.completedAt = now;
+            booking.updatedAt = LocalDateTime.now();
+            bookingMapper.updateById(booking);
+            return booking;
+        });
     }
 
     /**
@@ -88,6 +105,13 @@ public class VerificationServiceImpl implements VerificationService {
     @Override
     public List<StaffVerificationRecordVO> listStaffRecords(long staffUserId) {
         Employee employee = employeeService.getActiveEmployee(staffUserId);
+        return verificationMapper.selectStaffRecords(employee.id).stream()
+                .map(StaffVerificationRecordVO::from).toList();
+    }
+
+    @Override
+    public List<StaffVerificationRecordVO> listStaffRecords(long staffUserId, long venueId) {
+        Employee employee = employeeService.getActiveEmployee(staffUserId, venueId);
         return verificationMapper.selectStaffRecords(employee.id).stream()
                 .map(StaffVerificationRecordVO::from).toList();
     }
@@ -107,6 +131,9 @@ public class VerificationServiceImpl implements VerificationService {
             Long bookingId = credentialService.resolveQr(credential);
             Booking booking = bookingId == null ? null : bookingMapper.selectById(bookingId);
             if (booking != null) {
+                if (booking.source != BookingSource.ONLINE) {
+                    throw new ApiException(HttpStatus.CONFLICT, ErrorCode.NOT_VERIFIABLE);
+                }
                 return booking;
             }
         } else if (method == VerificationMethod.SHORT_CODE) {

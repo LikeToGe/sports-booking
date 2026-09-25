@@ -6,9 +6,12 @@
     "pages/payment/index",
     "pages/bookings/index",
     "pages/booking/index",
+    "pages/membership/index",
     "pages/mine/index",
     "pages/staff-bind/index",
+    "pages/staff-web-login/index",
     "pages/staff-verify/index",
+    "pages/staff-recharge/index",
     "pages/staff-records/index"
   ],
   "window": {
@@ -24,11 +27,11 @@
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/index", "text": "找场馆" },
-      { "pagePath": "pages/bookings/index", "text": "我的预约" },
+      { "pagePath": "pages/home/index", "text": "订场" },
+      { "pagePath": "pages/bookings/index", "text": "预约" },
+      { "pagePath": "pages/membership/index", "text": "会员" },
       { "pagePath": "pages/mine/index", "text": "我的" }
     ]
   },
-  "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents"
+  "sitemapLocation": "sitemap.json"
 }

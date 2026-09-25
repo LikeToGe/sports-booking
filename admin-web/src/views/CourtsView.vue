@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { ImageUp, Plus, X } from "@lucide/vue";
 import { api } from "../api";
+import { hasPermission } from "../auth";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
 import type { CourtView, SportType } from "../types";
@@ -21,6 +22,7 @@ const sportDialog = ref<HTMLDialogElement>();
 const keyword = ref("");
 const sportId = ref("");
 const status = ref("");
+const canEdit = hasPermission("COURT_EDIT");
 const filteredCourts = computed(() => {
   const query = keyword.value.trim().toLowerCase();
   return courts.value.filter(court =>
@@ -158,7 +160,7 @@ onMounted(load);
   <section class="page">
     <header class="page-header">
       <div><h1>场地</h1><p>一个场地可以支持多种运动，同一时间仍只接受一个预约。</p></div>
-      <div class="toolbar">
+      <div v-if="canEdit" class="toolbar">
         <button class="button secondary" type="button" @click="openSportDialog">管理运动类型</button>
         <button class="button" type="button" @click="openCourtDialog"><Plus :size="18" aria-hidden="true" />新增场地</button>
       </div>
@@ -184,7 +186,7 @@ onMounted(load);
             <td data-label="运动">{{ court.sportNames }}</td>
             <td data-label="状态"><span class="status" :data-tone="court.status === 'ACTIVE' ? 'active' : 'danger'">{{ court.status === "ACTIVE" ? "启用" : "停用" }}</span></td>
             <td data-label="操作">
-              <div class="court-actions">
+              <div v-if="canEdit" class="court-actions">
                 <button class="button secondary" type="button" @click="openCourtEdit(court)">编辑</button>
                 <label class="button secondary"><ImageUp :size="18" aria-hidden="true" /><span>上传图片</span><input class="file-input" type="file" accept="image/jpeg,image/png,image/webp" @change="uploadCourtImage(court, $event)"></label>
                 <button class="button secondary" type="button" @click="toggleCourt(court)">{{ court.status === "ACTIVE" ? "停用" : "启用" }}</button>

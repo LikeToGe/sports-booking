@@ -2,6 +2,12 @@
 .booking-list { display: grid; gap: 20rpx; }
 .booking-card { display: grid; gap: 12rpx; width: 100%; padding: 24rpx; color: var(--ink); text-align: left; line-height: 1.4; }
 .booking-top, .booking-foot { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.status-line { display: flex; justify-content: flex-end; gap: 12rpx; flex-wrap: wrap; }
 .date { color: var(--muted); font-size: 24rpx; font-variant-numeric: tabular-nums; }
 .booking-court { color: var(--ink-2); }
 .booking-foot { padding-top: 16rpx; border-top: 2rpx solid var(--rule-2); }
+.inline-action { min-height: 88rpx; margin-top: 16rpx; border: 2rpx solid var(--danger); background: transparent; color: var(--danger-strong); }
+@media (max-width: 360px) {
+  .booking-top { align-items: start; }
+  .status-line { display: grid; justify-items: end; }
+}

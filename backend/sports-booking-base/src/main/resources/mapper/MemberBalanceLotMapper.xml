@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.MemberBalanceLotMapper">
+    <select id="selectSpendableForUpdate" resultType="com.sportsbooking.admin.base.po.MemberBalanceLot">
+        SELECT * FROM s_member_balance_lot
+        WHERE venue_customer_id = #{venueCustomerId}
+          AND status = 'ACTIVE'
+          AND available_amount_fen &gt; 0
+          AND (type = 'PAID' OR expires_at &gt; #{now})
+        ORDER BY CASE WHEN type = 'GIFT' THEN 0 ELSE 1 END,
+                 CASE WHEN type = 'GIFT' THEN expires_at END,
+                 id
+        FOR UPDATE
+    </select>
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.MemberBalanceLot">
+        SELECT * FROM s_member_balance_lot WHERE id = #{id} FOR UPDATE
+    </select>
+    <select id="selectByRechargeForUpdate" resultType="com.sportsbooking.admin.base.po.MemberBalanceLot">
+        SELECT * FROM s_member_balance_lot WHERE source_recharge_id = #{rechargeId} ORDER BY id FOR UPDATE
+    </select>
+    <select id="selectSummary" resultType="com.sportsbooking.admin.base.bo.BalanceSummaryBO">
+        SELECT COALESCE(SUM(CASE WHEN lot.type = 'PAID' AND lot.status = 'ACTIVE'
+                                 THEN lot.available_amount_fen ELSE 0 END), 0)
+                   AS paidBalanceFen,
+               COALESCE(SUM(CASE WHEN lot.type = 'GIFT' AND lot.status = 'ACTIVE'
+                                      AND lot.expires_at &gt; #{now}
+                                 THEN lot.available_amount_fen ELSE 0 END), 0) AS giftBalanceFen,
+               COALESCE(SUM(CASE WHEN lot.type = 'GIFT' AND lot.status = 'ACTIVE'
+                                      AND lot.expires_at = nearest.expires_at
+                                 THEN lot.available_amount_fen ELSE 0 END), 0) AS nextGiftExpiresAmountFen,
+               nearest.expires_at AS nextGiftExpiresAt
+        FROM s_member_balance_lot lot
+        LEFT JOIN (
+            SELECT venue_customer_id, MIN(expires_at) AS expires_at
+            FROM s_member_balance_lot
+            WHERE venue_customer_id = #{venueCustomerId} AND type = 'GIFT' AND status = 'ACTIVE'
+              AND available_amount_fen &gt; 0 AND expires_at &gt; #{now}
+            GROUP BY venue_customer_id
+        ) nearest ON nearest.venue_customer_id = lot.venue_customer_id
+        WHERE lot.venue_customer_id = #{venueCustomerId}
+        GROUP BY nearest.expires_at
+    </select>
+    <select id="selectExpiringGiftLots" resultType="com.sportsbooking.admin.base.po.MemberBalanceLot">
+        SELECT * FROM s_member_balance_lot
+        WHERE type = 'GIFT' AND status = 'ACTIVE' AND available_amount_fen &gt; 0
+          AND expires_at &gt; #{now} AND expires_at &lt;= #{remindBefore}
+        ORDER BY id LIMIT 200
+    </select>
+    <select id="selectExpiredGiftLots" resultType="com.sportsbooking.admin.base.po.MemberBalanceLot">
+        SELECT * FROM s_member_balance_lot
+        WHERE type = 'GIFT' AND status = 'ACTIVE' AND available_amount_fen &gt; 0 AND expires_at &lt;= #{now}
+        ORDER BY id LIMIT 200
+    </select>
+</mapper>

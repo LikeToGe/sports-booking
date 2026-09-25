@@ -1,8 +1,24 @@
 export interface AdminPrincipal {
   accountId: number;
-  role: "PLATFORM_ADMIN" | "VENUE_ADMIN";
+  role: "PLATFORM_ADMIN" | "VENUE_ADMIN" | "VENUE_EMPLOYEE";
   venueId: number | null;
+  employeeId?: number;
+  permissions: string[];
   displayName: string;
+}
+
+export interface PermissionCatalog {
+  code: string;
+  name: string;
+  group: string;
+}
+
+export interface VenueRole {
+  id: number;
+  name: string;
+  status: "ACTIVE" | "DISABLED";
+  permissions: string[];
+  employeeCount: number;
 }
 
 export interface Venue {
@@ -59,6 +75,23 @@ export interface BookingView {
   paymentStatus?: string;
 }
 
+export interface VenueCustomer {
+  customerId: number;
+  contactName: string;
+  phone: string;
+  status: "CUSTOMER" | "MEMBER";
+  memberCode: string;
+  activatedAt?: string;
+  createdAt: string;
+}
+
+export interface PlatformCustomerSummary {
+  venueId: number;
+  venueName: string;
+  customerCount: number;
+  memberCount: number;
+}
+
 export interface WeeklySlot {
   id: number;
   courtId: number;
@@ -76,6 +109,8 @@ export interface Employee {
   userId?: number;
   status: string;
   bindingExpiresAt?: string;
+  roleIds?: number[];
+  roleNames?: string[];
 }
 
 export interface SessionView {
@@ -88,26 +123,92 @@ export interface SessionView {
   endAt: string;
   priceFen: number;
   status: string;
+  bookingId?: number;
+  bookingSource?: "ONLINE" | "OFFLINE";
+  bookingStatus?: string;
+  paymentStatus?: string;
+  contactName?: string;
+  contactPhone?: string;
 }
 
 export interface OperationReportDaily {
   reportDate: string;
+  onlineBookingAmountFen: number;
+  offlineRegisteredAmountFen: number;
+  availableSessionCount: number;
+  bookedSessionCount: number;
+  utilizationRateBasisPoints: number;
   bookingCount: number;
-  effectiveBookingCount: number;
-  completedCount: number;
   cancelledCount: number;
-  noShowCount: number;
-  amountFen: number;
+  cancellationRateBasisPoints: number;
+  pendingVerificationCount: number;
+  offlineUnrecordedCount: number;
+  offlineUnpaidCount: number;
+  newMemberCount: number;
+  rechargeInflowFen: number;
+  balanceConsumptionFen: number;
 }
 
-export interface OperationReport {
-  bookingCount: number;
-  effectiveBookingCount: number;
-  completedCount: number;
-  cancelledCount: number;
-  noShowCount: number;
-  amountFen: number;
+export interface OperationReport extends Omit<OperationReportDaily, "reportDate"> {
+  repeatCustomerCount: number;
+  repeatPurchaseRateBasisPoints: number;
+  memberAvailableBalanceFen: number;
+  memberFrozenBalanceFen: number;
   daily: OperationReportDaily[];
+}
+
+export interface ReportMemberFlow {
+  flowId: number;
+  memberCode: string;
+  businessType: string;
+  direction: string;
+  amountFen: number;
+  bookingNo?: string;
+  rechargeNo?: string;
+  operatorName?: string;
+  occurredAt: string;
+}
+
+export interface ReportBooking {
+  bookingNo: string;
+  sessionDate: string;
+  startTime: string;
+  endTime: string;
+  source: string;
+  contactName: string;
+  contactPhone: string;
+  courtName: string;
+  sportName: string;
+  status: string;
+  paymentStatus: string;
+  amountFen: number;
+  offlineRegisteredAmountFen: number;
+  balanceConsumptionFen: number;
+  externalPaymentFen: number;
+  createdAt: string;
+}
+
+export interface PlatformMemberOperation {
+  venueId: number;
+  venueName: string;
+  customerCount: number;
+  memberCount: number;
+  newMemberCount: number;
+  repeatCustomerCount: number;
+  repeatPurchaseRateBasisPoints: number;
+  rechargeInflowFen: number;
+  balanceConsumptionFen: number;
+  memberAvailableBalanceFen: number;
+  memberFrozenBalanceFen: number;
+}
+
+export interface ReportReceipt {
+  receiptDate: string;
+  operatorName: string;
+  channel: string;
+  businessType: string;
+  count: number;
+  amountFen: number;
 }
 
 export interface ServiceFeeBooking {

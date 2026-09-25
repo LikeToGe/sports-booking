@@ -21,6 +21,8 @@ public class Payment {
     public Long id;
     /** 关联预约 ID。 */
     public Long bookingId;
+    /** 稳定支付业务号。 */
+    public String paymentNo;
     /** 支付渠道。 */
     public PaymentProvider provider;
     /** 支付渠道交易号。 */
@@ -31,6 +33,10 @@ public class Payment {
     public PaymentStatus status;
     /** 支付完成时间。 */
     public Instant paidAt;
+    /** 支付关闭时间。 */
+    public Instant closedAt;
+    /** 最近渠道查单时间。 */
+    public Instant lastQueryAt;
     /** 创建时间。 */
     public LocalDateTime createdAt;
     /** 最后更新时间。 */

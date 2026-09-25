@@ -3,7 +3,7 @@ package com.sportsbooking.admin.biz.pojo.vo;
 import com.sportsbooking.admin.base.bo.VenueBookingBO;
 import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.BookingStatus;
-import com.sportsbooking.admin.base.enums.PaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -110,12 +110,19 @@ public class VenueBookingVO {
      */
     @Schema(description = "支付状态")
     @ApiModelProperty(value = "支付状态")
-    private PaymentStatus paymentStatus;
+    private BookingPaymentStatus paymentStatus;
+
+    /**
+     * 关联的场馆顾客档案 ID
+     */
+    @Schema(description = "关联的场馆顾客档案 ID")
+    @ApiModelProperty(value = "关联的场馆顾客档案 ID")
+    private Long venueCustomerId;
 
     public static VenueBookingVO from(VenueBookingBO source) {
         return new VenueBookingVO(source.getId(), source.getBookingNo(), source.getVenueName(),
                 source.getSource(), source.getContactName(), source.getContactPhone(), source.getCourtName(),
                 source.getSportName(), source.getStartAt(), source.getEndAt(), source.getAmountFen(),
-                source.getStatus(), source.getPaymentStatus());
+                source.getStatus(), source.getPaymentStatus(), source.getVenueCustomerId());
     }
 }

@@ -17,6 +17,10 @@ public interface SessionService {
      * @author gjm
      */
     String createAdminSession(AdminPrincipal principal);
+    /** 创建只保存员工和场馆标识的后台会话。 */
+    default String createEmployeeAdminSession(long employeeId, long venueId) {
+        throw new UnsupportedOperationException();
+    }
     /**
      * 功能描述: 创建小程序会话。
      * 创建时间: 2026/08/28 16:29

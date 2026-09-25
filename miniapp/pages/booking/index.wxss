@@ -1,9 +1,27 @@
 .detail-page { display: grid; align-content: start; gap: 24rpx; }
 .detail-head { display: flex; align-items: start; justify-content: space-between; gap: 24rpx; padding: 28rpx; }
 .block { margin-top: 10rpx; font-size: 24rpx; }
+.amount-block { display: grid; justify-items: end; gap: 10rpx; flex: 0 0 auto; }
 .amount { font-size: 42rpx; white-space: nowrap; }
 .facts { display: grid; gap: 24rpx; padding: 28rpx; }
 .facts > view { display: grid; grid-template-columns: 120rpx minmax(0, 1fr); gap: 20rpx; }
+.composition, .external-payment, .refund-panel { display: grid; gap: 0; padding: 24rpx; }
+.composition .section-title { margin-bottom: 12rpx; }
+.composition-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-height: 72rpx; border-bottom: 2rpx solid var(--rule-2); }
+.composition strong, .refund-facts { font-variant-numeric: tabular-nums; }
+.lot-list { display: grid; margin-top: 12rpx; }
+.lot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8rpx 20rpx; padding: 16rpx 0; border-bottom: 2rpx solid var(--rule-2); font-size: 24rpx; }
+.lot-row .muted { grid-column: 1 / -1; }
+.external-payment, .refund-panel { gap: 20rpx; }
+.external-payment-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-width: 0; }
+.external-payment-row .muted { min-width: 0; overflow-wrap: anywhere; }
+.refund-facts { display: grid; gap: 10rpx; }
+.error-text { color: var(--danger-strong); }
 .credential { display: grid; justify-items: center; gap: 20rpx; padding: 28rpx; text-align: center; }
 .qr { width: 400rpx; height: 400rpx; }
 .short-code { font-size: 56rpx; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 10rpx; }
+.retry-button { margin-top: 20rpx; }
+@media (max-width: 360px) {
+  .detail-head { align-items: stretch; flex-direction: column; }
+  .amount-block { justify-items: start; }
+}

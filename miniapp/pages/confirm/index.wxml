@@ -1,8 +1,8 @@
 <view class="page confirm-page" wx:if="{{slot}}">
-  <view class="screen-head"><text class="screen-title">确认预约</text><text class="muted">确认场次和联系人后进入支付。</text></view>
-  <view class="summary surface"><text class="muted">{{slot.venueName}}</text><text class="section-title">{{slot.courtName}} · {{slot.sportName}}</text><text>{{slot.dateLabel}}　{{slot.time}}</text><text class="price total">{{slot.price}}</text></view>
+  <view class="screen-head"><text class="screen-title">确认预约</text><text class="muted">确认场次和联系人。</text></view>
+  <view class="summary surface"><text class="muted">{{slot.venueName}}</text><text class="section-title">{{slot.courtName}} · {{slot.sportName}}</text><text>{{slot.dateLabel}}　{{slot.time}}</text><view class="summary-total"><text class="muted">预约总额</text><text class="price total">{{slot.price}}</text></view></view>
   <view class="form-panel surface"><text class="section-title">联系人</text><view class="form"><label class="field"><text class="field-label">姓名</text><input class="field-control" value="{{contactName}}" bindinput="onName" /></label><label class="field"><text class="field-label">手机号</text><input class="field-control" type="number" maxlength="11" value="{{contactPhone}}" bindinput="onPhone" /></label></view></view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
   <view class="rule"><text>取消规则</text><text class="muted">超过场馆规定的取消截止时间后不可自行取消。</text></view>
-  <button class="button-primary" disabled="{{loading || !contactName || !contactPhone}}" bindtap="submit">{{loading ? '正在创建' : '确认并支付'}}</button>
+  <button class="button-primary" disabled="{{loading || !contactName || !contactPhone}}" bindtap="submit">{{loading ? '正在创建预约' : '确认预约'}}</button>
 </view>

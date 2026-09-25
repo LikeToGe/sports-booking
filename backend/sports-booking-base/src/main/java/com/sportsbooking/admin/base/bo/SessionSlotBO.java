@@ -1,5 +1,8 @@
 package com.sportsbooking.admin.base.bo;
 
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingSource;
+import com.sportsbooking.admin.base.enums.BookingStatus;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -60,4 +63,34 @@ public class SessionSlotBO {
      * 状态
      */
     private SessionSlotStatus status;
+
+    /**
+     * 当前关联预约 ID
+     */
+    private Long bookingId;
+
+    /**
+     * 当前关联预约来源
+     */
+    private BookingSource bookingSource;
+
+    /**
+     * 当前关联预约状态
+     */
+    private BookingStatus bookingStatus;
+
+    /**
+     * 当前关联预约的独立收款状态
+     */
+    private BookingPaymentStatus paymentStatus;
+
+    /**
+     * 当前关联预约联系人姓名
+     */
+    private String contactName;
+
+    /**
+     * 当前关联预约联系人手机号
+     */
+    private String contactPhone;
 }

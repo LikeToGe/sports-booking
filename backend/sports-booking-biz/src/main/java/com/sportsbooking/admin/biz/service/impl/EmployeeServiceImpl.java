@@ -120,7 +120,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw badRequest();
         }
         Long existingCount = employeeMapper.selectCount(new QueryWrapper<Employee>()
-                .eq("user_id", userId).ne("id", employee.id));
+                .eq("venue_id", employee.venueId).eq("user_id", userId).ne("id", employee.id));
         if (existingCount > 0) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.ALREADY_BOUND);
         }
@@ -159,11 +159,33 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public Employee getActiveEmployee(long userId) {
-        Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>()
-                .eq("user_id", userId).eq("status", EnableStatus.ACTIVE));
+        Employee employee = employeeMapper.selectList(new QueryWrapper<Employee>()
+                .eq("user_id", userId).eq("status", EnableStatus.ACTIVE).orderByAsc("id")).stream()
+                .findFirst().orElse(null);
         if (employee == null) {
             throw new ApiException(HttpStatus.FORBIDDEN, ErrorCode.STAFF_REQUIRED);
         }
+        return employee;
+    }
+
+    @Override
+    public Employee getActiveEmployee(long userId, long venueId) {
+        Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>()
+                .eq("user_id", userId).eq("venue_id", venueId).eq("status", EnableStatus.ACTIVE));
+        if (employee == null) {
+            throw new ApiException(HttpStatus.FORBIDDEN, ErrorCode.STAFF_REQUIRED);
+        }
+        return employee;
+    }
+
+    @Override
+    public Employee unbindEmployee(long venueId, long employeeId) {
+        Employee employee = requireEmployee(venueId, employeeId);
+        employee.userId = null;
+        employee.bindingCodeHash = null;
+        employee.bindingExpiresAt = null;
+        employee.updatedAt = LocalDateTime.now();
+        employeeMapper.updateById(employee);
         return employee;
     }
 

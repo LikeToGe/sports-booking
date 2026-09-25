@@ -4,6 +4,7 @@ const STATUS_LABELS: Record<string, string> = {
   COMPLETED: "已完成",
   CANCELLED: "已取消",
   NO_SHOW: "未到场",
+  ENDED_UNTRACKED: "履约未跟踪",
   ACTIVE: "启用",
   DISABLED: "停用",
   DRAFT: "草稿",
@@ -16,6 +17,15 @@ const STATUS_LABELS: Record<string, string> = {
   SUCCESS: "成功",
   FAILED: "失败",
   REFUNDED: "已退款",
+  UNRECORDED: "未记录",
+  UNPAID: "未支付",
+  PAYING: "支付中",
+  PAID: "已支付",
+  REFUNDING: "退款中",
+  PAYMENT_FAILED: "支付失败",
+  REFUND_FAILED: "退款失败",
+  CUSTOMER: "普通顾客",
+  MEMBER: "会员",
   MOCK_SENT: "模拟发送成功",
 };
 
@@ -24,8 +34,8 @@ export function statusLabel(status: string) {
 }
 
 export function statusTone(status: string) {
-  if (["ACTIVE", "OPEN", "COMPLETED"].includes(status)) return "active";
-  if (["PENDING_PAYMENT", "PENDING", "CONFIRMED", "HELD", "BOOKED", "DRAFT"].includes(status)) return "warning";
-  if (["CANCELLED", "NO_SHOW", "DISABLED", "SUSPENDED", "CLOSED", "FAILED"].includes(status)) return "danger";
+  if (["ACTIVE", "OPEN", "COMPLETED", "PAID", "CUSTOMER", "MEMBER"].includes(status)) return "active";
+  if (["PENDING_PAYMENT", "PENDING", "CONFIRMED", "HELD", "BOOKED", "DRAFT", "UNRECORDED", "UNPAID", "PAYING", "REFUNDING", "ENDED_UNTRACKED"].includes(status)) return "warning";
+  if (["CANCELLED", "NO_SHOW", "DISABLED", "SUSPENDED", "CLOSED", "FAILED", "PAYMENT_FAILED", "REFUND_FAILED"].includes(status)) return "danger";
   return "";
 }

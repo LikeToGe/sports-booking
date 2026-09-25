@@ -2,6 +2,7 @@ package com.sportsbooking.admin.biz.service;
 
 import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.enums.NotificationType;
+import java.time.Instant;
 
 /**
  * 功能描述: 记录预约相关消息触发；真实订阅消息接入前写入模拟发送状态。
@@ -17,4 +18,7 @@ public interface NotificationService {
      * @author gjm
      */
     void record(Booking booking, NotificationType type);
+
+    /** 为余额批次幂等记录一次到期提醒和 Mock 投递。 */
+    void recordBalanceExpiry(long userId, long lotId, int amountFen, Instant expiresAt);
 }

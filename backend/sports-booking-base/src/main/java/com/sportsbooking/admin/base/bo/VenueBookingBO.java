@@ -2,7 +2,7 @@ package com.sportsbooking.admin.base.bo;
 
 import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.BookingStatus;
-import com.sportsbooking.admin.base.enums.PaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -81,5 +81,10 @@ public class VenueBookingBO {
     /**
      * 支付状态
      */
-    private PaymentStatus paymentStatus;
+    private BookingPaymentStatus paymentStatus;
+
+    /**
+     * 关联的场馆顾客档案 ID
+     */
+    private Long venueCustomerId;
 }

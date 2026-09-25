@@ -2,7 +2,7 @@ package com.sportsbooking.admin.biz.pojo.vo;
 
 import com.sportsbooking.admin.base.bo.UserBookingBO;
 import com.sportsbooking.admin.base.enums.BookingStatus;
-import com.sportsbooking.admin.base.enums.PaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.enums.RefundStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -96,7 +96,7 @@ public class UserBookingVO {
      */
     @Schema(description = "支付状态")
     @ApiModelProperty(value = "支付状态")
-    private PaymentStatus paymentStatus;
+    private BookingPaymentStatus paymentStatus;
 
     /**
      * 退款状态

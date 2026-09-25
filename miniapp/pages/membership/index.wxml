@@ -1,0 +1,46 @@
+<view class="page membership-page">
+  <view class="screen-head"><text class="screen-title">会员</text><text class="muted">每个场馆的顾客与会员关系独立。</text></view>
+  <view wx:if="{{error}}" class="error" role="alert"><text>{{error}}</text><button class="inline-action" bindtap="load">重新加载</button></view>
+  <block wx:if="{{current}}">
+    <label class="field"><text class="field-label">选择场馆</text><picker disabled="{{switching || creatingRecharge || payingRecharge}}" mode="selector" range="{{memberships}}" range-key="venueName" value="{{selectedIndex}}" bindchange="selectMembership"><view class="field-control venue-picker">{{switching ? '正在切换...' : current.venueName}}</view></picker></label>
+    <view class="member-identity surface">
+      <view class="section-head"><view><text class="section-title">{{current.venueName}}</text><text class="member-status">{{current.statusLabel}}</text></view><text class="member-code">{{current.memberCode}}</text></view>
+      <image wx:if="{{current.memberQrDataUrl}}" class="member-qr" src="{{current.memberQrDataUrl}}" mode="aspectFit" aria-label="{{current.venueName}}会员码" />
+      <text wx:if="{{current.memberQrDataUrl}}" class="muted">到店时向场馆员工出示此码。</text>
+      <text wx:else class="muted">首次充值成功后生成会员码。</text>
+    </view>
+    <view class="balance-band surface" aria-label="会员余额">
+      <view><text>实付余额</text><strong>{{current.paidBalance}}</strong></view>
+      <view><text>赠送余额</text><strong>{{current.giftBalance}}</strong></view>
+    </view>
+    <view wx:if="{{current.hasExpiry}}" class="expiry-notice"><text>近期到期</text><strong>{{current.expiringGiftBalance}}</strong><text>{{current.nextGiftExpiresAtLabel}} 到期</text></view>
+
+    <view class="recharge-section">
+      <view class="section-head"><text class="section-title">充值档位</text><text class="muted">{{plans.length}} 个可选</text></view>
+      <view class="plan-list">
+        <button wx:for="{{plans}}" wx:key="id" class="plan-row surface {{selectedPlanId === item.id ? 'is-selected' : ''}}" data-id="{{item.id}}" disabled="{{creatingRecharge || payingRecharge}}" bindtap="selectPlan">
+          <view><text class="plan-name">{{item.name}}</text><text class="muted plan-validity">{{item.validityLabel}}</text></view>
+          <view class="plan-money"><strong>{{item.paidAmount}}</strong><text class="plan-gift">{{item.giftLabel}}</text></view>
+        </button>
+      </view>
+      <view wx:if="{{!plans.length}}" class="empty surface"><text class="empty-title">暂无可用充值档位</text><text>场馆启用档位后可在此充值。</text></view>
+      <button wx:if="{{plans.length && !recharge}}" class="button-primary" disabled="{{!selectedPlanId || creatingRecharge}}" bindtap="createRecharge">{{creatingRecharge ? '正在创建充值单' : '创建充值单'}}</button>
+    </view>
+
+    <view wx:if="{{recharge}}" class="recharge-result surface">
+      <view class="section-head"><text class="section-title">本次充值</text><text class="status status-{{recharge.statusTone}}">{{recharge.statusLabel}}</text></view>
+      <view class="recharge-facts"><text>实付 {{recharge.paidAmount}}</text><text>赠送 {{recharge.giftAmount}}</text><text class="muted">{{recharge.createdAtLabel}}</text></view>
+      <view class="recharge-actions"><button wx:if="{{recharge.status === 'PENDING'}}" class="button-primary" disabled="{{payingRecharge}}" bindtap="payRecharge">{{payingRecharge ? '正在确认支付' : '完成 Mock 支付'}}</button><button wx:if="{{recharge.status === 'PENDING'}}" class="button-secondary" disabled="{{payingRecharge}}" bindtap="refreshRecharge">刷新状态</button><button wx:else class="button-secondary" bindtap="resetRecharge">继续充值</button></view>
+    </view>
+    <view wx:if="{{actionError}}" class="error" role="alert">{{actionError}}</view>
+    <view wx:if="{{actionMessage}}" class="action-message message-{{actionMessageTone}}" aria-live="polite">{{actionMessage}}</view>
+
+    <view class="flow-section">
+      <view class="section-head"><text class="section-title">余额流水</text><text class="muted">{{flows.length}} 条</text></view>
+      <view class="flow-list"><view wx:for="{{flows}}" wx:key="id" class="flow-row"><view><text class="flow-title">{{item.businessLabel}}</text><text class="muted flow-meta">{{item.balanceLabel}} · {{item.createdAtLabel}}</text></view><text class="flow-amount flow-{{item.tone}}">{{item.signedAmount}}</text></view></view>
+      <view wx:if="{{!flows.length}}" class="empty surface"><text class="empty-title">暂无余额流水</text><text>充值、冻结或退款后会显示明细。</text></view>
+    </view>
+  </block>
+  <view wx:elif="{{!loading}}" class="empty surface"><text class="empty-title">还没有场馆顾客档案</text><text>完成首次线上预约后，场馆关系会显示在这里。</text></view>
+  <view wx:else class="empty" aria-live="polite"><text>正在加载会员信息...</text></view>
+</view>

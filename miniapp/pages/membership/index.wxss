@@ -1,0 +1,46 @@
+.membership-page { display: grid; align-content: start; gap: 24rpx; }
+.venue-picker { display: flex; align-items: center; }
+.member-identity { display: grid; justify-items: center; gap: 24rpx; padding: 28rpx; }
+.member-identity .section-head { width: 100%; }
+.member-identity .section-head > view { display: grid; gap: 8rpx; min-width: 0; }
+.member-status { color: var(--muted); font-size: 24rpx; }
+.member-code { color: var(--ink-2); font-family: monospace; font-size: 24rpx; }
+.member-qr { width: 360rpx; height: 360rpx; background: var(--paper); }
+.balance-band { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.balance-band > view { display: grid; gap: 10rpx; padding: 28rpx; }
+.balance-band > view + view { border-left: 2rpx solid var(--rule-2); }
+.balance-band text { color: var(--muted); font-size: 24rpx; }
+.balance-band strong { font-size: 36rpx; font-variant-numeric: tabular-nums; }
+.expiry-notice { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 16rpx; padding: 22rpx 24rpx; border: 2rpx solid var(--warning); border-radius: 16rpx; background: var(--warning-soft); color: var(--warning-strong); }
+.expiry-notice strong { font-variant-numeric: tabular-nums; }
+.recharge-section, .flow-section { display: grid; gap: 20rpx; }
+.plan-list, .flow-list { display: grid; gap: 16rpx; }
+.plan-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; width: 100%; min-height: 112rpx; padding: 20rpx 24rpx; color: var(--ink); text-align: left; line-height: 1.4; }
+.plan-row > view { display: grid; gap: 6rpx; min-width: 0; }
+.plan-row.is-selected { border-color: var(--signal); background: var(--signal-soft); }
+.plan-name { font-weight: 600; overflow-wrap: anywhere; }
+.plan-validity { font-size: 24rpx; }
+.plan-money { justify-items: end; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.plan-money strong { font-size: 34rpx; }
+.plan-gift { color: var(--signal-strong); font-size: 24rpx; }
+.recharge-result { display: grid; gap: 20rpx; padding: 24rpx; }
+.recharge-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; font-variant-numeric: tabular-nums; }
+.recharge-facts .muted { grid-column: 1 / -1; font-size: 24rpx; }
+.recharge-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16rpx; }
+.action-message { padding: 20rpx 24rpx; border: 2rpx solid; border-radius: 16rpx; }
+.message-info { border-color: var(--signal); background: var(--signal-soft); color: var(--signal-strong); }
+.message-success { border-color: var(--success); background: var(--success-soft); color: var(--success-strong); }
+.flow-list { border-top: 2rpx solid var(--rule); }
+.flow-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-height: 96rpx; padding: 16rpx 0; border-bottom: 2rpx solid var(--rule-2); }
+.flow-row > view { display: grid; gap: 6rpx; min-width: 0; }
+.flow-title { overflow-wrap: anywhere; }
+.flow-meta { font-size: 24rpx; }
+.flow-amount { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+.flow-credit { color: var(--success-strong); }
+.flow-debit { color: var(--ink); }
+.inline-action { min-height: 88rpx; margin-top: 16rpx; border: 2rpx solid var(--danger); background: transparent; color: var(--danger-strong); }
+@media (max-width: 360px) {
+  .recharge-actions { grid-template-columns: 1fr; }
+  .expiry-notice { grid-template-columns: auto 1fr; }
+  .expiry-notice text:last-child { grid-column: 1 / -1; }
+}

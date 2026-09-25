@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.BookingStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.enums.CancelledBy;
 
 /**
@@ -24,6 +25,8 @@ public class Booking {
     public String bookingNo;
     /** 下单用户 ID，场馆线下代订时为空。 */
     public Long userId;
+    /** 关联的场馆级顾客档案 ID。 */
+    public Long venueCustomerId;
     /** 所属场馆 ID。 */
     public Long venueId;
     /** 预约场地 ID。 */
@@ -50,12 +53,24 @@ public class Booking {
     public Instant endAt;
     /** 预约金额，单位为分。 */
     public Integer amountFen;
+    /** 固定余额支付总额，单位为分。 */
+    public Integer balanceAmountFen;
+    /** 固定赠送余额支付额，单位为分。 */
+    public Integer giftBalanceAmountFen;
+    /** 固定实付余额支付额，单位为分。 */
+    public Integer paidBalanceAmountFen;
+    /** 固定外部支付额，单位为分。 */
+    public Integer externalAmountFen;
     /** 创建预约时的平台服务费率快照，单位为基点。 */
     public Integer serviceFeeRateBasisPoints;
     /** 预约状态。 */
     public BookingStatus status;
+    /** 预约整体收款或线下登记收款状态。 */
+    public BookingPaymentStatus paymentStatus;
     /** 待支付预约的支付截止时间。 */
     public Instant paymentExpiresAt;
+    /** 客户端创建幂等键。 */
+    public String clientIdempotencyKey;
     /** 取消操作方。 */
     public CancelledBy cancelledBy;
     /** 取消原因。 */

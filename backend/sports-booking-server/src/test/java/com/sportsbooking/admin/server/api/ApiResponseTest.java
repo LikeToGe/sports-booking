@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ApiResponseTest {
@@ -44,11 +46,24 @@ class ApiResponseTest {
     void keepsHttpStatusForFailedResponse() {
         ApiException exception = new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
 
-        ResponseEntity<ApiResponse<Void>> response = new ApiExceptionHandler().handleApiException(exception);
+        ResponseEntity<ApiResponse<Object>> response = new ApiExceptionHandler().handleApiException(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getCode()).isEqualTo(1);
         assertThat(response.getBody().getMsg()).isEqualTo("参数不正确");
+        assertThat(response.getBody().getData()).isNull();
+    }
+
+    @Test
+    void keepsStructuredBusinessErrorData() {
+        List<String> conflictDates = List.of("2026-09-16", "2026-09-18");
+        ApiException exception = new ApiException(HttpStatus.CONFLICT, ErrorCode.BATCH_SLOT_CONFLICT, conflictDates);
+
+        ResponseEntity<ApiResponse<Object>> response = new ApiExceptionHandler().handleApiException(exception);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getData()).isEqualTo(conflictDates);
     }
 }

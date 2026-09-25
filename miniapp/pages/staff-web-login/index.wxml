@@ -1,0 +1,9 @@
+<view class="page web-login-page">
+  <view class="screen-head"><text class="screen-title">Web 后台登录</text><text class="muted">选择场馆身份并确认一次性登录票据。</text></view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <label wx:if="{{current}}" class="field"><text class="field-label">登录场馆</text><picker mode="selector" range="{{venues}}" range-key="venueName" value="{{selectedIndex}}" bindchange="selectVenue"><view class="field-control venue-picker">{{current.venueName}}</view></picker></label>
+  <button wx:if="{{current}}" class="scan-button" disabled="{{loading}}" bindtap="scan"><text class="scan-title">扫描 Web 登录二维码</text><text class="scan-hint">打开相机扫码</text></button>
+  <view wx:if="{{current}}" class="ticket-panel surface"><label class="field"><text class="field-label">登录票据</text><textarea class="ticket-input" value="{{ticket}}" maxlength="-1" bindinput="onTicket" /></label><button class="button-primary" disabled="{{loading || !ticket || confirmed}}" bindtap="confirm">{{confirmed ? '已确认登录' : loading ? '正在确认' : '确认登录该场馆'}}</button></view>
+  <view wx:if="{{confirmed}}" class="success" aria-live="polite">Web 后台已登录，此票据不能再次使用。</view>
+  <view wx:if="{{!loading && !current}}" class="empty surface"><text class="empty-title">没有可用的员工身份</text></view>
+</view>

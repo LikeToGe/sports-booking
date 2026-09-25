@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PaymentMapper">
+    <select id="selectByBookingForUpdate" resultType="com.sportsbooking.admin.base.po.Payment">
+        SELECT * FROM s_payment WHERE booking_id = #{bookingId} LIMIT 1 FOR UPDATE
+    </select>
+    <select id="selectByBusinessNo" resultType="com.sportsbooking.admin.base.po.Payment">
+        SELECT * FROM s_payment WHERE payment_no = #{businessNo} LIMIT 1
+    </select>
+</mapper>

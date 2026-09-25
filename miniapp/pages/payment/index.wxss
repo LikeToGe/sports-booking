@@ -1,5 +1,14 @@
 .payment-page { display: grid; align-content: start; gap: 24rpx; }
-.payment-card { display: grid; justify-items: center; gap: 20rpx; padding: 48rpx 28rpx; text-align: center; }
+.payment-card { display: grid; justify-items: center; gap: 20rpx; padding: 32rpx 28rpx; text-align: center; }
+.payment-card .section-head { width: 100%; }
 .amount { font-size: 76rpx; font-weight: 600; font-variant-numeric: tabular-nums; }
 .countdown { color: var(--warning-strong); font-variant-numeric: tabular-nums; }
 .payment-order { display: grid; width: 100%; gap: 8rpx; padding-top: 24rpx; border-top: 2rpx solid var(--rule-2); }
+.composition { display: grid; gap: 0; padding: 24rpx; }
+.composition .section-title { margin-bottom: 12rpx; }
+.composition > view { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; min-height: 76rpx; border-bottom: 2rpx solid var(--rule-2); }
+.composition strong { font-variant-numeric: tabular-nums; }
+.composition .external-row { border-bottom: 0; color: var(--signal-strong); }
+.payment-actions { display: grid; gap: 16rpx; }
+.info-message { padding: 20rpx 24rpx; border: 2rpx solid var(--signal); border-radius: 16rpx; background: var(--signal-soft); color: var(--signal-strong); }
+.inline-action { min-height: 88rpx; margin-top: 16rpx; border: 2rpx solid var(--danger); background: transparent; color: var(--danger-strong); }

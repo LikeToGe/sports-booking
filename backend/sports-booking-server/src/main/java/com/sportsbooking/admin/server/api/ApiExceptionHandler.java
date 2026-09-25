@@ -29,8 +29,8 @@ public class ApiExceptionHandler {
      * @author gjm
      */
     @ExceptionHandler(ApiException.class)
-    ResponseEntity<ApiResponse<Void>> handleApiException(ApiException exception) {
-        return ResponseEntity.status(exception.getStatus()).body(error(exception.getCode()));
+    ResponseEntity<ApiResponse<Object>> handleApiException(ApiException exception) {
+        return ResponseEntity.status(exception.getStatus()).body(error(exception.getCode(), exception.getData()));
     }
 
     /**
@@ -72,5 +72,17 @@ public class ApiExceptionHandler {
      */
     private ApiResponse<Void> error(ErrorCode code) {
         return ApiResponse.failed(code.getDescription());
+    }
+
+    /**
+     * 功能描述: 构造带结构化详情的失败响应。
+     *
+     * @param code 业务错误码
+     * @param data 错误详情
+     * @return 统一错误响应体
+     * @author gjm
+     */
+    private ApiResponse<Object> error(ErrorCode code, Object data) {
+        return ApiResponse.failed(code.getDescription(), data);
     }
 }

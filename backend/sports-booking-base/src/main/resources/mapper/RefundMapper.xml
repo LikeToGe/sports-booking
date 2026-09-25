@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.RefundMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.Refund">
+        SELECT * FROM s_refund WHERE id = #{id} FOR UPDATE
+    </select>
+    <select id="selectByBookingForUpdate" resultType="com.sportsbooking.admin.base.po.Refund">
+        SELECT * FROM s_refund WHERE booking_id = #{bookingId} LIMIT 1 FOR UPDATE
+    </select>
+    <select id="selectPlatformRefunds" resultType="com.sportsbooking.admin.base.bo.PlatformRefundBO">
+        SELECT r.id, r.refund_no AS businessNo, r.booking_id AS bookingId, b.booking_no AS bookingNo,
+               b.venue_id AS venueId, b.venue_name AS venueName, r.amount_fen AS amountFen,
+               r.status, r.retry_count AS retryCount, r.next_retry_at AS nextRetryAt,
+               r.last_failure_reason AS lastFailureReason, r.created_at AS createdAt, r.updated_at AS updatedAt
+        FROM s_refund r JOIN s_booking b ON b.id = r.booking_id
+        WHERE r.status IN ('PROCESSING', 'FAILED')
+        ORDER BY r.updated_at, r.id
+    </select>
+    <select id="selectRetryIds" resultType="long">
+        SELECT id FROM s_refund
+        WHERE status IN ('PROCESSING', 'FAILED') AND (next_retry_at IS NULL OR next_retry_at &lt;= #{now})
+        ORDER BY id LIMIT 200
+    </select>
+</mapper>

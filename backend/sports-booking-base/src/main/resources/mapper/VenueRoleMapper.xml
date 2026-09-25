@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.VenueRoleMapper">
+    <select id="selectRoleRows" resultType="com.sportsbooking.admin.base.bo.VenueRoleBO">
+        SELECT r.id,
+               r.name,
+               r.status,
+               GROUP_CONCAT(DISTINCT rp.permission_code ORDER BY rp.permission_code) AS permissions,
+               COUNT(DISTINCT er.employee_id) AS employee_count
+        FROM s_venue_role r
+        LEFT JOIN s_venue_role_permission rp ON rp.role_id = r.id
+        LEFT JOIN s_employee_role er ON er.role_id = r.id
+        WHERE r.venue_id = #{venueId}
+        GROUP BY r.id, r.name, r.status
+        ORDER BY r.id
+    </select>
+</mapper>

@@ -134,9 +134,12 @@ public class CredentialServiceImpl implements CredentialService {
      * 功能描述: 将签名内容渲染为小程序可直接展示的 PNG Data URL。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param content 二维码原始内容
+     * @return PNG Data URL
      * @author gjm
      */
-    private String createQrDataUrl(String content) {
+    @Override
+    public String createQrDataUrl(String content) {
         try {
             BitMatrix matrix = new QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, QR_SIZE, QR_SIZE);
             BufferedImage image = new BufferedImage(matrix.getWidth(), matrix.getHeight(), BufferedImage.TYPE_INT_RGB);

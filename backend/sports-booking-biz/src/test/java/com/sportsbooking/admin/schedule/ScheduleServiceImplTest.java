@@ -4,17 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
+import com.sportsbooking.admin.base.bo.SessionSlotBO;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingSource;
+import com.sportsbooking.admin.base.enums.BookingStatus;
 import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
 import com.sportsbooking.admin.biz.pojo.request.ExtraSlotCreateRequest;
 import com.sportsbooking.admin.biz.pojo.request.WeeklySlotSaveRequest;
+import com.sportsbooking.admin.biz.pojo.vo.SessionSlotVO;
 import com.sportsbooking.admin.base.mapper.SessionSlotMapper;
 import com.sportsbooking.admin.base.mapper.WeeklySlotMapper;
 import com.sportsbooking.admin.biz.service.impl.ScheduleServiceImpl;
@@ -26,10 +32,12 @@ import com.sportsbooking.admin.base.po.WeeklySlot;
 import com.sportsbooking.admin.base.mapper.CourtMapper;
 import com.sportsbooking.admin.base.mapper.SportTypeMapper;
 import com.sportsbooking.admin.biz.service.VenueService;
+import com.sportsbooking.admin.biz.service.RedisLockService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -41,6 +49,72 @@ import org.junit.jupiter.api.Test;
 class ScheduleServiceImplTest {
 
     @Test
+    void returnsFilteredDayBoardWithBookingDetailsInOneMapperQuery() {
+        WeeklySlotMapper weeklySlotMapper = mock(WeeklySlotMapper.class);
+        SessionSlotMapper sessionSlotMapper = mock(SessionSlotMapper.class);
+        VenueService venueService = mock(VenueService.class);
+        ScheduleServiceImpl service = new ScheduleServiceImpl(
+                weeklySlotMapper, sessionSlotMapper, mock(CourtMapper.class),
+                mock(SportTypeMapper.class), venueService, lockService());
+        LocalDate date = LocalDate.of(2026, 9, 20);
+        SessionSlotBO slot = new SessionSlotBO();
+        slot.setId(11L);
+        slot.setCourtId(12L);
+        slot.setCourtName("1号场");
+        slot.setSportTypeId(3L);
+        slot.setSportName("羽毛球");
+        slot.setStartAt("2026-09-20T10:00:00+08:00");
+        slot.setEndAt("2026-09-20T11:00:00+08:00");
+        slot.setPriceFen(6000);
+        slot.setStatus(SessionSlotStatus.BOOKED);
+        slot.setBookingId(21L);
+        slot.setBookingSource(BookingSource.OFFLINE);
+        slot.setBookingStatus(BookingStatus.CONFIRMED);
+        slot.setPaymentStatus(BookingPaymentStatus.UNPAID);
+        slot.setContactName("测试顾客");
+        slot.setContactPhone("13800000000");
+        when(weeklySlotMapper.selectByVenue(2L, EnableStatus.ACTIVE)).thenReturn(List.of());
+        when(sessionSlotMapper.selectVenueDay(2L, date, 3L)).thenReturn(List.of(slot));
+
+        List<SessionSlotVO> result = service.listDay(2L, date, 3L);
+
+        assertThat(result).singleElement().satisfies(item -> {
+            assertThat(item.getId()).isEqualTo(11L);
+            assertThat(item.getCourtId()).isEqualTo(12L);
+            assertThat(item.getCourtName()).isEqualTo("1号场");
+            assertThat(item.getSportTypeId()).isEqualTo(3L);
+            assertThat(item.getSportName()).isEqualTo("羽毛球");
+            assertThat(item.getStartAt()).isEqualTo("2026-09-20T10:00:00+08:00");
+            assertThat(item.getEndAt()).isEqualTo("2026-09-20T11:00:00+08:00");
+            assertThat(item.getPriceFen()).isEqualTo(6000);
+            assertThat(item.getStatus()).isEqualTo(SessionSlotStatus.BOOKED);
+            assertThat(item.getBookingId()).isEqualTo(21L);
+            assertThat(item.getBookingSource()).isEqualTo(BookingSource.OFFLINE);
+            assertThat(item.getBookingStatus()).isEqualTo(BookingStatus.CONFIRMED);
+            assertThat(item.getPaymentStatus()).isEqualTo(BookingPaymentStatus.UNPAID);
+            assertThat(item.getContactName()).isEqualTo("测试顾客");
+            assertThat(item.getContactPhone()).isEqualTo("13800000000");
+        });
+        verify(sessionSlotMapper).selectVenueDay(2L, date, 3L);
+    }
+
+    @Test
+    void keepsUnfilteredListDayBehavior() {
+        WeeklySlotMapper weeklySlotMapper = mock(WeeklySlotMapper.class);
+        SessionSlotMapper sessionSlotMapper = mock(SessionSlotMapper.class);
+        ScheduleServiceImpl service = new ScheduleServiceImpl(
+                weeklySlotMapper, sessionSlotMapper, mock(CourtMapper.class), mock(SportTypeMapper.class),
+                mock(VenueService.class), lockService());
+        LocalDate date = LocalDate.of(2026, 9, 20);
+        when(weeklySlotMapper.selectByVenue(2L, EnableStatus.ACTIVE)).thenReturn(List.of());
+        when(sessionSlotMapper.selectVenueDay(2L, date, null)).thenReturn(List.of());
+
+        assertThat(service.listDay(2L, date)).isEmpty();
+
+        verify(sessionSlotMapper).selectVenueDay(2L, date, null);
+    }
+
+    @Test
     void reopensFutureClosedSlot() {
         WeeklySlotMapper weeklySlotMapper = mock(WeeklySlotMapper.class);
         SessionSlotMapper sessionSlotMapper = mock(SessionSlotMapper.class);
@@ -48,7 +122,7 @@ class ScheduleServiceImplTest {
         SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
         VenueService venueService = mock(VenueService.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
-                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService);
+                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, lockService());
         SessionSlot slot = closedSlot();
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
@@ -68,7 +142,7 @@ class ScheduleServiceImplTest {
         SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
         VenueService venueService = mock(VenueService.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
-                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService);
+                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, lockService());
         SessionSlot slot = closedSlot();
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
@@ -87,7 +161,7 @@ class ScheduleServiceImplTest {
         SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
         VenueService venueService = mock(VenueService.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
-                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService);
+                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, lockService());
         Court court = new Court();
         court.id = 1L;
         court.venueId = 2L;
@@ -118,7 +192,7 @@ class ScheduleServiceImplTest {
         SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
         VenueService venueService = mock(VenueService.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
-                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService);
+                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, lockService());
         Court court = new Court();
         court.id = 1L;
         court.venueId = 2L;
@@ -154,7 +228,8 @@ class ScheduleServiceImplTest {
         CourtMapper courtMapper = mock(CourtMapper.class);
         SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
-                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, mock(VenueService.class));
+                weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper,
+                mock(VenueService.class), lockService());
         SessionSlot slot = new SessionSlot();
         slot.id = 11L;
         slot.venueId = 2L;
@@ -192,7 +267,7 @@ class ScheduleServiceImplTest {
         VenueService venueService = mock(VenueService.class);
         ScheduleServiceImpl service = new ScheduleServiceImpl(
                 weeklySlotMapper, sessionSlotMapper, mock(CourtMapper.class),
-                mock(SportTypeMapper.class), venueService);
+                mock(SportTypeMapper.class), venueService, lockService());
         LocalDate date = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
         WeeklySlot weekly = new WeeklySlot();
         weekly.id = 7L;
@@ -225,5 +300,12 @@ class ScheduleServiceImplTest {
         slot.endAt = slot.startAt.plusSeconds(3600);
         slot.status = SessionSlotStatus.CLOSED;
         return slot;
+    }
+
+    private RedisLockService lockService() {
+        RedisLockService redisLockService = mock(RedisLockService.class);
+        doAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get())
+                .when(redisLockService).execute(any(), any());
+        return redisLockService;
     }
 }

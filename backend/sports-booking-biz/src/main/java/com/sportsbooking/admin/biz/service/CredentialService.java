@@ -23,6 +23,16 @@ public interface CredentialService {
      * @author gjm
      */
     Long resolveQr(String content);
+
+    /**
+     * 功能描述: 将指定内容渲染为客户端可直接展示的 PNG Data URL。
+     *
+     * @param content 二维码原始内容
+     * @return PNG Data URL
+     * @author gjm
+     */
+    String createQrDataUrl(String content);
+
     /**
      * 功能描述: 生成预约固定 6 位短码。
      * 创建时间: 2026/08/28 16:29

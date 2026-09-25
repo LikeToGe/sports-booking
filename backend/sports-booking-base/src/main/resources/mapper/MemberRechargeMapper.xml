@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.MemberRechargeMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.MemberRecharge">
+        SELECT * FROM s_member_recharge WHERE id = #{id} FOR UPDATE
+    </select>
+    <select id="selectByClientKey" resultType="com.sportsbooking.admin.base.po.MemberRecharge">
+        SELECT * FROM s_member_recharge
+        WHERE venue_customer_id = #{venueCustomerId} AND client_idempotency_key = #{key}
+        LIMIT 1
+    </select>
+    <select id="selectByCustomer" resultType="com.sportsbooking.admin.base.po.MemberRecharge">
+        SELECT * FROM s_member_recharge WHERE venue_customer_id = #{venueCustomerId} ORDER BY id DESC
+    </select>
+    <select id="selectPendingIds" resultType="long">
+        SELECT id FROM s_member_recharge WHERE status = 'PENDING' ORDER BY id LIMIT 200
+    </select>
+    <select id="selectByBusinessNo" resultType="com.sportsbooking.admin.base.po.MemberRecharge">
+        SELECT * FROM s_member_recharge WHERE recharge_no = #{businessNo} LIMIT 1
+    </select>
+</mapper>

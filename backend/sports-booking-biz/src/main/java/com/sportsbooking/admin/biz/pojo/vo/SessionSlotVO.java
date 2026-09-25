@@ -1,6 +1,9 @@
 package com.sportsbooking.admin.biz.pojo.vo;
 
 import com.sportsbooking.admin.base.bo.SessionSlotBO;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
+import com.sportsbooking.admin.base.enums.BookingSource;
+import com.sportsbooking.admin.base.enums.BookingStatus;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -82,9 +85,53 @@ public class SessionSlotVO {
     @ApiModelProperty(value = "状态")
     private SessionSlotStatus status;
 
+    /**
+     * 当前关联预约 ID
+     */
+    @Schema(description = "当前关联预约 ID")
+    @ApiModelProperty(value = "当前关联预约 ID")
+    private Long bookingId;
+
+    /**
+     * 当前关联预约来源
+     */
+    @Schema(description = "当前关联预约来源")
+    @ApiModelProperty(value = "当前关联预约来源")
+    private BookingSource bookingSource;
+
+    /**
+     * 当前关联预约状态
+     */
+    @Schema(description = "当前关联预约状态")
+    @ApiModelProperty(value = "当前关联预约状态")
+    private BookingStatus bookingStatus;
+
+    /**
+     * 当前关联预约的独立收款状态
+     */
+    @Schema(description = "当前关联预约的独立收款状态")
+    @ApiModelProperty(value = "当前关联预约的独立收款状态")
+    private BookingPaymentStatus paymentStatus;
+
+    /**
+     * 当前关联预约联系人姓名
+     */
+    @Schema(description = "当前关联预约联系人姓名")
+    @ApiModelProperty(value = "当前关联预约联系人姓名")
+    private String contactName;
+
+    /**
+     * 当前关联预约联系人手机号
+     */
+    @Schema(description = "当前关联预约联系人手机号")
+    @ApiModelProperty(value = "当前关联预约联系人手机号")
+    private String contactPhone;
+
     public static SessionSlotVO from(SessionSlotBO source) {
         return new SessionSlotVO(source.getId(), source.getCourtId(), source.getCourtName(),
                 source.getSportTypeId(), source.getSportName(), source.getStartAt(), source.getEndAt(),
-                source.getPriceFen(), source.getStatus());
+                source.getPriceFen(), source.getStatus(), source.getBookingId(), source.getBookingSource(),
+                source.getBookingStatus(), source.getPaymentStatus(), source.getContactName(),
+                source.getContactPhone());
     }
 }

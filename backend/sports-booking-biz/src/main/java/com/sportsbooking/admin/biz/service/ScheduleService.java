@@ -72,6 +72,17 @@ public interface ScheduleService {
     List<SessionSlotVO> listDay(long venueId, LocalDate date);
 
     /**
+     * 功能描述: 按运动类型查询并同步场馆某天的具体场次。
+     *
+     * @param venueId 场馆 ID
+     * @param date 日期
+     * @param sportTypeId 运动类型 ID，为空时查询全部运动
+     * @return 具体场次列表
+     * @author gjm
+     */
+    List<SessionSlotVO> listDay(long venueId, LocalDate date, Long sportTypeId);
+
+    /**
      * 功能描述: 创建不属于周模板的临时场次。
      * 创建时间: 2026/08/28 16:29
      *

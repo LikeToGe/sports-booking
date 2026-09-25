@@ -8,7 +8,8 @@ package com.sportsbooking.admin.base.enums;
  */
 public enum AdminRole {
     PLATFORM_ADMIN("PLATFORM_ADMIN", "平台管理员"),
-    VENUE_ADMIN("VENUE_ADMIN", "场馆管理员");
+    VENUE_ADMIN("VENUE_ADMIN", "场馆管理员"),
+    VENUE_EMPLOYEE("VENUE_EMPLOYEE", "场馆员工");
 
     private final String key;
     private final String description;

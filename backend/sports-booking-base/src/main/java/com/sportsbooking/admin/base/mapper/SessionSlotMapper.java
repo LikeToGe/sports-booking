@@ -120,13 +120,15 @@ public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
     int closeOpenForDate(@Param("venueId") long venueId, @Param("date") LocalDate date);
 
     /**
-     * 功能描述: 查询场馆指定日期的具体场次展示列表。
+     * 功能描述: 查询场馆指定日期的具体场次及当前关联预约展示列表。
      * 创建时间: 2026/08/28 16:29
      *
      * @param venueId 场馆 ID
      * @param date 日期
+     * @param sportTypeId 运动类型 ID，为空时查询全部运动
      * @return 具体场次列表
      * @author gjm
      */
-    List<SessionSlotBO> selectVenueDay(@Param("venueId") long venueId, @Param("date") LocalDate date);
+    List<SessionSlotBO> selectVenueDay(@Param("venueId") long venueId, @Param("date") LocalDate date,
+                                       @Param("sportTypeId") Long sportTypeId);
 }

@@ -7,6 +7,7 @@ import com.sportsbooking.admin.biz.pojo.request.NameRequest;
 import com.sportsbooking.admin.biz.pojo.request.VenueSaveRequest;
 import com.sportsbooking.admin.base.po.Court;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
+import com.sportsbooking.admin.base.enums.VenuePermission;
 import com.sportsbooking.admin.biz.service.EmployeeService;
 import com.sportsbooking.admin.biz.service.VenueCatalogService;
 import com.sportsbooking.admin.biz.service.VenueService;
@@ -19,6 +20,7 @@ import com.sportsbooking.admin.biz.pojo.vo.SportTypeVO;
 import com.sportsbooking.admin.biz.pojo.vo.VenueVO;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,7 +57,8 @@ public class VenueAdminController {
     */
     @GetMapping("/profile/detail")
     public ApiResponse<VenueVO> getProfile() {
-        return ApiResponse.success(VenueVO.from(venueService.getVenue(venuePrincipal().getVenueId())));
+        return ApiResponse.success(VenueVO.from(venueService.getVenue(
+                venuePrincipal(VenuePermission.VENUE_PROFILE_VIEW).getVenueId())));
     }
 
     /**
@@ -68,7 +71,8 @@ public class VenueAdminController {
     */
     @PutMapping("/profile/update")
     public ApiResponse<VenueVO> updateProfile(@RequestBody VenueSaveRequest body) {
-        return ApiResponse.success(VenueVO.from(venueService.updateVenue(venuePrincipal().getVenueId(), body)));
+        return ApiResponse.success(VenueVO.from(venueService.updateVenue(
+                venuePrincipal(VenuePermission.VENUE_PROFILE_EDIT).getVenueId(), body)));
     }
 
     /**
@@ -81,7 +85,8 @@ public class VenueAdminController {
     */
     @PostMapping("/profile/cover")
     public ApiResponse<CoverUploadVO> uploadCover(@RequestParam MultipartFile file) {
-        String coverPath = venueService.uploadCover(venuePrincipal().getVenueId(), file);
+        String coverPath = venueService.uploadCover(
+                venuePrincipal(VenuePermission.VENUE_PROFILE_EDIT).getVenueId(), file);
         return ApiResponse.success(new CoverUploadVO(coverPath));
     }
 
@@ -94,7 +99,8 @@ public class VenueAdminController {
     */
     @GetMapping("/sports/list")
     public ApiResponse<List<SportTypeVO>> listSports() {
-        return ApiResponse.success(venueCatalogService.listVenueSports(venuePrincipal().getVenueId()).stream()
+        return ApiResponse.success(venueCatalogService.listVenueSports(
+                venuePrincipal(VenuePermission.COURT_VIEW).getVenueId()).stream()
                 .map(SportTypeVO::from).toList());
     }
 
@@ -109,7 +115,8 @@ public class VenueAdminController {
     @PostMapping("/sports/create")
     public ApiResponse<SportTypeVO> createSport(@RequestBody NameRequest body) {
         return ApiResponse.success(SportTypeVO.from(
-                venueCatalogService.createVenueSport(venuePrincipal().getVenueId(), body.getName())));
+                venueCatalogService.createVenueSport(
+                        venuePrincipal(VenuePermission.COURT_EDIT).getVenueId(), body.getName())));
     }
 
     /**
@@ -125,7 +132,7 @@ public class VenueAdminController {
     public ApiResponse<SportTypeVO> updateSportName(
             @PathVariable long sportTypeId, @RequestBody NameRequest body) {
         return ApiResponse.success(SportTypeVO.from(venueCatalogService.updateVenueSportName(
-                venuePrincipal().getVenueId(), sportTypeId, body.getName())));
+                venuePrincipal(VenuePermission.COURT_EDIT).getVenueId(), sportTypeId, body.getName())));
     }
 
     /**
@@ -137,7 +144,8 @@ public class VenueAdminController {
     */
     @GetMapping("/courts/list")
     public ApiResponse<List<CourtVO>> listCourts() {
-        return ApiResponse.success(venueCatalogService.listCourts(venuePrincipal().getVenueId()));
+        return ApiResponse.success(venueCatalogService.listCourts(
+                venuePrincipal(VenuePermission.COURT_VIEW).getVenueId()));
     }
 
     /**
@@ -150,7 +158,7 @@ public class VenueAdminController {
     */
     @PostMapping("/courts/create")
     public ApiResponse<CourtVO> createCourt(@RequestBody CourtSaveRequest body) {
-        long venueId = venuePrincipal().getVenueId();
+        long venueId = venuePrincipal(VenuePermission.COURT_EDIT).getVenueId();
         Court court = venueCatalogService.createCourt(venueId, body.getName(), body.getSportIds());
         return ApiResponse.success(new CourtVO(court.id, court.name, court.imagePath, court.status, null,
                 body.getSportIds().stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","))));
@@ -168,7 +176,8 @@ public class VenueAdminController {
     @PutMapping("/courts/{courtId}")
     public ApiResponse<CourtVO> updateCourt(@PathVariable long courtId, @RequestBody CourtSaveRequest body) {
         Court court = venueCatalogService.updateCourt(
-                venuePrincipal().getVenueId(), courtId, body.getName(), body.getSportIds(), body.getStatus());
+                venuePrincipal(VenuePermission.COURT_EDIT).getVenueId(), courtId,
+                body.getName(), body.getSportIds(), body.getStatus());
         return ApiResponse.success(new CourtVO(court.id, court.name, court.imagePath, court.status, null,
                 body.getSportIds().stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","))));
     }
@@ -184,7 +193,8 @@ public class VenueAdminController {
      */
     @PostMapping("/courts/{courtId}/image")
     public ApiResponse<CourtVO> uploadCourtImage(@PathVariable long courtId, @RequestParam MultipartFile file) {
-        Court court = venueService.uploadCourtImage(venuePrincipal().getVenueId(), courtId, file);
+        Court court = venueService.uploadCourtImage(
+                venuePrincipal(VenuePermission.COURT_EDIT).getVenueId(), courtId, file);
         return ApiResponse.success(new CourtVO(court.id, court.name, court.imagePath, court.status, null, null));
     }
 
@@ -197,7 +207,8 @@ public class VenueAdminController {
     */
     @GetMapping("/employees/list")
     public ApiResponse<List<EmployeeVO>> listEmployees() {
-        return ApiResponse.success(employeeService.listEmployees(venuePrincipal().getVenueId()).stream()
+        return ApiResponse.success(employeeService.listEmployees(
+                venuePrincipal(VenuePermission.EMPLOYEE_VIEW).getVenueId()).stream()
                 .map(EmployeeVO::from).toList());
     }
 
@@ -211,7 +222,8 @@ public class VenueAdminController {
     */
     @PostMapping("/employees/create")
     public ApiResponse<EmployeeBindingVO> createEmployee(@RequestBody NameRequest body) {
-        return ApiResponse.success(employeeService.createEmployee(venuePrincipal().getVenueId(), body.getName()));
+        return ApiResponse.success(employeeService.createEmployee(
+                venuePrincipal(VenuePermission.EMPLOYEE_EDIT).getVenueId(), body.getName()));
     }
 
     /**
@@ -227,7 +239,7 @@ public class VenueAdminController {
     public ApiResponse<EmployeeVO> updateEmployeeName(
             @PathVariable long employeeId, @RequestBody NameRequest body) {
         return ApiResponse.success(EmployeeVO.from(employeeService.updateEmployeeName(
-                venuePrincipal().getVenueId(), employeeId, body.getName())));
+                venuePrincipal(VenuePermission.EMPLOYEE_EDIT).getVenueId(), employeeId, body.getName())));
     }
 
     /**
@@ -241,7 +253,7 @@ public class VenueAdminController {
     @PostMapping("/employees/{employeeId}/binding-code")
     public ApiResponse<EmployeeBindingVO> issueBindingCode(@PathVariable long employeeId) {
         return ApiResponse.success(employeeService.issueBindingCode(
-                venuePrincipal().getVenueId(), employeeId
+                venuePrincipal(VenuePermission.EMPLOYEE_EDIT).getVenueId(), employeeId
         ));
     }
 
@@ -258,8 +270,14 @@ public class VenueAdminController {
     public ApiResponse<EmployeeVO> updateEmployeeStatus(
             @PathVariable long employeeId, @RequestBody EnableStatusUpdateRequest body) {
         return ApiResponse.success(EmployeeVO.from(employeeService.updateEmployeeStatus(
-                venuePrincipal().getVenueId(), employeeId, body.getStatus()
+                venuePrincipal(VenuePermission.EMPLOYEE_EDIT).getVenueId(), employeeId, body.getStatus()
         )));
+    }
+
+    @DeleteMapping("/employees/{employeeId}/binding")
+    public ApiResponse<EmployeeVO> unbindEmployee(@PathVariable long employeeId) {
+        return ApiResponse.success(EmployeeVO.from(employeeService.unbindEmployee(
+                venuePrincipal(VenuePermission.EMPLOYEE_EDIT).getVenueId(), employeeId)));
     }
 
     /**
@@ -269,7 +287,7 @@ public class VenueAdminController {
      * @return 当前场馆管理员身份
      * @author gjm
      */
-    private AdminPrincipal venuePrincipal() {
-        return Principals.venue();
+    private AdminPrincipal venuePrincipal(VenuePermission permission) {
+        return Principals.venue(permission);
     }
 }

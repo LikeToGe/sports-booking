@@ -8,16 +8,20 @@ import {
   CircleUserRound,
   ClipboardList,
   Clock3,
+  CircleDollarSign,
   Dumbbell,
   LogOut,
   Menu,
   Settings2,
+  ShieldCheck,
   Tags,
+  WalletCards,
   UsersRound,
+  UserRoundSearch,
   X,
 } from "@lucide/vue";
 import { api } from "./api";
-import { auth, clearSession } from "./auth";
+import { auth, clearSession, hasPermission } from "./auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -26,28 +30,38 @@ const menuOpen = ref(false);
 const isPublic = computed(() => Boolean(route.meta.public));
 const platformGroups = [
   { label: "经营", links: [{ to: "/platform/reports", label: "经营总报表", icon: ChartNoAxesCombined }] },
+  { label: "平台资金异常", links: [{ to: "/platform/refunds", label: "退款异常", icon: CircleDollarSign }] },
   { label: "平台资源", links: [
     { to: "/platform/venues", label: "场馆管理", icon: Building2 },
     { to: "/platform/sports", label: "运动类型", icon: Tags },
   ] },
 ];
 const venueGroups = [
-  { label: "日常运营", links: [
-    { to: "/today", label: "今日场次", icon: CalendarDays },
-    { to: "/reports", label: "经营报表", icon: ChartNoAxesCombined },
-    { to: "/bookings", label: "预约管理", icon: ClipboardList },
+  { label: "工作台", links: [
+    { to: "/today", label: "今日运营", icon: CalendarDays, permission: "DASHBOARD_VIEW" },
   ] },
-  { label: "场馆资源", links: [
-    { to: "/courts", label: "场地管理", icon: Dumbbell },
-    { to: "/schedule", label: "固定排期", icon: Settings2 },
-    { to: "/sessions", label: "具体场次", icon: Clock3 },
+  { label: "预约运营", links: [
+    { to: "/bookings", label: "预约管理", icon: ClipboardList, permission: "BOOKING_VIEW" },
   ] },
-  { label: "组织与设置", links: [
-    { to: "/employees", label: "员工管理", icon: UsersRound },
-    { to: "/profile", label: "场馆资料", icon: CircleUserRound },
+  { label: "会员经营", links: [
+    { to: "/customers", label: "顾客与会员", icon: UserRoundSearch, permission: "CUSTOMER_VIEW" },
+    { to: "/recharge-plans", label: "充值档位", icon: WalletCards, permission: "RECHARGE_PLAN_EDIT" },
+  ] },
+  { label: "财务报表", links: [
+    { to: "/reports", label: "经营报表", icon: ChartNoAxesCombined, permission: "REPORT_VIEW" },
+  ] },
+  { label: "场馆设置", links: [
+    { to: "/courts", label: "场地管理", icon: Dumbbell, permission: "COURT_VIEW" },
+    { to: "/schedule", label: "固定排期", icon: Settings2, permission: "SCHEDULE_VIEW" },
+    { to: "/sessions", label: "具体场次", icon: Clock3, permission: "SESSION_VIEW" },
+    { to: "/employees", label: "员工管理", icon: UsersRound, permission: "EMPLOYEE_VIEW" },
+    { to: "/roles", label: "角色权限", icon: ShieldCheck, permission: "ROLE_MANAGE" },
+    { to: "/profile", label: "场馆资料", icon: CircleUserRound, permission: "VENUE_PROFILE_VIEW" },
   ] },
 ];
-const navGroups = computed(() => auth.principal?.role === "PLATFORM_ADMIN" ? platformGroups : venueGroups);
+const navGroups = computed(() => (auth.principal?.role === "PLATFORM_ADMIN" ? platformGroups : venueGroups)
+  .map(group => ({ ...group, links: group.links.filter(link => hasPermission("permission" in link ? link.permission as string : undefined)) }))
+  .filter(group => group.links.length));
 const links = computed(() => navGroups.value.flatMap(group => group.links));
 const currentLabel = computed(() => links.value.find(link => link.to === route.path)?.label || "运营工作台");
 
@@ -64,6 +78,7 @@ async function logout() {
 <template>
   <RouterView v-if="isPublic" />
   <div v-else class="app-shell">
+    <a class="skip-link" href="#main">跳到主要内容</a>
     <header class="mobile-header">
       <div><span class="wordmark">约场</span><span class="mobile-page-name">{{ currentLabel }}</span></div>
       <button class="icon-button" type="button" :aria-label="menuOpen ? '关闭导航' : '打开导航'" @click="menuOpen = !menuOpen">
@@ -89,7 +104,7 @@ async function logout() {
       <div class="account-block">
         <div>
           <strong>{{ auth.principal?.displayName }}</strong>
-          <span>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台管理员" : "场馆管理员" }}</span>
+          <span>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台管理员" : auth.principal?.role === "VENUE_EMPLOYEE" ? "场馆员工" : "场馆超级管理员" }}</span>
         </div>
         <button class="icon-button" type="button" aria-label="退出登录" title="退出登录" @click="logout">
           <LogOut :size="18" aria-hidden="true" />

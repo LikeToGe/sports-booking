@@ -1,6 +1,7 @@
 <view class="page records-page">
-  <view class="screen-head"><text class="screen-title">我的核销记录</text><text class="muted">仅展示当前员工完成的核销。</text></view>
+  <view class="screen-head"><text class="screen-title">我的核销记录</text><text class="muted">仅展示本人在所选场馆完成的核销。</text></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
+  <label wx:if="{{current}}" class="field"><text class="field-label">场馆</text><picker mode="selector" range="{{venues}}" range-key="venueName" value="{{selectedIndex}}" bindchange="selectVenue"><view class="field-control venue-picker">{{current.venueName}}</view></picker></label>
   <view class="records"><view wx:for="{{records}}" wx:key="id" class="record-card surface"><view><text class="record-title">{{item.courtName}} · {{item.sportName}}</text><text class="muted block">{{item.contactName}} · {{item.method === 'QR' ? '二维码' : '短码'}}</text></view><text class="record-time">{{item.time}}</text></view></view>
   <view wx:if="{{!loading && !records.length}}" class="empty surface"><text class="empty-title">还没有核销记录</text><text>完成核销后会显示在这里。</text></view>
 </view>

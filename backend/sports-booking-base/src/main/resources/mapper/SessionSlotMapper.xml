@@ -92,11 +92,20 @@
                DATE_FORMAT(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
                DATE_FORMAT(CONVERT_TZ(ss.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
                ss.price_fen AS priceFen,
-               ss.status
+               ss.status,
+               b.id AS bookingId,
+               b.source AS bookingSource,
+               b.status AS bookingStatus,
+               b.payment_status AS paymentStatus,
+               b.contact_name AS contactName,
+               b.contact_phone AS contactPhone
         FROM s_session_slot ss
         JOIN s_court c ON c.id = ss.court_id
         JOIN s_sport_type st ON st.id = ss.sport_type_id
-        WHERE ss.venue_id = #{venueId} AND ss.slot_date = #{date}
+        LEFT JOIN s_booking b ON b.id = ss.hold_booking_id AND b.venue_id = ss.venue_id
+        WHERE ss.venue_id = #{venueId}
+          AND ss.slot_date = #{date}
+        <if test="sportTypeId != null">AND ss.sport_type_id = #{sportTypeId}</if>
         ORDER BY ss.start_at, c.name
     </select>
 </mapper>

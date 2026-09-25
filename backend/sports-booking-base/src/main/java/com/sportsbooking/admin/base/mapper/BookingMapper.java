@@ -30,6 +30,27 @@ public interface BookingMapper extends BaseMapper<Booking> {
     Booking selectForUpdate(long id);
 
     /**
+     * 功能描述: 按模板场次批量解析相同场地、运动和时段的具体日期场次。
+     *
+     * @param templateSessionSlotId 模板具体场次 ID
+     * @param dates 目标日期
+     * @return 按具体场次 ID 排序的匹配场次
+     * @author gjm
+     */
+    List<com.sportsbooking.admin.base.po.SessionSlot> selectTemplateSlots(
+            @Param("templateSessionSlotId") long templateSessionSlotId,
+            @Param("dates") List<LocalDate> dates);
+
+    /**
+     * 功能描述: 按 ID 稳定排序并加排他锁查询多个具体场次。
+     *
+     * @param ids 具体场次 ID
+     * @return 已锁定场次
+     * @author gjm
+     */
+    List<com.sportsbooking.admin.base.po.SessionSlot> selectSlotsForUpdate(@Param("ids") List<Long> ids);
+
+    /**
      * 功能描述: 查询用户预约列表并聚合支付和退款状态。
      * 创建时间: 2026/08/28 16:29
      *
@@ -111,4 +132,13 @@ public interface BookingMapper extends BaseMapper<Booking> {
      * @author gjm
      */
     List<Long> selectNoShowIds(@Param("now") Instant now);
+
+    /**
+     * 功能描述: 分批查询已结束但仍待收敛的线下预约 ID。
+     *
+     * @param now 当前时间
+     * @return 履约未跟踪候选预约 ID
+     * @author gjm
+     */
+    List<Long> selectEndedUntrackedIds(@Param("now") Instant now);
 }

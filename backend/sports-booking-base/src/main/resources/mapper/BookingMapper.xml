@@ -5,6 +5,35 @@
         SELECT * FROM s_booking WHERE id = #{id} FOR UPDATE
     </select>
 
+    <select id="selectTemplateSlots" resultType="com.sportsbooking.admin.base.po.SessionSlot">
+        SELECT ss.*
+        FROM s_session_slot ss
+        JOIN s_session_slot template ON template.id = #{templateSessionSlotId}
+        WHERE ss.venue_id = template.venue_id
+          AND ss.court_id = template.court_id
+          AND ss.sport_type_id = template.sport_type_id
+          AND ss.slot_date IN
+          <foreach collection="dates" item="date" open="(" separator="," close=")">
+              #{date}
+          </foreach>
+          AND TIME(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'))
+              = TIME(CONVERT_TZ(template.start_at, '+00:00', '+08:00'))
+          AND TIMESTAMPDIFF(SECOND, ss.start_at, ss.end_at)
+              = TIMESTAMPDIFF(SECOND, template.start_at, template.end_at)
+        ORDER BY ss.id
+    </select>
+
+    <select id="selectSlotsForUpdate" resultType="com.sportsbooking.admin.base.po.SessionSlot">
+        SELECT *
+        FROM s_session_slot
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY id
+        FOR UPDATE
+    </select>
+
     <select id="selectUserBookings" resultType="com.sportsbooking.admin.base.bo.UserBookingBO">
         SELECT b.id,
                b.booking_no AS bookingNo,
@@ -16,10 +45,9 @@
                b.amount_fen AS amountFen,
                b.status,
                DATE_FORMAT(CONVERT_TZ(b.payment_expires_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS paymentExpiresAt,
-               p.status AS paymentStatus,
+               b.payment_status AS paymentStatus,
                r.status AS refundStatus
         FROM s_booking b
-        LEFT JOIN s_payment p ON p.booking_id = b.id
         LEFT JOIN s_refund r ON r.booking_id = b.id
         WHERE b.user_id = #{userId}
         ORDER BY b.created_at DESC
@@ -38,9 +66,9 @@
                DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
                b.amount_fen AS amountFen,
                b.status,
-               p.status AS paymentStatus
+               b.payment_status AS paymentStatus,
+               b.venue_customer_id AS venueCustomerId
         FROM s_booking b
-        LEFT JOIN s_payment p ON p.booking_id = b.id
         WHERE b.venue_id = #{venueId}
         <if test="date != null">AND DATE(CONVERT_TZ(b.start_at, '+00:00', '+08:00')) = #{date}</if>
         ORDER BY b.start_at, b.id
@@ -90,6 +118,7 @@
         SELECT *
         FROM s_booking
         WHERE venue_id = #{venueId}
+          AND source = 'ONLINE'
           AND status = 'CONFIRMED'
           AND start_at &lt;= #{latest}
           AND end_at &gt;= #{earliest}
@@ -98,14 +127,23 @@
 
     <select id="selectExpiredPendingIds" resultType="long">
         SELECT id FROM s_booking
-        WHERE status = 'PENDING_PAYMENT' AND payment_expires_at &lt;= #{now}
+        WHERE source = 'ONLINE'
+          AND status = 'PENDING_PAYMENT'
+          AND payment_expires_at &lt;= #{now}
         ORDER BY id
         LIMIT 200
     </select>
 
     <select id="selectNoShowIds" resultType="long">
         SELECT id FROM s_booking
-        WHERE status = 'CONFIRMED' AND end_at &lt; #{now}
+        WHERE source = 'ONLINE' AND status = 'CONFIRMED' AND end_at &lt; #{now}
+        ORDER BY id
+        LIMIT 200
+    </select>
+
+    <select id="selectEndedUntrackedIds" resultType="long">
+        SELECT id FROM s_booking
+        WHERE source = 'OFFLINE' AND status = 'CONFIRMED' AND end_at &lt; #{now}
         ORDER BY id
         LIMIT 200
     </select>

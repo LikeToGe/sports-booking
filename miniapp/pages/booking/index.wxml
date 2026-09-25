@@ -1,8 +1,19 @@
 <view class="page detail-page" wx:if="{{booking}}">
-  <view class="detail-head surface"><view><text class="screen-title">{{statusLabel}}</text><text class="muted block">预约号 {{booking.bookingNo}}</text></view><text class="price amount">{{amount}}</text></view>
+  <view class="detail-head surface"><view><text class="screen-title">{{statusLabel}}</text><text class="muted block">预约号 {{booking.bookingNo}}</text></view><view class="amount-block"><text class="price amount">{{amount}}</text><text class="status status-{{paymentTone}}">{{paymentLabel}}</text></view></view>
   <view class="facts surface"><view><text class="muted">场馆</text><text>{{booking.venueName}}</text></view><view><text class="muted">场地</text><text>{{booking.courtName}} · {{booking.sportName}}</text></view><view><text class="muted">时间</text><text>{{date}}　{{time}}</text></view><view><text class="muted">联系人</text><text>{{booking.contactName}} · {{booking.contactPhone}}</text></view></view>
+  <view wx:if="{{composition}}" class="composition surface">
+    <text class="section-title">支付组成</text>
+    <view class="composition-row"><text>赠送余额</text><strong>{{composition.giftBalanceAmount}}</strong></view>
+    <view class="composition-row"><text>实付余额</text><strong>{{composition.paidBalanceAmount}}</strong></view>
+    <view class="composition-row"><text>外部支付</text><strong>{{composition.externalAmount}}</strong></view>
+    <view wx:if="{{composition.lots.length}}" class="lot-list"><view wx:for="{{composition.lots}}" wx:key="lotId" class="lot-row"><text>{{item.typeLabel}} · 批次 {{item.lotId}}</text><text>{{item.amount}}</text><text wx:if="{{item.expiresAtLabel}}" class="muted">{{item.expiresAtLabel}} 到期</text></view></view>
+  </view>
+  <view wx:if="{{payment}}" class="external-payment surface"><view class="section-head"><text class="section-title">外部支付</text><text class="status status-{{payment.statusTone}}">{{payment.statusLabel}}</text></view><view class="external-payment-row"><text class="muted">{{payment.businessNo}}</text><strong>{{payment.amount}}</strong></view></view>
+  <view wx:if="{{refund}}" class="refund-panel surface"><view class="section-head"><text class="section-title">退款</text><text class="status status-{{refund.statusTone}}">{{refund.statusLabel}}</text></view><view class="refund-facts"><text>{{refund.amount}}</text><text wx:if="{{refund.retryLabel}}" class="muted">{{refund.retryLabel}}</text><text wx:if="{{refund.nextRetryAtLabel}}" class="muted">下次重试 {{refund.nextRetryAtLabel}}</text><text wx:if="{{refund.lastFailureReason}}" class="error-text">{{refund.lastFailureReason}}</text></view></view>
   <view wx:if="{{booking.status === 'CONFIRMED' && credential.shortCode}}" class="credential surface"><text class="section-title">到场核销</text><image class="qr" src="{{credential.qr}}" mode="aspectFit" aria-label="预约核销二维码" /><text class="short-code">{{credential.shortCode}}</text><text class="muted">二维码会自动更新，短码可在扫码失败时使用。</text></view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <button wx:if="{{booking.status === 'PENDING_PAYMENT'}}" class="button-primary" bindtap="pay">继续支付</button>
-  <button wx:if="{{booking.status === 'CONFIRMED'}}" class="button-danger" bindtap="cancel">取消预约</button>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+  <button wx:if="{{canPay}}" class="button-primary" bindtap="pay">继续支付</button>
+  <button wx:if="{{booking.status === 'CONFIRMED'}}" class="button-danger" disabled="{{cancelling}}" bindtap="cancel">{{cancelling ? '正在取消预约' : '取消预约'}}</button>
 </view>
+<view wx:elif="{{loading}}" class="page empty" aria-live="polite"><text>正在加载预约详情...</text></view>
+<view wx:elif="{{error}}" class="page"><view class="error" role="alert">{{error}}</view><button class="button-secondary retry-button" bindtap="load">重新加载</button></view>

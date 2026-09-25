@@ -6,12 +6,15 @@ import com.sportsbooking.admin.biz.service.VerificationService;
 import com.sportsbooking.admin.biz.pojo.vo.StaffVerificationRecordVO;
 import com.sportsbooking.admin.biz.pojo.vo.VerificationResultVO;
 import com.sportsbooking.admin.server.context.AuthContext;
+import com.sportsbooking.admin.base.enums.VenuePermission;
+import com.sportsbooking.admin.biz.service.PermissionService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -25,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StaffVerificationController {
     @Autowired
     private VerificationService verificationService;
+    @Autowired
+    private PermissionService permissionService;
 
     /**
      * 功能描述: 使用二维码或短码核销预约。
@@ -35,9 +40,11 @@ public class StaffVerificationController {
      * @author gjm
     */
     @PostMapping("/verifications/verify")
-    public ApiResponse<VerificationResultVO> verify(@RequestBody VerificationRequest body) {
+    public ApiResponse<VerificationResultVO> verify(
+            @RequestParam long venueId, @RequestBody VerificationRequest body) {
+        permissionService.requireEmployee(AuthContext.getMiniUserId(), venueId, VenuePermission.BOOKING_VERIFY);
         return ApiResponse.success(VerificationResultVO.from(verificationService.verify(
-                AuthContext.getMiniUserId(), body.getCredential(), body.getMethod()
+                AuthContext.getMiniUserId(), venueId, body.getCredential(), body.getMethod()
         )));
     }
 
@@ -49,7 +56,8 @@ public class StaffVerificationController {
      * @author gjm
     */
     @GetMapping("/verifications/records")
-    public ApiResponse<List<StaffVerificationRecordVO>> listRecords() {
-        return ApiResponse.success(verificationService.listStaffRecords(AuthContext.getMiniUserId()));
+    public ApiResponse<List<StaffVerificationRecordVO>> listRecords(@RequestParam long venueId) {
+        permissionService.requireEmployee(AuthContext.getMiniUserId(), venueId, VenuePermission.BOOKING_VERIFY);
+        return ApiResponse.success(verificationService.listStaffRecords(AuthContext.getMiniUserId(), venueId));
     }
 }

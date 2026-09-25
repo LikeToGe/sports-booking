@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.ReportMapper">
+    <select id="selectOperationDaily" resultType="com.sportsbooking.admin.base.bo.ReportOperationDailyBO">
+        SELECT reportDate,
+               SUM(onlineBookingAmountFen) AS onlineBookingAmountFen,
+               SUM(offlineRegisteredAmountFen) AS offlineRegisteredAmountFen,
+               SUM(availableSessionCount) AS availableSessionCount,
+               SUM(bookedSessionCount) AS bookedSessionCount,
+               SUM(bookingCount) AS bookingCount,
+               SUM(cancelledCount) AS cancelledCount,
+               SUM(pendingVerificationCount) AS pendingVerificationCount,
+               SUM(offlineUnrecordedCount) AS offlineUnrecordedCount,
+               SUM(offlineUnpaidCount) AS offlineUnpaidCount,
+               SUM(newMemberCount) AS newMemberCount,
+               SUM(rechargeInflowFen) AS rechargeInflowFen,
+               SUM(balanceConsumptionFen) AS balanceConsumptionFen
+        FROM (
+            SELECT DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+                   SUM(CASE WHEN b.source = 'ONLINE' AND b.payment_status = 'PAID'
+                                  AND b.status &lt;&gt; 'CANCELLED' THEN b.amount_fen ELSE 0 END)
+                       AS onlineBookingAmountFen,
+                   SUM(CASE WHEN b.source = 'OFFLINE' AND b.payment_status = 'PAID'
+                       THEN b.amount_fen ELSE 0 END) AS offlineRegisteredAmountFen,
+                   0 AS availableSessionCount,
+                   0 AS bookedSessionCount,
+                   COUNT(*) AS bookingCount,
+                   SUM(CASE WHEN b.status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelledCount,
+                   SUM(CASE WHEN b.source = 'ONLINE' AND b.status = 'CONFIRMED' THEN 1 ELSE 0 END)
+                       AS pendingVerificationCount,
+                   SUM(CASE WHEN b.source = 'OFFLINE' AND b.payment_status = 'UNRECORDED' THEN 1 ELSE 0 END)
+                       AS offlineUnrecordedCount,
+                   SUM(CASE WHEN b.source = 'OFFLINE' AND b.payment_status = 'UNPAID' THEN 1 ELSE 0 END)
+                       AS offlineUnpaidCount,
+                   0 AS newMemberCount,
+                   0 AS rechargeInflowFen,
+                   0 AS balanceConsumptionFen
+            FROM s_booking b
+            WHERE b.start_at &gt;= #{startAt}
+              AND b.start_at &lt; #{endAt}
+            <if test="venueId != null">AND b.venue_id = #{venueId}</if>
+            GROUP BY reportDate
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+                   0, 0,
+                   SUM(CASE WHEN ss.status &lt;&gt; 'CLOSED' THEN 1 ELSE 0 END) AS availableSessionCount,
+                   SUM(CASE WHEN ss.status = 'BOOKED' THEN 1 ELSE 0 END) AS bookedSessionCount,
+                   0, 0, 0, 0, 0, 0, 0, 0
+            FROM s_session_slot ss
+            WHERE ss.start_at &gt;= #{startAt}
+              AND ss.start_at &lt; #{endAt}
+            <if test="venueId != null">AND ss.venue_id = #{venueId}</if>
+            GROUP BY reportDate
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(vc.activated_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   COUNT(*) AS newMemberCount,
+                   0, 0
+            FROM s_venue_customer vc
+            WHERE vc.activated_at &gt;= #{startAt}
+              AND vc.activated_at &lt; #{endAt}
+            <if test="venueId != null">AND vc.venue_id = #{venueId}</if>
+            GROUP BY reportDate
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(r.succeeded_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   SUM(r.paid_amount_fen) AS rechargeInflowFen,
+                   0
+            FROM s_member_recharge r
+            JOIN s_venue_customer vc ON vc.id = r.venue_customer_id
+            WHERE r.status = 'SUCCESS'
+              AND r.succeeded_at &gt;= #{startAt}
+              AND r.succeeded_at &lt; #{endAt}
+            <if test="venueId != null">AND vc.venue_id = #{venueId}</if>
+            GROUP BY reportDate
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(f.created_at, '+00:00', '+08:00'), '%Y-%m-%d') AS reportDate,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   SUM(f.amount_fen) AS balanceConsumptionFen
+            FROM s_member_balance_flow f
+            JOIN s_venue_customer vc ON vc.id = f.venue_customer_id
+            WHERE f.business_type = 'CONSUME'
+              AND f.direction = 'DEBIT'
+              AND f.created_at &gt;= #{startAt}
+              AND f.created_at &lt; #{endAt}
+            <if test="venueId != null">AND vc.venue_id = #{venueId}</if>
+            GROUP BY reportDate
+        ) daily_events
+        GROUP BY reportDate
+        ORDER BY reportDate
+    </select>
+
+    <select id="selectOperationExtra" resultType="com.sportsbooking.admin.base.bo.ReportOperationExtraBO">
+        WITH effective_customers AS (
+            SELECT b.venue_customer_id, COUNT(*) AS booking_count
+            FROM s_booking b
+            WHERE b.venue_customer_id IS NOT NULL
+              AND b.status IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW', 'ENDED_UNTRACKED')
+              AND b.start_at &gt;= #{startAt}
+              AND b.start_at &lt; #{endAt}
+            <if test="venueId != null">AND b.venue_id = #{venueId}</if>
+            GROUP BY b.venue_customer_id
+        )
+        SELECT (SELECT COUNT(*) FROM effective_customers) AS effectiveCustomerCount,
+               (SELECT COUNT(*) FROM effective_customers WHERE booking_count &gt;= 2) AS repeatCustomerCount,
+               COALESCE(SUM(l.available_amount_fen), 0) AS memberAvailableBalanceFen,
+               COALESCE(SUM(l.frozen_amount_fen), 0) AS memberFrozenBalanceFen
+        FROM s_member_balance_lot l
+        JOIN s_venue_customer vc ON vc.id = l.venue_customer_id
+        <where>
+            <if test="venueId != null">vc.venue_id = #{venueId}</if>
+        </where>
+    </select>
+
+    <select id="selectVenueMemberOperations"
+            resultType="com.sportsbooking.admin.base.bo.ReportVenueMemberOperationBO">
+        WITH customer_stats AS (
+            SELECT vc.venue_id,
+                   COUNT(*) AS customer_count,
+                   SUM(CASE WHEN vc.status = 'MEMBER' THEN 1 ELSE 0 END) AS member_count,
+                   SUM(CASE WHEN vc.activated_at &gt;= #{startAt} AND vc.activated_at &lt; #{endAt}
+                       THEN 1 ELSE 0 END) AS new_member_count
+            FROM s_venue_customer vc
+            GROUP BY vc.venue_id
+        ), effective_customers AS (
+            SELECT b.venue_id, b.venue_customer_id, COUNT(*) AS booking_count
+            FROM s_booking b
+            WHERE b.venue_customer_id IS NOT NULL
+              AND b.status IN ('CONFIRMED', 'COMPLETED', 'NO_SHOW', 'ENDED_UNTRACKED')
+              AND b.start_at &gt;= #{startAt}
+              AND b.start_at &lt; #{endAt}
+            GROUP BY b.venue_id, b.venue_customer_id
+        ), repeat_stats AS (
+            SELECT venue_id,
+                   COUNT(*) AS effective_customer_count,
+                   SUM(CASE WHEN booking_count &gt;= 2 THEN 1 ELSE 0 END) AS repeat_customer_count
+            FROM effective_customers
+            GROUP BY venue_id
+        ), recharge_stats AS (
+            SELECT vc.venue_id, SUM(r.paid_amount_fen) AS recharge_inflow_fen
+            FROM s_member_recharge r
+            JOIN s_venue_customer vc ON vc.id = r.venue_customer_id
+            WHERE r.status = 'SUCCESS'
+              AND r.succeeded_at &gt;= #{startAt}
+              AND r.succeeded_at &lt; #{endAt}
+            GROUP BY vc.venue_id
+        ), consumption_stats AS (
+            SELECT vc.venue_id, SUM(f.amount_fen) AS balance_consumption_fen
+            FROM s_member_balance_flow f
+            JOIN s_venue_customer vc ON vc.id = f.venue_customer_id
+            WHERE f.business_type = 'CONSUME'
+              AND f.direction = 'DEBIT'
+              AND f.created_at &gt;= #{startAt}
+              AND f.created_at &lt; #{endAt}
+            GROUP BY vc.venue_id
+        ), balance_stats AS (
+            SELECT vc.venue_id,
+                   SUM(l.available_amount_fen) AS available_balance_fen,
+                   SUM(l.frozen_amount_fen) AS frozen_balance_fen
+            FROM s_member_balance_lot l
+            JOIN s_venue_customer vc ON vc.id = l.venue_customer_id
+            GROUP BY vc.venue_id
+        )
+        SELECT v.id AS venueId,
+               v.name AS venueName,
+               COALESCE(cs.customer_count, 0) AS customerCount,
+               COALESCE(cs.member_count, 0) AS memberCount,
+               COALESCE(cs.new_member_count, 0) AS newMemberCount,
+               COALESCE(rs.effective_customer_count, 0) AS effectiveCustomerCount,
+               COALESCE(rs.repeat_customer_count, 0) AS repeatCustomerCount,
+               COALESCE(rgs.recharge_inflow_fen, 0) AS rechargeInflowFen,
+               COALESCE(cos.balance_consumption_fen, 0) AS balanceConsumptionFen,
+               COALESCE(bs.available_balance_fen, 0) AS memberAvailableBalanceFen,
+               COALESCE(bs.frozen_balance_fen, 0) AS memberFrozenBalanceFen
+        FROM s_venue v
+        LEFT JOIN customer_stats cs ON cs.venue_id = v.id
+        LEFT JOIN repeat_stats rs ON rs.venue_id = v.id
+        LEFT JOIN recharge_stats rgs ON rgs.venue_id = v.id
+        LEFT JOIN consumption_stats cos ON cos.venue_id = v.id
+        LEFT JOIN balance_stats bs ON bs.venue_id = v.id
+        ORDER BY v.name, v.id
+    </select>
+
+    <select id="selectBookings" resultType="com.sportsbooking.admin.base.bo.ReportBookingBO">
+        SELECT b.booking_no AS bookingNo,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%d') AS sessionDate,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%H:%i:%s') AS startTime,
+               DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%H:%i:%s') AS endTime,
+               b.source,
+               b.contact_name AS contactName,
+               b.contact_phone AS contactPhone,
+               b.court_name AS courtName,
+               b.sport_name AS sportName,
+               b.status,
+               b.payment_status AS paymentStatus,
+               b.amount_fen AS amountFen,
+               CASE WHEN b.source = 'OFFLINE' AND b.payment_status = 'PAID'
+                    THEN b.amount_fen ELSE 0 END AS offlineRegisteredAmountFen,
+               COALESCE(flow.balance_consumption_fen, 0) AS balanceConsumptionFen,
+               CASE WHEN p.status = 'SUCCESS' THEN p.amount_fen ELSE 0 END AS externalPaymentFen,
+               CONVERT_TZ(b.created_at, '+00:00', '+08:00') AS createdAt
+        FROM s_booking b
+        LEFT JOIN (
+            SELECT booking_id, SUM(amount_fen) AS balance_consumption_fen
+            FROM s_member_balance_flow
+            WHERE business_type = 'CONSUME' AND direction = 'DEBIT'
+            GROUP BY booking_id
+        ) flow ON flow.booking_id = b.id
+        LEFT JOIN s_payment p ON p.booking_id = b.id
+        WHERE b.venue_id = #{venueId}
+          AND b.start_at &gt;= #{startAt}
+          AND b.start_at &lt; #{endAt}
+        ORDER BY b.start_at, b.id
+    </select>
+
+    <select id="selectMemberFlows" resultType="com.sportsbooking.admin.base.bo.ReportMemberFlowBO">
+        SELECT f.id AS flowId,
+               vc.member_code AS memberCode,
+               f.business_type AS businessType,
+               f.direction,
+               f.amount_fen AS amountFen,
+               b.booking_no AS bookingNo,
+               r.recharge_no AS rechargeNo,
+               COALESCE(e.name, a.display_name, '用户自助') AS operatorName,
+               CONVERT_TZ(f.created_at, '+00:00', '+08:00') AS occurredAt
+        FROM s_member_balance_flow f
+        JOIN s_venue_customer vc ON vc.id = f.venue_customer_id
+        LEFT JOIN s_booking b ON b.id = f.booking_id
+        LEFT JOIN s_member_recharge r ON r.id = f.recharge_id
+        LEFT JOIN s_admin_account a ON a.id = f.operator_admin_id
+        LEFT JOIN s_employee e ON e.id = f.operator_employee_id
+        WHERE vc.venue_id = #{venueId}
+          AND f.created_at &gt;= #{startAt}
+          AND f.created_at &lt; #{endAt}
+        ORDER BY f.created_at, f.id
+    </select>
+
+    <select id="selectReceipts" resultType="com.sportsbooking.admin.base.bo.ReportReceiptBO">
+        SELECT receiptDate,
+               operatorName,
+               channel,
+               businessType,
+               COUNT(*) AS count,
+               SUM(amountFen) AS amountFen
+        FROM (
+            SELECT DATE_FORMAT(CONVERT_TZ(p.paid_at, '+00:00', '+08:00'), '%Y-%m-%d') AS receiptDate,
+                   '用户自助' AS operatorName,
+                   p.provider AS channel,
+                   'ONLINE_BOOKING' AS businessType,
+                   p.amount_fen AS amountFen
+            FROM s_payment p
+            JOIN s_booking b ON b.id = p.booking_id
+            WHERE b.venue_id = #{venueId}
+              AND p.status = 'SUCCESS'
+              AND p.paid_at &gt;= #{startAt}
+              AND p.paid_at &lt; #{endAt}
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(rf.refunded_at, '+00:00', '+08:00'), '%Y-%m-%d') AS receiptDate,
+                   '系统退款' AS operatorName,
+                   p.provider AS channel,
+                   'ONLINE_REFUND' AS businessType,
+                   -rf.amount_fen AS amountFen
+            FROM s_refund rf
+            JOIN s_payment p ON p.id = rf.payment_id
+            JOIN s_booking b ON b.id = rf.booking_id
+            WHERE b.venue_id = #{venueId}
+              AND rf.status = 'SUCCESS'
+              AND rf.refunded_at &gt;= #{startAt}
+              AND rf.refunded_at &lt; #{endAt}
+
+            UNION ALL
+
+            SELECT DATE_FORMAT(CONVERT_TZ(r.succeeded_at, '+00:00', '+08:00'), '%Y-%m-%d') AS receiptDate,
+                   COALESCE(e.name, a.display_name, '用户自助') AS operatorName,
+                   r.channel,
+                   'RECHARGE' AS businessType,
+                   r.paid_amount_fen AS amountFen
+            FROM s_member_recharge r
+            JOIN s_venue_customer vc ON vc.id = r.venue_customer_id
+            LEFT JOIN s_admin_account a ON a.id = r.operator_admin_id
+            LEFT JOIN s_employee e ON e.id = r.operator_employee_id
+            WHERE vc.venue_id = #{venueId}
+              AND r.status = 'SUCCESS'
+              AND r.succeeded_at &gt;= #{startAt}
+              AND r.succeeded_at &lt; #{endAt}
+        ) receipt_events
+        GROUP BY receiptDate, operatorName, channel, businessType
+        ORDER BY receiptDate, operatorName, channel, businessType
+    </select>
+</mapper>

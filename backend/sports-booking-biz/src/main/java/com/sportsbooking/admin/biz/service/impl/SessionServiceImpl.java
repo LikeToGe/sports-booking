@@ -6,10 +6,12 @@ import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.base.model.MiniPrincipal;
 import com.sportsbooking.admin.biz.service.SessionService;
+import com.sportsbooking.admin.biz.service.PermissionService;
 import com.sportsbooking.admin.biz.service.TokenService;
 import com.sportsbooking.admin.biz.constants.AuthConstants;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import java.time.Duration;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,13 +32,16 @@ public class SessionServiceImpl implements SessionService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final TokenService tokenService;
+    private final PermissionService permissionService;
     private final Duration ttl;
 
     public SessionServiceImpl(StringRedisTemplate redisTemplate, ObjectMapper objectMapper,
-                              TokenService tokenService, @Value("${app.session.ttl-hours}") long ttlHours) {
+                              TokenService tokenService, PermissionService permissionService,
+                              @Value("${app.session.ttl-hours}") long ttlHours) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.tokenService = tokenService;
+        this.permissionService = permissionService;
         this.ttl = Duration.ofHours(ttlHours);
     }
 
@@ -49,6 +54,11 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public String createAdminSession(AdminPrincipal principal) {
         return create(ADMIN_SESSION_KIND, principal);
+    }
+
+    @Override
+    public String createEmployeeAdminSession(long employeeId, long venueId) {
+        return create(ADMIN_SESSION_KIND, Map.of("employeeId", employeeId, "venueId", venueId));
     }
 
     /**
@@ -70,7 +80,18 @@ public class SessionServiceImpl implements SessionService {
      */
     @Override
     public AdminPrincipal requireAdmin(String token) {
-        return read(ADMIN_SESSION_KIND, token, AdminPrincipal.class);
+        String sessionJson = readJson(ADMIN_SESSION_KIND, token);
+        try {
+            com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(sessionJson);
+            if (root.has("employeeId") && !root.has("role")) {
+                return permissionService.resolveEmployee(root.get("employeeId").asLong(), root.get("venueId").asLong());
+            }
+            return objectMapper.readValue(sessionJson, AdminPrincipal.class);
+        } catch (ApiException exception) {
+            throw exception;
+        } catch (JsonProcessingException exception) {
+            throw unauthorized();
+        }
     }
 
     /**
@@ -129,6 +150,16 @@ public class SessionServiceImpl implements SessionService {
      * @author gjm
      */
     private <T> T read(String kind, String token, Class<T> principalType) {
+        String sessionJson = readJson(kind, token);
+        try {
+            return objectMapper.readValue(sessionJson, principalType);
+        } catch (JsonProcessingException exception) {
+            throw unauthorized();
+        }
+    }
+
+    /** 读取并续期原始会话 JSON。 */
+    private String readJson(String kind, String token) {
         if (token == null || token.isBlank()) {
             throw unauthorized();
         }
@@ -138,13 +169,11 @@ public class SessionServiceImpl implements SessionService {
                 throw unauthorized();
             }
             redisTemplate.expire(key(kind, token), ttl);
-            return objectMapper.readValue(sessionJson, principalType);
+            return sessionJson;
         } catch (ApiException exception) {
             throw exception;
         } catch (DataAccessException exception) {
             throw sessionUnavailable();
-        } catch (JsonProcessingException exception) {
-            throw unauthorized();
         }
     }
 

@@ -2,6 +2,7 @@ package com.sportsbooking.admin.biz.service.impl;
 
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
+import com.sportsbooking.admin.biz.constants.RedisLockType;
 import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
@@ -13,6 +14,7 @@ import com.sportsbooking.admin.base.po.WeeklySlot;
 import com.sportsbooking.admin.base.mapper.SessionSlotMapper;
 import com.sportsbooking.admin.base.mapper.WeeklySlotMapper;
 import com.sportsbooking.admin.biz.service.ScheduleService;
+import com.sportsbooking.admin.biz.service.RedisLockService;
 import com.sportsbooking.admin.biz.pojo.vo.SessionSlotVO;
 import com.sportsbooking.admin.biz.service.VenueService;
 import com.sportsbooking.admin.base.po.Court;
@@ -46,14 +48,17 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final CourtMapper courtMapper;
     private final SportTypeMapper sportTypeMapper;
     private final VenueService venueService;
+    private final RedisLockService redisLockService;
 
     public ScheduleServiceImpl(WeeklySlotMapper weeklySlotMapper, SessionSlotMapper sessionSlotMapper,
-                           CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService) {
+                           CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService,
+                           RedisLockService redisLockService) {
         this.weeklySlotMapper = weeklySlotMapper;
         this.sessionSlotMapper = sessionSlotMapper;
         this.courtMapper = courtMapper;
         this.sportTypeMapper = sportTypeMapper;
         this.venueService = venueService;
+        this.redisLockService = redisLockService;
     }
 
     /**
@@ -205,8 +210,22 @@ public class ScheduleServiceImpl implements ScheduleService {
      */
     @Override
     public List<SessionSlotVO> listDay(long venueId, LocalDate date) {
+        return listDay(venueId, date, null);
+    }
+
+    /**
+     * 功能描述: 同步并按运动类型查询场馆指定日期的具体场次及当前关联预约。
+     *
+     * @param venueId 场馆 ID
+     * @param date 日期
+     * @param sportTypeId 运动类型 ID，为空时查询全部运动
+     * @return 具体场次列表
+     * @author gjm
+     */
+    @Override
+    public List<SessionSlotVO> listDay(long venueId, LocalDate date, Long sportTypeId) {
         syncVenue(venueId);
-        return sessionSlotMapper.selectVenueDay(venueId, date).stream().map(SessionSlotVO::from).toList();
+        return sessionSlotMapper.selectVenueDay(venueId, date, sportTypeId).stream().map(SessionSlotVO::from).toList();
     }
 
     /**
@@ -244,9 +263,22 @@ public class ScheduleServiceImpl implements ScheduleService {
      *
      * @author gjm
      */
-    @Transactional
     @Override
     public SessionSlot updateSession(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
+        return redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)),
+                () -> updateSessionLocked(venueId, sessionSlotId, body));
+    }
+
+    /**
+     * 功能描述: 在具体场次业务锁和数据库事务内编辑场次，并保留库存状态及预约关联。
+     *
+     * @param venueId 场馆 ID
+     * @param sessionSlotId 具体场次 ID
+     * @param body 场次保存请求
+     * @return 更新后的具体场次
+     * @author gjm
+     */
+    private SessionSlot updateSessionLocked(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
         SessionSlot slot = sessionSlotMapper.selectForUpdate(sessionSlotId);
         if (slot == null || slot.venueId != venueId) {
             throw notFound();
@@ -290,9 +322,22 @@ public class ScheduleServiceImpl implements ScheduleService {
      *
      * @author gjm
      */
-    @Transactional
     @Override
     public void closeSlot(long venueId, long sessionSlotId) {
+        redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)), () -> {
+            closeSlotLocked(venueId, sessionSlotId);
+            return null;
+        });
+    }
+
+    /**
+     * 功能描述: 在具体场次业务锁和数据库事务内关闭未被占用的场次。
+     *
+     * @param venueId 场馆 ID
+     * @param sessionSlotId 具体场次 ID
+     * @author gjm
+     */
+    private void closeSlotLocked(long venueId, long sessionSlotId) {
         SessionSlot slot = sessionSlotMapper.selectForUpdate(sessionSlotId);
         if (slot == null || slot.venueId != venueId) {
             throw notFound();
@@ -311,9 +356,22 @@ public class ScheduleServiceImpl implements ScheduleService {
      *
      * @author gjm
      */
-    @Transactional
     @Override
     public void openSlot(long venueId, long sessionSlotId) {
+        redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)), () -> {
+            openSlotLocked(venueId, sessionSlotId);
+            return null;
+        });
+    }
+
+    /**
+     * 功能描述: 在具体场次业务锁和数据库事务内重新开放未来且不重叠的场次。
+     *
+     * @param venueId 场馆 ID
+     * @param sessionSlotId 具体场次 ID
+     * @author gjm
+     */
+    private void openSlotLocked(long venueId, long sessionSlotId) {
         SessionSlot existing = sessionSlotMapper.selectById(sessionSlotId);
         if (existing == null || existing.venueId != venueId) {
             throw notFound();

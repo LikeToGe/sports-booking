@@ -38,4 +38,9 @@ public class BookingCreateRequest {
     @Schema(description = "联系人手机号")
     @ApiModelProperty(value = "联系人手机号")
     private String contactPhone;
+
+    /** 客户端创建幂等键。 */
+    @Schema(description = "客户端创建幂等键")
+    @ApiModelProperty(value = "客户端创建幂等键")
+    private String idempotencyKey;
 }

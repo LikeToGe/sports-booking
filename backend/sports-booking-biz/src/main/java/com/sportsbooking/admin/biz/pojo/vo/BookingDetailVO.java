@@ -38,6 +38,11 @@ public class BookingDetailVO {
     @ApiModelProperty(value = "退款信息")
     private RefundVO refund;
 
+    /** 固定支付组成。 */
+    @Schema(description = "固定支付组成")
+    @ApiModelProperty(value = "固定支付组成")
+    private PaymentCompositionVO composition;
+
     /**
      * 核销凭证
      */

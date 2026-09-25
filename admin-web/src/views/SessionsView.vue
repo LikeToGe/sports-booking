@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { Plus, X } from "@lucide/vue";
 import { api, localDateTime, money, today } from "../api";
+import { hasPermission } from "../auth";
 import { statusLabel, statusTone } from "../labels";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
@@ -23,6 +24,7 @@ const form = reactive({
 const courtId = ref("");
 const sportId = ref("");
 const status = ref("");
+const canEdit = hasPermission("SESSION_EDIT");
 const filteredSessions = computed(() => sessions.value.filter(session =>
   (!courtId.value || session.courtId === Number(courtId.value))
   && (!sportId.value || session.sportTypeId === Number(sportId.value))
@@ -142,7 +144,7 @@ onMounted(load);
   <section class="page">
     <header class="page-header">
       <div><h1>场次</h1><p>按具体日期查看、临时加场或关闭可预约场次。</p></div>
-      <div class="toolbar">
+      <div v-if="canEdit" class="toolbar">
         <button class="button danger" type="button" @click="closeDay">关闭当天</button>
         <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增场次</button>
       </div>
@@ -166,7 +168,7 @@ onMounted(load);
             <td data-label="运动">{{ session.sportName }}</td>
             <td data-label="价格">{{ money(session.priceFen) }}</td>
             <td data-label="状态"><span class="status" :data-tone="statusTone(session.status)">{{ statusLabel(session.status) }}</span></td>
-            <td data-label="操作"><div class="toolbar">
+            <td data-label="操作"><div v-if="canEdit" class="toolbar">
               <button class="button secondary" type="button" @click="openEdit(session)">编辑</button>
               <button v-if="session.status === 'OPEN'" class="button secondary" type="button" @click="closeSession(session)">关闭</button>
               <button v-else-if="canOpen(session)" class="button secondary" type="button" @click="openSession(session)">开启</button>

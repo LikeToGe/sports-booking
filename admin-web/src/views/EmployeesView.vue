@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { KeyRound, Plus, X } from "@lucide/vue";
+import { KeyRound, Plus, ShieldCheck, Unlink, X } from "@lucide/vue";
 import { api, localDateTime } from "../api";
+import { hasPermission } from "../auth";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
-import type { Employee } from "../types";
+import type { Employee, VenueRole } from "../types";
 
 const employees = ref<Employee[]>([]);
 const name = ref("");
@@ -18,6 +19,13 @@ const bindingExpiry = ref("");
 const keyword = ref("");
 const binding = ref("");
 const status = ref("");
+const roles = ref<VenueRole[]>([]);
+const roleDialog = ref<HTMLDialogElement>();
+const roleEmployee = ref<Employee>();
+const selectedRoleIds = ref<number[]>([]);
+const roleError = ref("");
+const canManageRoles = hasPermission("ROLE_MANAGE");
+const canEditEmployees = hasPermission("EMPLOYEE_EDIT");
 const filteredEmployees = computed(() => {
   const query = keyword.value.trim().toLowerCase();
   return employees.value.filter(employee =>
@@ -29,9 +37,48 @@ const { page, pageSize, total, pagedItems } = usePagination(filteredEmployees);
 
 async function load() {
   try {
-    employees.value = await api<Employee[]>("/venue-admin/employees/list");
+    const [loadedEmployees, loadedRoles] = await Promise.all([
+      api<Employee[]>("/venue-admin/employees/list"),
+      canManageRoles ? api<VenueRole[]>("/venue-admin/roles") : Promise.resolve([]),
+    ]);
+    roles.value = loadedRoles;
+    if (!canManageRoles) {
+      employees.value = loadedEmployees;
+      return;
+    }
+    const roleIds = await Promise.all(loadedEmployees.map(employee =>
+      api<number[]>(`/venue-admin/employees/${employee.id}/roles`)));
+    employees.value = loadedEmployees.map((employee, index) => ({
+      ...employee,
+      roleIds: roleIds[index],
+      roleNames: loadedRoles.filter(role => roleIds[index].includes(role.id)).map(role => role.name),
+    }));
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "员工加载失败";
+  }
+}
+
+function openRoles(employee: Employee) {
+  roleEmployee.value = employee;
+  selectedRoleIds.value = [...(employee.roleIds || [])];
+  roleError.value = "";
+  roleDialog.value?.showModal();
+}
+
+async function saveRoles() {
+  if (!roleEmployee.value) return;
+  loading.value = true;
+  roleError.value = "";
+  try {
+    await api(`/venue-admin/employees/${roleEmployee.value.id}/roles`, {
+      method: "PUT", body: JSON.stringify({ roleIds: selectedRoleIds.value }),
+    });
+    roleDialog.value?.close();
+    await load();
+  } catch (reason) {
+    roleError.value = reason instanceof Error ? reason.message : "角色分配失败";
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -90,6 +137,17 @@ async function toggle(employee: Employee) {
   await load();
 }
 
+async function unbind(employee: Employee) {
+  if (!window.confirm(`确定解除“${employee.name}”的微信绑定吗？`)) return;
+  error.value = "";
+  try {
+    await api(`/venue-admin/employees/${employee.id}/binding`, { method: "DELETE" });
+    await load();
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : "员工解绑失败";
+  }
+}
+
 function showCode(result: { bindingCode: string; expiresAt: string }) {
   bindingCode.value = result.bindingCode;
   bindingExpiry.value = result.expiresAt;
@@ -102,7 +160,7 @@ onMounted(load);
   <section class="page">
     <header class="page-header">
       <div><h1>员工</h1><p>员工在同一个小程序中绑定身份并完成核销。</p></div>
-      <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增员工</button>
+      <button v-if="canEditEmployees" class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增员工</button>
     </header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
     <div v-if="bindingCode" class="binding-result" aria-live="polite">
@@ -117,13 +175,14 @@ onMounted(load);
       <header class="data-panel-head"><div><h2>员工列表</h2><p>管理员工身份、绑定和可用状态</p></div><span class="record-count">{{ total }} 人</span></header>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>员工</th><th>微信绑定</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>员工</th><th>微信绑定</th><th>角色</th><th>状态</th><th>操作</th></tr></thead>
           <tbody>
           <tr v-for="employee in pagedItems" :key="employee.id">
             <td data-label="员工"><strong>{{ employee.name }}</strong></td>
             <td data-label="微信绑定">{{ employee.userId ? "已绑定" : "未绑定" }}</td>
+            <td data-label="角色">{{ employee.roleNames?.join("、") || "未分配" }}</td>
             <td data-label="状态"><span class="status" :data-tone="employee.status === 'ACTIVE' ? 'active' : 'danger'">{{ employee.status === "ACTIVE" ? "启用" : "停用" }}</span></td>
-            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="openEdit(employee)">编辑</button><button class="button secondary" type="button" @click="issue(employee)"><KeyRound :size="17" aria-hidden="true" />绑定码</button><button class="button secondary" type="button" @click="toggle(employee)">{{ employee.status === "ACTIVE" ? "停用" : "启用" }}</button></div></td>
+            <td data-label="操作"><div class="toolbar"><button v-if="canEditEmployees" class="button secondary" type="button" @click="openEdit(employee)">编辑</button><button v-if="canManageRoles" class="button secondary" type="button" @click="openRoles(employee)"><ShieldCheck :size="17" aria-hidden="true" />分配角色</button><button v-if="canEditEmployees" class="button secondary" type="button" @click="issue(employee)"><KeyRound :size="17" aria-hidden="true" />绑定码</button><button v-if="canEditEmployees" class="button secondary" type="button" @click="toggle(employee)">{{ employee.status === "ACTIVE" ? "停用" : "启用" }}</button><button v-if="canEditEmployees && employee.userId" class="icon-button" type="button" aria-label="解除微信绑定" title="解除微信绑定" @click="unbind(employee)"><Unlink :size="18" aria-hidden="true" /></button></div></td>
           </tr>
           </tbody>
         </table>
@@ -138,6 +197,18 @@ onMounted(load);
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>员工姓名</span><input v-model.trim="name" required></label>
         <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingEmployee ? "保存修改" : "创建员工" }}</button></div>
+      </form>
+    </dialog>
+
+    <dialog ref="roleDialog" class="modal">
+      <form method="dialog" class="modal-head"><h2>分配角色</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="saveRoles">
+        <p class="muted">{{ roleEmployee?.name }} · 多个角色的权限取并集</p>
+        <p v-if="roleError" class="error-banner" role="alert">{{ roleError }}</p>
+        <div class="role-options">
+          <label v-for="role in roles" :key="role.id"><input v-model="selectedRoleIds" type="checkbox" :value="role.id" :disabled="role.status !== 'ACTIVE' && !selectedRoleIds.includes(role.id)"><span>{{ role.name }}</span><span class="muted">{{ role.permissions.length }} 项权限</span></label>
+        </div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="roleDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : "保存分配" }}</button></div>
       </form>
     </dialog>
   </section>
@@ -159,4 +230,8 @@ onMounted(load);
   font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
 }
+
+.role-options { display: grid; gap: var(--space-xs); }
+.role-options label { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; min-height: var(--control-height); gap: var(--space-sm); border-block-end: 1px solid var(--color-rule-2); cursor: pointer; }
+.role-options input { width: 1.125rem; height: 1.125rem; accent-color: var(--color-accent); }
 </style>

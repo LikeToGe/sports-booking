@@ -7,6 +7,8 @@ import com.sportsbooking.admin.biz.pojo.request.MiniLoginRequest;
 import com.sportsbooking.admin.biz.pojo.request.UserProfileUpdateRequest;
 import com.sportsbooking.admin.biz.service.AuthService;
 import com.sportsbooking.admin.biz.service.SessionService;
+import com.sportsbooking.admin.biz.service.WebLoginTicketService;
+import com.sportsbooking.admin.biz.pojo.vo.ScanTicketVO;
 import com.sportsbooking.admin.biz.pojo.vo.AdminLoginVO;
 import com.sportsbooking.admin.biz.pojo.vo.MiniLoginVO;
 import com.sportsbooking.admin.biz.pojo.vo.UserProfileVO;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -34,6 +37,8 @@ public class AuthController {
     private AuthService authService;
     @Autowired
     private SessionService sessionService;
+    @Autowired
+    private WebLoginTicketService webLoginTicketService;
 
     /**
      * 功能描述: 后台账号登录。
@@ -47,6 +52,22 @@ public class AuthController {
     public ApiResponse<AdminLoginVO> loginAdmin(@RequestBody AdminLoginRequest body) {
         return ApiResponse.success(authService.loginAdmin(body.getUsername(), body.getPassword()));
     }
+
+    @PostMapping("/admin/web-login-tickets")
+    public ApiResponse<ScanTicketVO> createWebLoginTicket() {
+        return ApiResponse.success(webLoginTicketService.create());
+    }
+
+    @GetMapping("/admin/web-login-tickets/{ticket}")
+    public ApiResponse<ScanTicketVO> getWebLoginTicket(@PathVariable String ticket) {
+        return ApiResponse.success(webLoginTicketService.get(ticket));
+    }
+
+    @PostMapping("/admin/web-login-tickets/{ticket}/consume")
+    public ApiResponse<AdminLoginVO> consumeWebLoginTicket(@PathVariable String ticket) {
+        return ApiResponse.success(webLoginTicketService.consume(ticket));
+    }
+
 
     /**
      * 功能描述: 删除当前后台会话。

@@ -27,6 +27,10 @@ public class RefundVO {
     @ApiModelProperty(value = "主键 ID")
     private Long id;
 
+    /** 稳定退款业务号。 */
+    @Schema(description = "退款业务号") @ApiModelProperty(value = "退款业务号")
+    private String businessNo;
+
     /**
      * 金额，单位为分
      */
@@ -48,6 +52,18 @@ public class RefundVO {
     @ApiModelProperty(value = "状态")
     private RefundStatus status;
 
+    /** 已发起退款次数。 */
+    @Schema(description = "重试次数") @ApiModelProperty(value = "重试次数")
+    private Integer retryCount;
+
+    /** 下次自动重试时间。 */
+    @Schema(description = "下次重试时间") @ApiModelProperty(value = "下次重试时间")
+    private Instant nextRetryAt;
+
+    /** 最近失败原因。 */
+    @Schema(description = "最近失败原因") @ApiModelProperty(value = "最近失败原因")
+    private String lastFailureReason;
+
     /**
      * 退款时间
      */
@@ -64,7 +80,7 @@ public class RefundVO {
      * @author gjm
      */
     public static RefundVO from(Refund refund) {
-        return refund == null ? null : new RefundVO(refund.id, refund.amountFen, refund.reason,
-                refund.status, refund.refundedAt);
+        return refund == null ? null : new RefundVO(refund.id, refund.refundNo, refund.amountFen, refund.reason,
+                refund.status, refund.retryCount, refund.nextRetryAt, refund.lastFailureReason, refund.refundedAt);
     }
 }

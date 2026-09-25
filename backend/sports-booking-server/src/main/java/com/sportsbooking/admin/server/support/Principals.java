@@ -6,6 +6,8 @@ import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.server.context.AuthContext;
 import org.springframework.http.HttpStatus;
+import com.sportsbooking.admin.base.enums.VenuePermission;
+import java.util.Arrays;
 
 /**
  * 功能描述: 从认证上下文读取并校验后台身份角色范围。
@@ -42,6 +44,33 @@ public final class Principals {
     public static AdminPrincipal venue() {
         AdminPrincipal principal = AuthContext.getAdminPrincipal();
         if (principal.getRole() != AdminRole.VENUE_ADMIN || principal.getVenueId() == null) {
+            throw forbidden();
+        }
+        return principal;
+    }
+
+    /** 获取具备指定权限的场馆后台身份；场馆密码管理员始终放行。 */
+    public static AdminPrincipal venue(VenuePermission permission) {
+        AdminPrincipal principal = AuthContext.getAdminPrincipal();
+        if (principal.getVenueId() == null || (principal.getRole() != AdminRole.VENUE_ADMIN
+                && (principal.getRole() != AdminRole.VENUE_EMPLOYEE
+                || principal.getPermissions() == null || !principal.getPermissions().contains(permission)))) {
+            throw forbidden();
+        }
+        return principal;
+    }
+
+    /** 获取具备任一指定权限的场馆后台身份。 */
+    public static AdminPrincipal venueAny(VenuePermission... permissions) {
+        AdminPrincipal principal = AuthContext.getAdminPrincipal();
+        if (principal.getVenueId() == null) {
+            throw forbidden();
+        }
+        if (principal.getRole() == AdminRole.VENUE_ADMIN) {
+            return principal;
+        }
+        if (principal.getRole() != AdminRole.VENUE_EMPLOYEE || principal.getPermissions() == null
+                || Arrays.stream(permissions).noneMatch(principal.getPermissions()::contains)) {
             throw forbidden();
         }
         return principal;

@@ -22,8 +22,20 @@ public class Notification {
     public Long userId;
     /** 关联预约 ID。 */
     public Long bookingId;
+    /** 业务类型。 */
+    public String businessType;
+    /** 业务主键。 */
+    public Long businessId;
     /** 消息类型。 */
     public NotificationType type;
+    /** 站内消息标题。 */
+    public String title;
+    /** 站内消息正文。 */
+    public String content;
+    /** 阅读时间。 */
+    public LocalDateTime readAt;
+    /** 防止重复生成消息的幂等键。 */
+    public String idempotencyKey;
     /** 消息发送状态。 */
     public NotificationStatus status;
     /** 创建时间。 */

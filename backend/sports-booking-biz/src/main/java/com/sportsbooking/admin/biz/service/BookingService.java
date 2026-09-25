@@ -1,6 +1,7 @@
 package com.sportsbooking.admin.biz.service;
 
 import com.sportsbooking.admin.base.po.Booking;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.biz.pojo.vo.BookingDetailVO;
 import com.sportsbooking.admin.biz.pojo.vo.UserBookingVO;
 import com.sportsbooking.admin.biz.pojo.vo.VenueBookingVO;
@@ -29,18 +30,77 @@ public interface BookingService {
      * @author gjm
      */
     Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone);
+
+    /** 使用客户端幂等键创建线上预约。 */
+    Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone,
+                         String idempotencyKey);
     /**
-     * 功能描述: 场馆创建立即确认的线下预约。
-     * 创建时间: 2026/08/28 16:29
+     * 功能描述: 场馆按明确登记收款状态创建线下预约。
      *
      * @param venueId 场馆 ID
      * @param sessionSlotId 具体场次 ID
      * @param contactName 联系人
      * @param contactPhone 联系电话
+     * @param paymentStatus 登记收款状态
+     * @param venueCustomerId 可选的本场馆顾客档案 ID
      * @return 已确认预约
      * @author gjm
      */
-    Booking createOffline(long venueId, long sessionSlotId, String contactName, String contactPhone);
+    Booking createOffline(long venueId, long sessionSlotId, String contactName, String contactPhone,
+                          BookingPaymentStatus paymentStatus, Long venueCustomerId);
+
+    /**
+     * 功能描述: 按模板场次为多个日期整批创建线下预约。
+     *
+     * @param venueId 场馆 ID
+     * @param templateSessionSlotId 模板具体场次 ID
+     * @param dates 目标日期列表
+     * @param contactName 联系人
+     * @param contactPhone 联系电话
+     * @param paymentStatus 登记收款状态
+     * @param venueCustomerId 可选的本场馆顾客档案 ID
+     * @return 去重日期对应的预约
+     * @author gjm
+     */
+    List<Booking> createOfflineBatch(long venueId, long templateSessionSlotId, List<LocalDate> dates,
+                                     String contactName, String contactPhone,
+                                     BookingPaymentStatus paymentStatus, Long venueCustomerId);
+
+    /**
+     * 功能描述: 修改线下预约登记收款状态并记录可信操作者和原因。
+     *
+     * @param venueId 场馆 ID
+     * @param operatorAdminId 当前后台账号 ID
+     * @param bookingId 预约 ID
+     * @param paymentStatus 目标登记收款状态
+     * @param reason 修改原因
+     * @return 更新后的预约
+     * @author gjm
+     */
+    default Booking updateOfflinePaymentStatus(long venueId, long operatorAdminId, long bookingId,
+                                               BookingPaymentStatus paymentStatus, String reason) {
+        return updateOfflinePaymentStatus(venueId, operatorAdminId, null, bookingId, paymentStatus, reason);
+    }
+    Booking updateOfflinePaymentStatus(long venueId, Long operatorAdminId, Long operatorEmployeeId, long bookingId,
+                                       BookingPaymentStatus paymentStatus, String reason);
+
+    /**
+     * 功能描述: 将未开始的线下预约改到本场馆同价开放场次并记录审计。
+     *
+     * @param venueId 场馆 ID
+     * @param operatorAdminId 当前后台账号 ID
+     * @param bookingId 预约 ID
+     * @param sessionSlotId 目标具体场次 ID
+     * @param reason 改期原因
+     * @return 改期后的预约
+     * @author gjm
+     */
+    default Booking rescheduleOffline(long venueId, long operatorAdminId, long bookingId,
+                                      long sessionSlotId, String reason) {
+        return rescheduleOffline(venueId, operatorAdminId, null, bookingId, sessionSlotId, reason);
+    }
+    Booking rescheduleOffline(long venueId, Long operatorAdminId, Long operatorEmployeeId, long bookingId,
+                              long sessionSlotId, String reason);
 
     /**
      * 功能描述: 修改任意状态线下预约的联系人资料。
@@ -74,7 +134,12 @@ public interface BookingService {
      * @return 已取消预约
      * @author gjm
      */
-    Booking cancelByVenue(long venueId, long bookingId, String reason);
+    default Booking cancelByVenue(long venueId, long bookingId, String reason) {
+        return cancelByVenue(venueId, bookingId, reason, true, true);
+    }
+    /** 按预约来源和当前实时权限取消场馆预约。 */
+    Booking cancelByVenue(long venueId, long bookingId, String reason,
+                          boolean canCancelOnline, boolean canEditOffline);
     /**
      * 功能描述: 查询当前用户全部预约。
      * 创建时间: 2026/08/28 16:29

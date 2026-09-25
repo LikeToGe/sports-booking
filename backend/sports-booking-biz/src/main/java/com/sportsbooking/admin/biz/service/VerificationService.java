@@ -24,6 +24,7 @@ public interface VerificationService {
      * @author gjm
      */
     Booking verify(long staffUserId, String credential, VerificationMethod method);
+    Booking verify(long staffUserId, long venueId, String credential, VerificationMethod method);
 
     /**
      * 功能描述: 查询当前员工本人的核销记录。
@@ -34,4 +35,5 @@ public interface VerificationService {
      * @author gjm
      */
     List<StaffVerificationRecordVO> listStaffRecords(long staffUserId);
+    List<StaffVerificationRecordVO> listStaffRecords(long staffUserId, long venueId);
 }

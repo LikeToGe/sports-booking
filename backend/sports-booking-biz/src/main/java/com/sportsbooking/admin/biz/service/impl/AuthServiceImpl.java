@@ -100,7 +100,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserProfileVO getMiniProfile(long userId) {
         UserAccount user = requireActiveUser(userId);
-        Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>().eq("user_id", userId));
+        Employee employee = employeeMapper.selectList(new QueryWrapper<Employee>()
+                        .eq("user_id", userId).orderByAsc("id"))
+                .stream().findFirst().orElse(null);
         EmployeeIdentityVO staff = employee == null ? null : new EmployeeIdentityVO(
                 employee.id, employee.venueId, employee.name, employee.status
         );

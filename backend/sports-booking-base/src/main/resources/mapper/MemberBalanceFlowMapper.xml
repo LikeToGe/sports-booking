@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.MemberBalanceFlowMapper">
+    <select id="selectByCustomer" resultType="com.sportsbooking.admin.base.bo.MemberBalanceFlowBO">
+        SELECT f.id, f.lot_id AS lotId, lot.type AS balanceType, f.business_type AS businessType,
+               f.direction, f.amount_fen AS amountFen, f.booking_id AS bookingId,
+               f.recharge_id AS rechargeId, f.created_at AS createdAt
+        FROM s_member_balance_flow f
+        JOIN s_member_balance_lot lot ON lot.id = f.lot_id
+        WHERE f.venue_customer_id = #{venueCustomerId}
+        ORDER BY f.id DESC
+    </select>
+    <select id="countConsumedByRecharge" resultType="int">
+        SELECT COUNT(*)
+        FROM s_member_balance_flow f
+        JOIN s_member_balance_lot lot ON lot.id = f.lot_id
+        WHERE lot.source_recharge_id = #{rechargeId} AND f.business_type = 'CONSUME'
+    </select>
+</mapper>

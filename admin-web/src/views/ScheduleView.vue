@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { Copy, Plus, X } from "@lucide/vue";
 import { api, money } from "../api";
+import { hasPermission } from "../auth";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
 import type { CourtView, SportType, WeeklySlot } from "../types";
@@ -19,6 +20,7 @@ const editingSlot = ref<WeeklySlot | null>(null);
 const form = reactive({ courtId: 0, sportTypeId: 0, startTime: "09:00", endTime: "10:00", priceYuan: 60 });
 const courtId = ref("");
 const sportId = ref("");
+const canEdit = hasPermission("SCHEDULE_EDIT");
 const daySlots = computed(() => slots.value.filter(slot => slot.dayOfWeek === activeDay.value && slot.status === "ACTIVE"));
 const filteredDaySlots = computed(() => daySlots.value.filter(slot =>
   (!courtId.value || slot.courtId === Number(courtId.value))
@@ -128,7 +130,7 @@ onMounted(load);
   <section class="page">
     <header class="page-header">
       <div><h1>排期</h1><p>按星期维护固定场次，已预约场次不会被后续修改覆盖。</p></div>
-      <div class="toolbar">
+      <div v-if="canEdit" class="toolbar">
         <button class="button secondary" type="button" @click="copyToWeekdays"><Copy :size="18" aria-hidden="true" />复制排期</button>
         <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增排期</button>
       </div>
@@ -152,7 +154,7 @@ onMounted(load);
             <td data-label="场地">{{ nameOf(courts, slot.courtId) }}</td>
             <td data-label="运动">{{ sportName(slot.sportTypeId) }}</td>
             <td data-label="价格">{{ money(slot.priceFen) }}</td>
-            <td data-label="操作"><div class="toolbar"><button class="button secondary" type="button" @click="openEdit(slot)">编辑</button><button class="button secondary" type="button" @click="remove(slot)">停用</button></div></td>
+            <td data-label="操作"><div v-if="canEdit" class="toolbar"><button class="button secondary" type="button" @click="openEdit(slot)">编辑</button><button class="button secondary" type="button" @click="remove(slot)">停用</button></div></td>
           </tr>
           </tbody>
         </table>

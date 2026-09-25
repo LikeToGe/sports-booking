@@ -89,4 +89,10 @@ public interface EmployeeService {
      * @author gjm
      */
     Employee getActiveEmployee(long userId);
+
+    /** 查询用户在指定场馆的有效员工身份。 */
+    Employee getActiveEmployee(long userId, long venueId);
+
+    /** 解除员工与小程序用户的绑定。 */
+    Employee unbindEmployee(long venueId, long employeeId);
 }

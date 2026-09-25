@@ -10,4 +10,6 @@ import com.sportsbooking.admin.base.po.Payment;
  * @author gjm
  */
 public interface PaymentMapper extends BaseMapper<Payment> {
+    Payment selectByBookingForUpdate(long bookingId);
+    Payment selectByBusinessNo(String businessNo);
 }

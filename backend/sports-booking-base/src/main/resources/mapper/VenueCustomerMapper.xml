@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.VenueCustomerMapper">
+    <sql id="customerColumns">
+        vc.id AS customerId,
+        vc.venue_id AS venueId,
+        v.name AS venueName,
+        u.contact_name AS contactName,
+        u.phone,
+        vc.status,
+        vc.member_code AS memberCode,
+        vc.activated_at AS activatedAt,
+        vc.created_at AS createdAt,
+        COALESCE(bs.paid_balance_fen, 0) AS paidBalanceFen,
+        COALESCE(bs.gift_balance_fen, 0) AS giftBalanceFen,
+        COALESCE(bs.expiring_gift_balance_fen, 0) AS expiringGiftBalanceFen,
+        bs.next_gift_expires_at AS nextGiftExpiresAt
+    </sql>
+
+    <sql id="balanceJoin">
+        LEFT JOIN (
+            SELECT lot.venue_customer_id,
+                   SUM(CASE WHEN lot.type = 'PAID' AND lot.status = 'ACTIVE'
+                            THEN lot.available_amount_fen ELSE 0 END) AS paid_balance_fen,
+                   SUM(CASE WHEN lot.type = 'GIFT' AND lot.status = 'ACTIVE' AND lot.expires_at &gt; UTC_TIMESTAMP(3)
+                            THEN lot.available_amount_fen ELSE 0 END) AS gift_balance_fen,
+                   SUM(CASE WHEN lot.type = 'GIFT' AND lot.status = 'ACTIVE'
+                                 AND lot.expires_at = nearest.expires_at
+                            THEN lot.available_amount_fen ELSE 0 END) AS expiring_gift_balance_fen,
+                   nearest.expires_at AS next_gift_expires_at
+            FROM s_member_balance_lot lot
+            LEFT JOIN (
+                SELECT venue_customer_id, MIN(expires_at) AS expires_at
+                FROM s_member_balance_lot
+                WHERE type = 'GIFT' AND status = 'ACTIVE' AND available_amount_fen &gt; 0
+                  AND expires_at &gt; UTC_TIMESTAMP(3)
+                GROUP BY venue_customer_id
+            ) nearest ON nearest.venue_customer_id = lot.venue_customer_id
+            GROUP BY lot.venue_customer_id, nearest.expires_at
+        ) bs ON bs.venue_customer_id = vc.id
+    </sql>
+
+    <select id="selectByVenueAndUser" resultType="com.sportsbooking.admin.base.po.VenueCustomer">
+        SELECT *
+        FROM s_venue_customer
+        WHERE venue_id = #{venueId} AND user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <select id="selectByVenueAndUserForUpdate" resultType="com.sportsbooking.admin.base.po.VenueCustomer">
+        SELECT *
+        FROM s_venue_customer
+        WHERE venue_id = #{venueId} AND user_id = #{userId}
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <select id="selectVenueCustomers" resultType="com.sportsbooking.admin.base.bo.VenueCustomerBO">
+        SELECT <include refid="customerColumns"/>
+        FROM s_venue_customer vc
+        JOIN s_user_account u ON u.id = vc.user_id
+        JOIN s_venue v ON v.id = vc.venue_id
+        <include refid="balanceJoin"/>
+        WHERE vc.venue_id = #{venueId}
+        <if test="keyword != null and keyword != ''">
+            AND (u.contact_name LIKE CONCAT('%', #{keyword}, '%')
+                OR u.phone = #{keyword}
+                OR vc.member_code = #{keyword})
+        </if>
+        ORDER BY vc.created_at DESC, vc.id DESC
+    </select>
+
+    <select id="selectVenueCustomer" resultType="com.sportsbooking.admin.base.bo.VenueCustomerBO">
+        SELECT <include refid="customerColumns"/>
+        FROM s_venue_customer vc
+        JOIN s_user_account u ON u.id = vc.user_id
+        JOIN s_venue v ON v.id = vc.venue_id
+        <include refid="balanceJoin"/>
+        WHERE vc.venue_id = #{venueId} AND vc.id = #{customerId}
+        LIMIT 1
+    </select>
+
+    <select id="selectByIdentity" resultType="com.sportsbooking.admin.base.bo.VenueCustomerBO">
+        SELECT <include refid="customerColumns"/>
+        FROM s_venue_customer vc
+        JOIN s_user_account u ON u.id = vc.user_id
+        JOIN s_venue v ON v.id = vc.venue_id
+        <include refid="balanceJoin"/>
+        WHERE vc.venue_id = #{venueId}
+        <choose>
+            <when test="memberCode != null">AND vc.member_code = #{memberCode}</when>
+            <otherwise>AND u.phone = #{phone}</otherwise>
+        </choose>
+        ORDER BY vc.id
+        LIMIT 2
+    </select>
+
+    <select id="selectUserMemberships" resultType="com.sportsbooking.admin.base.bo.VenueCustomerBO">
+        SELECT <include refid="customerColumns"/>
+        FROM s_venue_customer vc
+        JOIN s_user_account u ON u.id = vc.user_id
+        JOIN s_venue v ON v.id = vc.venue_id
+        <include refid="balanceJoin"/>
+        WHERE vc.user_id = #{userId}
+        ORDER BY vc.created_at DESC, vc.id DESC
+    </select>
+
+    <select id="selectUserMembership" resultType="com.sportsbooking.admin.base.bo.VenueCustomerBO">
+        SELECT <include refid="customerColumns"/>
+        FROM s_venue_customer vc
+        JOIN s_user_account u ON u.id = vc.user_id
+        JOIN s_venue v ON v.id = vc.venue_id
+        <include refid="balanceJoin"/>
+        WHERE vc.user_id = #{userId} AND vc.venue_id = #{venueId}
+        LIMIT 1
+    </select>
+
+    <select id="selectPlatformSummaries" resultType="com.sportsbooking.admin.base.bo.PlatformCustomerSummaryBO">
+        SELECT v.id AS venueId,
+               v.name AS venueName,
+               COUNT(vc.id) AS customerCount,
+               COALESCE(SUM(CASE WHEN vc.status = 'MEMBER' THEN 1 ELSE 0 END), 0) AS memberCount
+        FROM s_venue v
+        LEFT JOIN s_venue_customer vc ON vc.venue_id = v.id
+        GROUP BY v.id, v.name
+        ORDER BY v.id
+    </select>
+</mapper>

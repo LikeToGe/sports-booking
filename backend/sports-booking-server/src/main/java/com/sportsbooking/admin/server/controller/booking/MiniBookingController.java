@@ -54,7 +54,8 @@ public class MiniBookingController {
     @PostMapping("/bookings/create")
     public ApiResponse<BookingVO> createBooking(@RequestBody BookingCreateRequest body) {
         return ApiResponse.success(BookingVO.from(bookingService.createOnline(
-                AuthContext.getMiniUserId(), body.getSessionSlotId(), body.getContactName(), body.getContactPhone()
+                AuthContext.getMiniUserId(), body.getSessionSlotId(), body.getContactName(), body.getContactPhone(),
+                body.getIdempotencyKey()
         )));
     }
 
@@ -82,6 +83,13 @@ public class MiniBookingController {
     @PostMapping("/bookings/{bookingId}/mock-pay")
     public ApiResponse<BookingVO> mockPay(@PathVariable long bookingId) {
         return ApiResponse.success(BookingVO.from(paymentService.mockPay(AuthContext.getMiniUserId(), bookingId)));
+    }
+
+    /** 查询渠道结果并幂等收敛当前用户预约。 */
+    @PostMapping("/bookings/{bookingId}/payment-query")
+    public ApiResponse<BookingVO> queryPayment(@PathVariable long bookingId) {
+        return ApiResponse.success(BookingVO.from(
+                paymentService.queryPayment(AuthContext.getMiniUserId(), bookingId)));
     }
 
     /**

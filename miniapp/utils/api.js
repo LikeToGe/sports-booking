@@ -40,14 +40,33 @@ function money(fen) {
   return `¥${(Number(fen || 0) / 100).toFixed(0)}`;
 }
 
+function localValue(value) {
+  if (!value) return null;
+  const text = String(value);
+  if (!/(Z|[+-]\d{2}:\d{2})$/.test(text)) return text;
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getTime() + 8 * 60 * 60 * 1000).toISOString();
+}
+
+function date(value) {
+  const local = localValue(value);
+  return local ? local.slice(0, 10) : "—";
+}
+
 function time(value) {
-  if (!value) return "—";
-  const matched = String(value).match(/T(\d{2}:\d{2})/);
+  const local = localValue(value);
+  if (!local) return "—";
+  const matched = local.match(/T(\d{2}:\d{2})/);
   return matched ? matched[1] : value;
+}
+
+function dateTime(value) {
+  const local = localValue(value);
+  return local ? local.slice(0, 16).replace("T", " ") : "—";
 }
 
 function assetUrl(path) {
   return path ? `${getApp().globalData.apiBase}${path}` : "";
 }
 
-module.exports = { request, dateInZhengzhou, money, time, assetUrl };
+module.exports = { request, dateInZhengzhou, money, date, time, dateTime, assetUrl };

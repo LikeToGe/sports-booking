@@ -11,7 +11,8 @@ public enum BookingStatus {
     CONFIRMED("CONFIRMED", "待核销"),
     COMPLETED("COMPLETED", "已完成"),
     CANCELLED("CANCELLED", "已取消"),
-    NO_SHOW("NO_SHOW", "未到场");
+    NO_SHOW("NO_SHOW", "未到场"),
+    ENDED_UNTRACKED("ENDED_UNTRACKED", "履约未跟踪");
 
     private final String key;
     private final String description;

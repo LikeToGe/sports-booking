@@ -3,6 +3,7 @@ package com.sportsbooking.admin.biz.pojo.vo;
 import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.BookingStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.enums.CancelledBy;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -63,6 +64,13 @@ public class BookingVO {
     @Schema(description = "具体场次 ID")
     @ApiModelProperty(value = "具体场次 ID")
     private Long sessionSlotId;
+
+    /**
+     * 关联的场馆顾客档案 ID
+     */
+    @Schema(description = "关联的场馆顾客档案 ID")
+    @ApiModelProperty(value = "关联的场馆顾客档案 ID")
+    private Long venueCustomerId;
 
     /**
      * 预约来源
@@ -135,6 +143,13 @@ public class BookingVO {
     private BookingStatus status;
 
     /**
+     * 预约整体收款或线下登记收款状态
+     */
+    @Schema(description = "预约整体收款或线下登记收款状态")
+    @ApiModelProperty(value = "预约整体收款或线下登记收款状态")
+    private BookingPaymentStatus paymentStatus;
+
+    /**
      * 支付过期时间
      */
     @Schema(description = "支付过期时间")
@@ -179,9 +194,9 @@ public class BookingVO {
      */
     public static BookingVO from(Booking booking) {
         return new BookingVO(booking.id, booking.bookingNo, booking.venueId, booking.courtId,
-                booking.sportTypeId, booking.sessionSlotId, booking.source, booking.contactName,
+                booking.sportTypeId, booking.sessionSlotId, booking.venueCustomerId, booking.source, booking.contactName,
                 booking.contactPhone, booking.venueName, booking.courtName, booking.sportName,
-                booking.startAt, booking.endAt, booking.amountFen, booking.status,
+                booking.startAt, booking.endAt, booking.amountFen, booking.status, booking.paymentStatus,
                 booking.paymentExpiresAt, booking.cancelledBy, booking.cancelReason,
                 booking.cancelledAt, booking.completedAt);
     }

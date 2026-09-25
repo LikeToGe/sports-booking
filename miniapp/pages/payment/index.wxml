@@ -1,11 +1,28 @@
-<view class="page payment-page" wx:if="{{detail}}">
-  <view class="screen-head"><text class="screen-title">模拟支付</text><text class="muted">本地演示不会发起真实扣款。</text></view>
-  <view class="payment-card surface">
-    <text class="muted">待支付金额</text>
-    <text class="amount">{{amount}}</text>
-    <text class="countdown">剩余 {{countdown}}</text>
-    <view class="payment-order"><text>{{detail.booking.venueName}}</text><text class="muted">{{detail.booking.courtName}} · {{detail.booking.sportName}}</text></view>
-  </view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <button class="button-primary" disabled="{{loading || seconds <= 0}}" bindtap="pay">{{loading ? '正在支付' : '模拟支付成功'}}</button>
+<view class="page payment-page">
+  <view class="screen-head"><text class="screen-title">预约支付</text><text class="muted">支付组成由预约创建结果固定。</text></view>
+  <view wx:if="{{error}}" class="error" role="alert"><text>{{error}}</text><button class="inline-action" bindtap="load">重新加载</button></view>
+  <block wx:if="{{detail}}">
+    <view class="payment-card surface">
+      <view class="section-head"><text class="muted">预约总额</text><text class="status status-{{paymentTone}}">{{paymentLabel}}</text></view>
+      <text class="amount">{{amount}}</text>
+      <text wx:if="{{seconds !== null}}" class="countdown">剩余 {{countdown}}</text>
+      <view class="payment-order"><text>{{booking.venueName}}</text><text class="muted">{{booking.courtName}} · {{booking.sportName}}</text></view>
+    </view>
+
+    <view wx:if="{{composition}}" class="composition surface">
+      <text class="section-title">支付组成</text>
+      <view><text>赠送余额</text><strong>{{composition.giftBalanceAmount}}</strong></view>
+      <view><text>实付余额</text><strong>{{composition.paidBalanceAmount}}</strong></view>
+      <view class="external-row"><text>外部支付</text><strong>{{composition.externalAmount}}</strong></view>
+    </view>
+    <view wx:else class="info-message"><text>支付组成暂不可用，请重新加载后再操作。</text></view>
+
+    <view wx:if="{{message}}" class="info-message" aria-live="polite">{{message}}</view>
+    <view class="payment-actions">
+      <button wx:if="{{canPay}}" class="button-primary" disabled="{{paying || querying}}" bindtap="pay">{{paying ? '正在确认支付' : '完成 Mock 支付'}}</button>
+      <button wx:if="{{canQuery}}" class="button-secondary" disabled="{{paying || querying}}" bindtap="queryPayment">{{querying ? '正在查询' : '查询支付结果'}}</button>
+      <button class="button-secondary" disabled="{{paying || querying}}" bindtap="openBooking">查看预约详情</button>
+    </view>
+  </block>
+  <view wx:elif="{{loading}}" class="empty" aria-live="polite"><text>正在加载支付信息...</text></view>
 </view>

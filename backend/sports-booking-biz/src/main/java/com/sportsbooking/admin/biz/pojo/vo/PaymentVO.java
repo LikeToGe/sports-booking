@@ -28,6 +28,10 @@ public class PaymentVO {
     @ApiModelProperty(value = "主键 ID")
     private Long id;
 
+    /** 稳定支付业务号。 */
+    @Schema(description = "支付业务号") @ApiModelProperty(value = "支付业务号")
+    private String businessNo;
+
     /**
      * 支付渠道
      */
@@ -72,7 +76,7 @@ public class PaymentVO {
      * @author gjm
      */
     public static PaymentVO from(Payment payment) {
-        return payment == null ? null : new PaymentVO(payment.id, payment.provider, payment.providerNo,
+        return payment == null ? null : new PaymentVO(payment.id, payment.paymentNo, payment.provider, payment.providerNo,
                 payment.amountFen, payment.status, payment.paidAt);
     }
 }

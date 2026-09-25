@@ -2,6 +2,10 @@ package com.sportsbooking.admin.base.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sportsbooking.admin.base.po.Refund;
+import com.sportsbooking.admin.base.bo.PlatformRefundBO;
+import java.time.Instant;
+import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 功能描述: 退款记录数据访问。
@@ -10,4 +14,8 @@ import com.sportsbooking.admin.base.po.Refund;
  * @author gjm
  */
 public interface RefundMapper extends BaseMapper<Refund> {
+    Refund selectForUpdate(long id);
+    Refund selectByBookingForUpdate(long bookingId);
+    List<PlatformRefundBO> selectPlatformRefunds();
+    List<Long> selectRetryIds(@Param("now") Instant now);
 }

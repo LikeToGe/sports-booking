@@ -56,9 +56,15 @@ request_json PATCH "/platform/venues/$venue_id/service-fee-rate" X-Admin-Token "
 print "[2/6] 场馆服务费率配置通过"
 
 employee="$(request_json POST /venue-admin/employees/create X-Admin-Token "$venue_token" "{\"name\":\"验证员工$verify_suffix\"}")"
+employee_id="$(printf '%s' "$employee" | jq -er '.data.employeeId')"
 binding_code="$(printf '%s' "$employee" | jq -er '.data.bindingCode')"
 request_json POST /mini/staff/bind X-Mini-Token "$mini_token" "{\"bindingCode\":\"$binding_code\"}" \
   | jq -e '.data.status == "ACTIVE" and (.data | has("bindingCodeHash") | not)' >/dev/null
+verify_role_id="$(request_json POST /venue-admin/roles X-Admin-Token "$venue_token" \
+  "{\"name\":\"验证核销$verify_suffix\",\"status\":\"ACTIVE\",\"permissions\":[\"BOOKING_VERIFY\"]}" \
+  | jq -er '.data.id')"
+request_json PUT "/venue-admin/employees/$employee_id/roles" X-Admin-Token "$venue_token" \
+  "{\"roleIds\":[$verify_role_id]}" | jq -e '.data == true' >/dev/null
 print "[3/6] 员工创建与绑定通过"
 
 sport_id="$(request_json GET /venue-admin/sports/list X-Admin-Token "$venue_token" | jq -er '.data[0].id')"
@@ -92,10 +98,15 @@ booking="$(request_json POST /mini/bookings/create X-Mini-Token "$mini_token" "{
 booking_id="$(printf '%s' "$booking" | jq -er '.data.id')"
 booking_no="$(printf '%s' "$booking" | jq -er '.data.bookingNo')"
 request_json POST "/mini/bookings/$booking_id/mock-pay" X-Mini-Token "$mini_token" | jq -e '.data.status == "CONFIRMED"' >/dev/null
+print "[5.1/6] 在线预约支付通过"
 short_code="$(request_json GET "/mini/bookings/$booking_id" X-Mini-Token "$mini_token" | jq -er '.data.credential.shortCode')"
-request_json POST /staff/verifications/verify X-Mini-Token "$mini_token" "{\"credential\":\"$short_code\",\"method\":\"SHORT_CODE\"}" \
+print "[5.2/6] 核销凭证读取通过"
+request_json POST "/staff/verifications/verify?venueId=$venue_id" X-Mini-Token "$mini_token" \
+  "{\"credential\":\"$short_code\",\"method\":\"SHORT_CODE\"}" \
   | jq -e '.data.status == "COMPLETED" and (.data | has("contactPhone") | not)' >/dev/null
-request_json GET /staff/verifications/records X-Mini-Token "$mini_token" | jq -e '.data[0].courtName != null' >/dev/null
+print "[5.3/6] 员工核销通过"
+request_json GET "/staff/verifications/records?venueId=$venue_id" X-Mini-Token "$mini_token" \
+  | jq -e '.data[0].courtName != null' >/dev/null
 billing_month="$(TZ=Asia/Shanghai date +%Y-%m)"
 request_json GET "/venue-admin/reports/service-fees?billingMonth=$billing_month" X-Admin-Token "$venue_token" \
   | jq -e --arg bookingNo "$booking_no" \

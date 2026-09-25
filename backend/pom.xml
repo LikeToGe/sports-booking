@@ -28,6 +28,7 @@
         <springdoc.version>2.9.0</springdoc.version>
         <swagger-annotations.version>1.6.15</swagger-annotations.version>
         <zxing.version>3.5.4</zxing.version>
+        <poi.version>5.5.1</poi.version>
     </properties>
 
     <dependencyManagement>

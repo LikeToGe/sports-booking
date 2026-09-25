@@ -10,7 +10,7 @@ public enum PaymentStatus {
     PENDING("PENDING", "待支付"),
     SUCCESS("SUCCESS", "支付成功"),
     FAILED("FAILED", "支付失败"),
-    REFUNDED("REFUNDED", "已退款");
+    CLOSED("CLOSED", "已关闭");
 
     private final String key;
     private final String description;

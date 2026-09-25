@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.mapper.BookingMapper;
 import com.sportsbooking.admin.base.po.Venue;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
@@ -42,7 +43,8 @@ class DemoDataRunnerTest {
         new DemoDataRunner(venueService, venueCatalogService, scheduleService, bookingService, bookingMapper, true)
                 .run();
 
-        verify(bookingService).createOffline(venue.id, 12L, "本地演示用户", "13800000000");
+        verify(bookingService).createOffline(venue.id, 12L, "本地演示用户", "13800000000",
+                BookingPaymentStatus.UNPAID, null);
     }
 
     private SessionSlotVO openSlot(long id, Instant startAt) {

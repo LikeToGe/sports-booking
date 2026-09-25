@@ -1,7 +1,8 @@
 .mine-page { display: grid; align-content: start; gap: 24rpx; }
-.profile-panel, .staff-section, .profile-form, .staff-actions { display: grid; gap: 24rpx; }
-.profile-panel, .staff-section { padding: 28rpx; }
+.profile-panel, .staff-section, .debug-section, .profile-form, .staff-actions { display: grid; gap: 24rpx; }
+.profile-panel, .staff-section, .debug-section { padding: 28rpx; }
 .saved { color: var(--accent-strong); font-size: 24rpx; }
+.debug-address { font-family: monospace; font-size: 24rpx; }
 .staff-row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 88rpx; padding: 0; border-bottom: 2rpx solid var(--rule-2); background: transparent; color: var(--ink); text-align: left; }
 .staff-row:last-child { border-bottom: 0; }
 .arrow { color: var(--muted); font-size: 40rpx; font-weight: 400; }

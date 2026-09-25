@@ -2,27 +2,37 @@ package com.sportsbooking.admin.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.base.mapper.UserAccountMapper;
 import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.mapper.BookingMapper;
+import com.sportsbooking.admin.base.mapper.BookingPaymentStatusLogMapper;
+import com.sportsbooking.admin.base.mapper.BookingRescheduleLogMapper;
 import com.sportsbooking.admin.base.bo.OperationReportDailyBO;
 import com.sportsbooking.admin.base.bo.ServiceFeeBookingBO;
 import com.sportsbooking.admin.biz.pojo.vo.OperationReportVO;
 import com.sportsbooking.admin.biz.pojo.vo.ServiceFeeSettlementVO;
 import com.sportsbooking.admin.biz.service.CredentialService;
 import com.sportsbooking.admin.biz.service.PaymentService;
+import com.sportsbooking.admin.biz.service.RedisLockService;
+import com.sportsbooking.admin.biz.service.VenueCustomerService;
+import com.sportsbooking.admin.biz.service.MemberFundsService;
+import com.sportsbooking.admin.biz.service.NotificationService;
 import com.sportsbooking.admin.biz.service.impl.BookingServiceImpl;
 import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.BookingStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
@@ -32,13 +42,18 @@ import com.sportsbooking.admin.biz.service.ScheduleService;
 import com.sportsbooking.admin.base.po.Court;
 import com.sportsbooking.admin.base.po.SportType;
 import com.sportsbooking.admin.base.po.Venue;
+import com.sportsbooking.admin.base.po.VenueCustomer;
+import com.sportsbooking.admin.base.po.BookingPaymentStatusLog;
+import com.sportsbooking.admin.base.po.BookingRescheduleLog;
 import com.sportsbooking.admin.base.mapper.CourtMapper;
 import com.sportsbooking.admin.base.mapper.SportTypeMapper;
 import com.sportsbooking.admin.biz.service.VenueService;
+import com.sportsbooking.admin.biz.constants.BusinessConstants;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -54,14 +69,21 @@ import org.springframework.data.redis.core.ValueOperations;
 @SuppressWarnings("unchecked")
 class BookingServiceImplTest {
     private final BookingMapper bookingMapper = mock(BookingMapper.class);
+    private final BookingPaymentStatusLogMapper bookingPaymentStatusLogMapper =
+            mock(BookingPaymentStatusLogMapper.class);
+    private final BookingRescheduleLogMapper bookingRescheduleLogMapper = mock(BookingRescheduleLogMapper.class);
     private final SessionSlotMapper sessionSlotMapper = mock(SessionSlotMapper.class);
     private final UserAccountMapper userAccountMapper = mock(UserAccountMapper.class);
     private final CourtMapper courtMapper = mock(CourtMapper.class);
     private final SportTypeMapper sportTypeMapper = mock(SportTypeMapper.class);
     private final VenueService venueService = mock(VenueService.class);
+    private final VenueCustomerService venueCustomerService = mock(VenueCustomerService.class);
+    private final MemberFundsService memberFundsService = mock(MemberFundsService.class);
+    private final NotificationService notificationService = mock(NotificationService.class);
     private final CredentialService credentialService = mock(CredentialService.class);
     private final PaymentService paymentService = mock(PaymentService.class);
     private final ScheduleService scheduleService = mock(ScheduleService.class);
+    private final RedisLockService redisLockService = mock(RedisLockService.class);
     private final StringRedisTemplate redisTemplate = mock(StringRedisTemplate.class);
     private final ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
     private BookingServiceImpl service;
@@ -71,9 +93,16 @@ class BookingServiceImplTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment(any())).thenReturn(1L);
         when(bookingMapper.selectCount(any())).thenReturn(0L);
-        service = new BookingServiceImpl(bookingMapper, sessionSlotMapper, userAccountMapper,
-                courtMapper, sportTypeMapper, venueService, credentialService, paymentService,
-                scheduleService, redisTemplate, 10, 2, 5);
+        VenueCustomer venueCustomer = new VenueCustomer();
+        venueCustomer.id = 501L;
+        when(venueCustomerService.ensureCustomer(anyLong(), anyLong())).thenReturn(venueCustomer);
+        doAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get())
+                .when(redisLockService).execute(any(), any());
+        service = new BookingServiceImpl(bookingMapper, bookingPaymentStatusLogMapper,
+                bookingRescheduleLogMapper, sessionSlotMapper, userAccountMapper,
+                courtMapper, sportTypeMapper, venueService, venueCustomerService, memberFundsService,
+                notificationService, credentialService, paymentService,
+                scheduleService, redisLockService, redisTemplate, 10, 2, 5);
     }
 
     @Test
@@ -81,6 +110,7 @@ class BookingServiceImplTest {
         SessionSlot slot = openSlot(Instant.now().plusSeconds(20 * 60L));
         Venue venue = venue(30);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(venueService.getVenue(slot.venueId)).thenReturn(venue);
 
         assertThatThrownBy(() -> service.createOnline(1L, 11L, "张三", "13800000000"))
@@ -102,6 +132,7 @@ class BookingServiceImplTest {
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(venueService.getVenue(slot.venueId)).thenReturn(venue);
         when(courtMapper.selectById(slot.courtId)).thenReturn(court);
         when(sportTypeMapper.selectById(slot.sportTypeId)).thenReturn(sport);
@@ -113,6 +144,60 @@ class BookingServiceImplTest {
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingMapper).insert(bookingCaptor.capture());
         assertThat(bookingCaptor.getValue().serviceFeeRateBasisPoints).isEqualTo(525);
+        assertThat(bookingCaptor.getValue().venueCustomerId).isEqualTo(501L);
+        assertThat(bookingCaptor.getValue().paymentStatus).isEqualTo(BookingPaymentStatus.PAYING);
+    }
+
+    @Test
+    void fullBalanceBookingConfirmsWithoutExternalPaymentRecord() {
+        SessionSlot slot = openSlot(Instant.now().plusSeconds(2 * 60 * 60L));
+        Venue venue = venue(30);
+        Court court = new Court();
+        court.id = slot.courtId;
+        court.name = "篮球 1 号场";
+        SportType sport = new SportType();
+        sport.id = slot.sportTypeId;
+        sport.name = "篮球";
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(venueService.getVenue(slot.venueId)).thenReturn(venue);
+        when(courtMapper.selectById(slot.courtId)).thenReturn(court);
+        when(sportTypeMapper.selectById(slot.sportTypeId)).thenReturn(sport);
+        doAnswer(invocation -> {
+            Booking booking = invocation.getArgument(0);
+            booking.balanceAmountFen = booking.amountFen;
+            booking.paidBalanceAmountFen = booking.amountFen;
+            booking.externalAmountFen = 0;
+            return null;
+        }).when(memberFundsService).freeze(any(Booking.class), anyLong(), any());
+        doAnswer(invocation -> {
+            ((Booking) invocation.getArgument(0)).id = 99L;
+            return 1;
+        }).when(bookingMapper).insert(any(Booking.class));
+
+        Booking booking = service.createOnline(1L, 11L, "张三", "13800000000");
+
+        assertThat(booking.status).isEqualTo(BookingStatus.CONFIRMED);
+        assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
+        verify(paymentService, never()).createPending(any());
+        verify(memberFundsService).consume(org.mockito.ArgumentMatchers.eq(booking.id),
+                org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void refusesToCancelPendingBookingWhileChannelResultIsUnknown() {
+        Booking booking = new Booking();
+        booking.id = 77L;
+        booking.userId = 1L;
+        booking.venueCustomerId = 501L;
+        booking.sessionSlotId = 11L;
+        booking.status = BookingStatus.PENDING_PAYMENT;
+        when(bookingMapper.selectById(77L)).thenReturn(booking);
+        when(paymentService.queryPayment(1L, 77L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.cancelByUser(1L, 77L))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.OPERATION_IN_PROGRESS.getDescription());
     }
 
     @Test
@@ -131,12 +216,26 @@ class BookingServiceImplTest {
         when(courtMapper.selectById(slot.courtId)).thenReturn(court);
         when(sportTypeMapper.selectById(slot.sportTypeId)).thenReturn(sport);
 
-        service.createOffline(slot.venueId, 11L, "线下用户", "13800000002");
+        service.createOffline(slot.venueId, 11L, "线下用户", "13800000002",
+                BookingPaymentStatus.PAID, null);
 
         ArgumentCaptor<Booking> bookingCaptor = ArgumentCaptor.forClass(Booking.class);
         verify(bookingMapper).insert(bookingCaptor.capture());
         assertThat(bookingCaptor.getValue().source).isEqualTo(BookingSource.OFFLINE);
         assertThat(bookingCaptor.getValue().serviceFeeRateBasisPoints).isZero();
+        assertThat(bookingCaptor.getValue().paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
+    }
+
+    @Test
+    void requiresOfflinePaymentStatusAndPaymentChangeReason() {
+        assertThatThrownBy(() -> service.createOffline(21L, 11L, "线下用户", "13800000002", null, null))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
+        assertThatThrownBy(() -> service.updateOfflinePaymentStatus(
+                21L, 99L, 7L, BookingPaymentStatus.PAID, " "))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
+        verify(redisLockService, never()).execute(any(), any());
     }
 
     @Test
@@ -167,6 +266,205 @@ class BookingServiceImplTest {
                 .isInstanceOf(ApiException.class)
                 .hasMessage(ErrorCode.NOT_FOUND.getDescription());
         verify(bookingMapper, never()).updateById(booking);
+    }
+
+    @Test
+    void updatesOfflinePaymentStatusThroughAllowedPathsAndWritesLogs() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.UNRECORDED);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        service.updateOfflinePaymentStatus(21L, 99L, 7L, BookingPaymentStatus.UNPAID, " 补录未收款 ");
+        service.updateOfflinePaymentStatus(21L, 99L, 7L, BookingPaymentStatus.PAID, " 确认已收款 ");
+        booking.status = BookingStatus.CANCELLED;
+        service.updateOfflinePaymentStatus(21L, 99L, 7L, BookingPaymentStatus.REFUNDED, " 线下已退款 ");
+
+        assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.REFUNDED);
+        ArgumentCaptor<BookingPaymentStatusLog> logCaptor = ArgumentCaptor.forClass(BookingPaymentStatusLog.class);
+        verify(bookingPaymentStatusLogMapper, times(3)).insert(logCaptor.capture());
+        assertThat(logCaptor.getAllValues()).extracting(log -> log.reason)
+                .containsExactly("补录未收款", "确认已收款", "线下已退款");
+        assertThat(logCaptor.getAllValues().get(0).operatorAdminId).isEqualTo(99L);
+    }
+
+    @Test
+    void rejectsIllegalOfflinePaymentStatusTransitionWithoutLog() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAID);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.updateOfflinePaymentStatus(
+                21L, 99L, 7L, BookingPaymentStatus.REFUNDED, "尚未取消"))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
+        verify(bookingPaymentStatusLogMapper, never()).insert((BookingPaymentStatusLog) any());
+    }
+
+    @Test
+    void cancelsOfflineBookingWithoutPaymentOrRefundSideEffects() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAID);
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        service.cancelByVenue(21L, 7L, "客户取消", false, true);
+
+        assertThat(booking.status).isEqualTo(BookingStatus.CANCELLED);
+        assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
+        verify(scheduleService).releaseBookingSlot(11L);
+        verify(paymentService, never()).refundAndNotify(any(), any());
+    }
+
+    @Test
+    void rejectsOfflineCancellationWithOnlyOnlineCancellationPermission() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAID);
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.cancelByVenue(21L, 7L, "客户取消", true, false))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.FORBIDDEN.getDescription());
+        verify(redisLockService, never()).execute(any(), any());
+    }
+
+    @Test
+    void allowsOnlineCancellationWithOnlyOnlineCancellationPermission() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAID);
+        booking.source = BookingSource.ONLINE;
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        service.cancelByVenue(21L, 7L, "客户取消", true, false);
+
+        assertThat(booking.status).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    void rejectsOnlineCancellationWithOnlyOfflineEditPermission() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAID);
+        booking.source = BookingSource.ONLINE;
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.cancelByVenue(21L, 7L, "客户取消", false, true))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.FORBIDDEN.getDescription());
+        verify(redisLockService, never()).execute(any(), any());
+    }
+
+    @Test
+    void deduplicatesAndLocksBatchSlotsInStableOrder() {
+        LocalDate firstDate = LocalDate.now().plusDays(2);
+        LocalDate secondDate = firstDate.plusDays(1);
+        SessionSlot template = datedSlot(90L, firstDate, SessionSlotStatus.OPEN, 6000);
+        SessionSlot firstSlot = datedSlot(30L, firstDate, SessionSlotStatus.OPEN, 6000);
+        SessionSlot secondSlot = datedSlot(20L, secondDate, SessionSlotStatus.OPEN, 6000);
+        when(sessionSlotMapper.selectById(90L)).thenReturn(template);
+        when(venueService.getVenue(21L)).thenReturn(venue(0));
+        when(bookingMapper.selectTemplateSlots(anyLong(), any())).thenReturn(List.of(firstSlot, secondSlot));
+        when(bookingMapper.selectSlotsForUpdate(List.of(20L, 30L))).thenReturn(List.of(secondSlot, firstSlot));
+        when(courtMapper.selectById(31L)).thenReturn(court(31L));
+        when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
+        long[] bookingId = {100L};
+        doAnswer(invocation -> {
+            ((Booking) invocation.getArgument(0)).id = bookingId[0]++;
+            return 1;
+        }).when(bookingMapper).insert((Booking) any(Booking.class));
+
+        List<Booking> result = service.createOfflineBatch(21L, 90L,
+                List.of(secondDate, firstDate, secondDate), "客户", "13800000000",
+                BookingPaymentStatus.UNPAID, null);
+
+        assertThat(result).extracting(booking -> booking.startAt)
+                .containsExactly(firstSlot.startAt, secondSlot.startAt);
+        verify(bookingMapper).selectTemplateSlots(90L, List.of(firstDate, secondDate));
+        verify(bookingMapper).selectSlotsForUpdate(List.of(20L, 30L));
+        ArgumentCaptor<List<String>> lockCaptor = ArgumentCaptor.forClass(List.class);
+        verify(redisLockService).execute(lockCaptor.capture(), any());
+        assertThat(lockCaptor.getValue()).containsExactly(
+                "sports-booking:lock:session-slot:20", "sports-booking:lock:session-slot:30");
+    }
+
+    @Test
+    void returnsEveryBatchConflictBeforeCreatingAnything() {
+        LocalDate firstDate = LocalDate.now().plusDays(2);
+        LocalDate missingDate = firstDate.plusDays(1);
+        LocalDate thirdDate = firstDate.plusDays(2);
+        SessionSlot template = datedSlot(90L, firstDate, SessionSlotStatus.OPEN, 6000);
+        SessionSlot busySlot = datedSlot(30L, firstDate, SessionSlotStatus.BOOKED, 6000);
+        SessionSlot openSlot = datedSlot(40L, thirdDate, SessionSlotStatus.OPEN, 6000);
+        when(sessionSlotMapper.selectById(90L)).thenReturn(template);
+        when(venueService.getVenue(21L)).thenReturn(venue(0));
+        when(bookingMapper.selectTemplateSlots(anyLong(), any())).thenReturn(List.of(busySlot, openSlot));
+
+        ApiException exception = catchThrowableOfType(() -> service.createOfflineBatch(21L, 90L,
+                List.of(firstDate, missingDate, thirdDate), "客户", "13800000000",
+                BookingPaymentStatus.PAID, null), ApiException.class);
+
+        assertThat(exception.getCode()).isEqualTo(ErrorCode.BATCH_SLOT_CONFLICT);
+        assertThat(exception.getData()).isEqualTo(List.of(firstDate, missingDate));
+        verify(redisLockService, never()).execute(any(), any());
+        verify(bookingMapper, never()).insert(any(Booking.class));
+    }
+
+    @Test
+    void reschedulesOfflineBookingToSamePriceAndKeepsPaymentStatus() {
+        Booking booking = offlineBooking(7L, 30L, BookingPaymentStatus.PAID);
+        booking.amountFen = 6000;
+        booking.startAt = Instant.now().plusSeconds(7200);
+        SessionSlot original = datedSlot(30L, LocalDate.now().plusDays(1), SessionSlotStatus.BOOKED, 6000);
+        original.holdBookingId = 7L;
+        SessionSlot target = datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 6000);
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+        when(bookingMapper.selectSlotsForUpdate(List.of(20L, 30L))).thenReturn(List.of(target, original));
+        when(courtMapper.selectById(31L)).thenReturn(court(31L));
+        when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
+        doAnswer(invocation -> {
+            original.status = SessionSlotStatus.OPEN;
+            original.holdBookingId = null;
+            return null;
+        }).when(scheduleService).releaseBookingSlot(30L);
+
+        service.rescheduleOffline(21L, 99L, 7L, 20L, "客户调整日期");
+
+        assertThat(booking.sessionSlotId).isEqualTo(20L);
+        assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
+        assertThat(original.status).isEqualTo(SessionSlotStatus.OPEN);
+        assertThat(target.status).isEqualTo(SessionSlotStatus.BOOKED);
+        verify(scheduleService).releaseBookingSlot(30L);
+        ArgumentCaptor<BookingRescheduleLog> logCaptor = ArgumentCaptor.forClass(BookingRescheduleLog.class);
+        verify(bookingRescheduleLogMapper).insert(logCaptor.capture());
+        assertThat(logCaptor.getValue().originalSessionSlotId).isEqualTo(30L);
+        assertThat(logCaptor.getValue().newSessionSlotId).isEqualTo(20L);
+        assertThat(logCaptor.getValue().operatorAdminId).isEqualTo(99L);
+    }
+
+    @Test
+    void rejectsOnlineOfflineReschedule() {
+        Booking booking = offlineBooking(7L, 30L, BookingPaymentStatus.PAID);
+        booking.source = BookingSource.ONLINE;
+        stubReschedule(booking, datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 6000));
+
+        assertThatThrownBy(() -> service.rescheduleOffline(21L, 99L, 7L, 20L, "调整"))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
+    }
+
+    @Test
+    void rejectsCrossVenueOfflineReschedule() {
+        Booking booking = offlineBooking(7L, 30L, BookingPaymentStatus.PAID);
+        SessionSlot target = datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 6000);
+        target.venueId = 22L;
+        stubReschedule(booking, target);
+
+        assertThatThrownBy(() -> service.rescheduleOffline(21L, 99L, 7L, 20L, "调整"))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.NOT_FOUND.getDescription());
+    }
+
+    @Test
+    void rejectsDifferentPriceOfflineReschedule() {
+        Booking booking = offlineBooking(7L, 30L, BookingPaymentStatus.PAID);
+        booking.amountFen = 6000;
+        stubReschedule(booking, datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 7000));
+
+        assertThatThrownBy(() -> service.rescheduleOffline(21L, 99L, 7L, 20L, "调整"))
+                .isInstanceOf(ApiException.class)
+                .hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
     }
 
     @Test
@@ -212,6 +510,53 @@ class BookingServiceImplTest {
         verify(bookingMapper).selectServiceFeeBookings(isNull(), startCaptor.capture(), endCaptor.capture());
         assertThat(startCaptor.getValue()).isEqualTo(Instant.parse("2026-08-31T16:00:00Z"));
         assertThat(endCaptor.getValue()).isEqualTo(Instant.parse("2026-09-30T16:00:00Z"));
+    }
+
+    private void stubReschedule(Booking booking, SessionSlot target) {
+        booking.amountFen = booking.amountFen == null ? 6000 : booking.amountFen;
+        booking.startAt = Instant.now().plusSeconds(7200);
+        SessionSlot original = datedSlot(booking.sessionSlotId, LocalDate.now().plusDays(1),
+                SessionSlotStatus.BOOKED, booking.amountFen);
+        original.holdBookingId = booking.id;
+        when(bookingMapper.selectById(booking.id)).thenReturn(booking);
+        when(bookingMapper.selectForUpdate(booking.id)).thenReturn(booking);
+        when(bookingMapper.selectSlotsForUpdate(List.of(target.id, original.id))).thenReturn(List.of(target, original));
+    }
+
+    private Booking offlineBooking(long id, long sessionSlotId, BookingPaymentStatus paymentStatus) {
+        Booking booking = new Booking();
+        booking.id = id;
+        booking.venueId = 21L;
+        booking.sessionSlotId = sessionSlotId;
+        booking.source = BookingSource.OFFLINE;
+        booking.status = BookingStatus.CONFIRMED;
+        booking.paymentStatus = paymentStatus;
+        booking.amountFen = 6000;
+        booking.startAt = Instant.now().plusSeconds(7200);
+        return booking;
+    }
+
+    private SessionSlot datedSlot(long id, LocalDate date, SessionSlotStatus status, int priceFen) {
+        SessionSlot slot = openSlot(date.atTime(10, 0).atZone(BusinessConstants.BUSINESS_ZONE).toInstant());
+        slot.id = id;
+        slot.slotDate = date;
+        slot.status = status;
+        slot.priceFen = priceFen;
+        return slot;
+    }
+
+    private Court court(long id) {
+        Court court = new Court();
+        court.id = id;
+        court.name = "篮球 1 号场";
+        return court;
+    }
+
+    private SportType sport(long id) {
+        SportType sport = new SportType();
+        sport.id = id;
+        sport.name = "篮球";
+        return sport;
     }
 
     private SessionSlot openSlot(Instant startAt) {

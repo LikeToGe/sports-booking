@@ -2,6 +2,7 @@ package com.sportsbooking.admin.server.controller.schedule;
 
 import com.sportsbooking.admin.server.api.ApiResponse;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
+import com.sportsbooking.admin.base.enums.VenuePermission;
 import com.sportsbooking.admin.biz.pojo.request.CloseDayRequest;
 import com.sportsbooking.admin.biz.pojo.request.CopyDayRequest;
 import com.sportsbooking.admin.biz.pojo.request.ExtraSlotCreateRequest;
@@ -46,7 +47,8 @@ public class ScheduleController {
     */
     @GetMapping("/weekly-slots/list")
     public ApiResponse<List<WeeklySlotVO>> listWeeklySlots() {
-        return ApiResponse.success(scheduleService.listWeekly(venuePrincipal().getVenueId()).stream()
+        return ApiResponse.success(scheduleService.listWeekly(
+                venuePrincipal(VenuePermission.SCHEDULE_VIEW).getVenueId()).stream()
                 .map(WeeklySlotVO::from).toList());
     }
 
@@ -61,7 +63,7 @@ public class ScheduleController {
     @PostMapping("/weekly-slots/create")
     public ApiResponse<WeeklySlotVO> createWeeklySlot(@RequestBody WeeklySlotSaveRequest body) {
         return ApiResponse.success(WeeklySlotVO.from(scheduleService.saveWeekly(
-                venuePrincipal().getVenueId(), null, body
+                venuePrincipal(VenuePermission.SCHEDULE_EDIT).getVenueId(), null, body
         )));
     }
 
@@ -78,7 +80,7 @@ public class ScheduleController {
     public ApiResponse<WeeklySlotVO> updateWeeklySlot(
             @PathVariable long weeklySlotId, @RequestBody WeeklySlotSaveRequest body) {
         return ApiResponse.success(WeeklySlotVO.from(scheduleService.saveWeekly(
-                venuePrincipal().getVenueId(), weeklySlotId, body
+                venuePrincipal(VenuePermission.SCHEDULE_EDIT).getVenueId(), weeklySlotId, body
         )));
     }
 
@@ -92,7 +94,7 @@ public class ScheduleController {
     */
     @DeleteMapping("/weekly-slots/{weeklySlotId}/disable")
     public ApiResponse<Boolean> disableWeeklySlot(@PathVariable long weeklySlotId) {
-        scheduleService.disableWeekly(venuePrincipal().getVenueId(), weeklySlotId);
+        scheduleService.disableWeekly(venuePrincipal(VenuePermission.SCHEDULE_EDIT).getVenueId(), weeklySlotId);
         return ApiResponse.success(true);
     }
 
@@ -107,7 +109,7 @@ public class ScheduleController {
     @PostMapping("/weekly-slots/copy-day")
     public ApiResponse<List<WeeklySlotVO>> copyDay(@RequestBody CopyDayRequest body) {
         return ApiResponse.success(scheduleService.copyDay(
-                venuePrincipal().getVenueId(), body.getSourceDay(), body.getTargetDays()
+                venuePrincipal(VenuePermission.SCHEDULE_EDIT).getVenueId(), body.getSourceDay(), body.getTargetDays()
         ).stream().map(WeeklySlotVO::from).toList());
     }
 
@@ -116,13 +118,16 @@ public class ScheduleController {
      * 创建时间: 2026/08/28 16:29
      *
      * @param date 日期
+     * @param sportTypeId 运动类型 ID，为空时查询全部运动
      * @return 具体场次列表
      * @author gjm
      */
     @GetMapping("/sessions/list")
     public ApiResponse<List<SessionSlotVO>> listSessions(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.success(scheduleService.listDay(venuePrincipal().getVenueId(), date));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long sportTypeId) {
+        return ApiResponse.success(scheduleService.listDay(
+                venuePrincipal(VenuePermission.SESSION_VIEW).getVenueId(), date, sportTypeId));
     }
 
     /**
@@ -136,7 +141,7 @@ public class ScheduleController {
     @PostMapping("/sessions/create")
     public ApiResponse<SessionSlotResultVO> createExtraSession(@RequestBody ExtraSlotCreateRequest body) {
         return ApiResponse.success(SessionSlotResultVO.from(
-                scheduleService.createExtra(venuePrincipal().getVenueId(), body)));
+                scheduleService.createExtra(venuePrincipal(VenuePermission.SESSION_EDIT).getVenueId(), body)));
     }
 
     /**
@@ -152,7 +157,7 @@ public class ScheduleController {
     public ApiResponse<SessionSlotResultVO> updateSession(
             @PathVariable long sessionSlotId, @RequestBody ExtraSlotCreateRequest body) {
         return ApiResponse.success(SessionSlotResultVO.from(scheduleService.updateSession(
-                venuePrincipal().getVenueId(), sessionSlotId, body)));
+                venuePrincipal(VenuePermission.SESSION_EDIT).getVenueId(), sessionSlotId, body)));
     }
 
     /**
@@ -165,7 +170,7 @@ public class ScheduleController {
     */
     @PostMapping("/sessions/{sessionSlotId}/close")
     public ApiResponse<Boolean> closeSession(@PathVariable long sessionSlotId) {
-        scheduleService.closeSlot(venuePrincipal().getVenueId(), sessionSlotId);
+        scheduleService.closeSlot(venuePrincipal(VenuePermission.SESSION_EDIT).getVenueId(), sessionSlotId);
         return ApiResponse.success(true);
     }
 
@@ -179,7 +184,7 @@ public class ScheduleController {
      */
     @PostMapping("/sessions/{sessionSlotId}/open")
     public ApiResponse<Boolean> openSession(@PathVariable long sessionSlotId) {
-        scheduleService.openSlot(venuePrincipal().getVenueId(), sessionSlotId);
+        scheduleService.openSlot(venuePrincipal(VenuePermission.SESSION_EDIT).getVenueId(), sessionSlotId);
         return ApiResponse.success(true);
     }
 
@@ -193,7 +198,7 @@ public class ScheduleController {
     */
     @PostMapping("/sessions/close-day")
     public ApiResponse<Boolean> closeDay(@RequestBody CloseDayRequest body) {
-        scheduleService.closeDay(venuePrincipal().getVenueId(), body.getDate());
+        scheduleService.closeDay(venuePrincipal(VenuePermission.SESSION_EDIT).getVenueId(), body.getDate());
         return ApiResponse.success(true);
     }
 
@@ -204,7 +209,7 @@ public class ScheduleController {
      * @return 当前场馆管理员身份
      * @author gjm
      */
-    private AdminPrincipal venuePrincipal() {
-        return Principals.venue();
+    private AdminPrincipal venuePrincipal(VenuePermission permission) {
+        return Principals.venue(permission);
     }
 }

@@ -2,12 +2,14 @@
 import { onMounted, reactive, ref } from "vue";
 import { ImageUp, Save } from "@lucide/vue";
 import { api } from "../api";
+import { hasPermission } from "../auth";
 import type { Venue } from "../types";
 
 const form = reactive<Partial<Venue>>({});
 const error = ref("");
 const saved = ref(false);
 const file = ref<File>();
+const canEdit = hasPermission("VENUE_PROFILE_EDIT");
 
 async function load() {
   try {
@@ -18,6 +20,7 @@ async function load() {
 }
 
 async function save() {
+  if (!canEdit) return;
   error.value = "";
   saved.value = false;
   try {
@@ -63,6 +66,7 @@ onMounted(load);
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
     <p v-if="saved" class="saved-message" role="status">资料已保存</p>
     <form class="form-panel profile-form" @submit.prevent="save">
+      <fieldset class="profile-fields" :disabled="!canEdit">
       <div class="form-grid">
         <label class="field"><span>场馆名称</span><input v-model.trim="form.name" required></label>
         <label class="field"><span>城市</span><input v-model.trim="form.city" required></label>
@@ -81,7 +85,8 @@ onMounted(load);
         <span>{{ file?.name || "选择场馆封面" }}</span>
         <input type="file" accept="image/jpeg,image/png,image/webp" @change="selectFile">
       </label>
-      <button class="button" type="submit"><Save :size="18" aria-hidden="true" />保存资料</button>
+      <button v-if="canEdit" class="button" type="submit"><Save :size="18" aria-hidden="true" />保存资料</button>
+      </fieldset>
     </form>
   </section>
 </template>
@@ -90,6 +95,8 @@ onMounted(load);
 .profile-form {
   max-width: 64rem;
 }
+
+.profile-fields { display: grid; gap: var(--space-lg); margin: 0; padding: 0; border: 0; }
 
 .file-control {
   display: flex;

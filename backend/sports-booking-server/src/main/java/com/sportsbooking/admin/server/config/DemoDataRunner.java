@@ -7,6 +7,7 @@ import com.sportsbooking.admin.biz.service.BookingService;
 import com.sportsbooking.admin.base.mapper.BookingMapper;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
 import com.sportsbooking.admin.base.enums.SessionSlotStatus;
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import com.sportsbooking.admin.base.enums.VenueStatus;
 import com.sportsbooking.admin.biz.pojo.request.VenueSaveRequest;
 import com.sportsbooking.admin.biz.service.VenueService;
@@ -138,7 +139,7 @@ public class DemoDataRunner implements CommandLineRunner {
                 if (session.getStatus() == SessionSlotStatus.OPEN
                         && OffsetDateTime.parse(session.getStartAt()).toInstant().isAfter(earliestStart)) {
                     bookingService.createOffline(venue.id, session.getId(),
-                            "本地演示用户", "13800000000");
+                            "本地演示用户", "13800000000", BookingPaymentStatus.UNPAID, null);
                     return;
                 }
             }

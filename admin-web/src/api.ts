@@ -8,6 +8,12 @@ interface Envelope<T> {
   msg: string;
 }
 
+export class ApiError<T = unknown> extends Error {
+  constructor(message: string, public readonly data?: T) {
+    super(message);
+  }
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (!(options.body instanceof FormData)) {
@@ -20,7 +26,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const body = (await response.json().catch(() => ({}))) as Envelope<T>;
   if (!response.ok || body.code !== 0) {
     if (response.status === 401) clearSession();
-    throw new Error(body.msg || `请求失败（${response.status}）`);
+    throw new ApiError(body.msg || `请求失败（${response.status}）`, body.data);
   }
   return body.data as T;
 }

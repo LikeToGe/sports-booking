@@ -64,4 +64,20 @@ public class ApiResponse<T> {
                 .setCode(FAILED_CODE)
                 .setMsg(msg);
     }
+
+    /**
+     * 功能描述: 包装带结构化详情的失败响应。
+     *
+     * @param msg 错误提示
+     * @param data 错误详情
+     * @param <T> 详情类型
+     * @return 统一失败响应
+     * @author gjm
+     */
+    public static <T> ApiResponse<T> failed(String msg, T data) {
+        return new ApiResponse<T>()
+                .setData(data)
+                .setCode(FAILED_CODE)
+                .setMsg(msg);
+    }
 }

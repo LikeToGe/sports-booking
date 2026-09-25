@@ -1,5 +1,6 @@
 package com.sportsbooking.admin.biz.pojo.request;
 
+import com.sportsbooking.admin.base.enums.BookingPaymentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,4 +39,18 @@ public class OfflineBookingCreateRequest {
     @Schema(description = "联系人手机号")
     @ApiModelProperty(value = "联系人手机号")
     private String contactPhone;
+
+    /**
+     * 线下登记收款状态
+     */
+    @Schema(description = "线下登记收款状态，仅允许 UNPAID 或 PAID")
+    @ApiModelProperty(value = "线下登记收款状态，仅允许 UNPAID 或 PAID")
+    private BookingPaymentStatus paymentStatus;
+
+    /**
+     * 可选的本场馆顾客档案 ID
+     */
+    @Schema(description = "可选的本场馆顾客档案 ID")
+    @ApiModelProperty(value = "可选的本场馆顾客档案 ID")
+    private Long venueCustomerId;
 }

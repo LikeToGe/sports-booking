@@ -22,12 +22,20 @@ public class Refund {
     public Long bookingId;
     /** 关联原支付记录 ID。 */
     public Long paymentId;
+    /** 稳定退款业务号。 */
+    public String refundNo;
     /** 退款金额，单位为分。 */
     public Integer amountFen;
     /** 退款原因。 */
     public String reason;
     /** 退款状态。 */
     public RefundStatus status;
+    /** 已发起退款次数。 */
+    public Integer retryCount;
+    /** 下次自动重试时间。 */
+    public Instant nextRetryAt;
+    /** 最近失败原因。 */
+    public String lastFailureReason;
     /** 退款完成时间。 */
     public Instant refundedAt;
     /** 创建时间。 */
