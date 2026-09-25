@@ -1,756 +1,5296 @@
+---
 openapi: 3.1.0
 info:
-  title: 约场 API
-  version: 0.1.0
-  description: 本地 Mock MVP；具体时间使用 UTC ISO 8601，页面按 Asia/Shanghai 展示。
+  title: OpenAPI definition
+  version: v0
 servers:
-  - url: http://127.0.0.1:8089/api
-tags:
-  - name: Auth
-  - name: Platform
-  - name: VenueAdmin
-  - name: Mini
-  - name: Staff
+- url: http://127.0.0.1:8089/api
+  description: Generated server url
 paths:
-  /auth/admin/login:
-    post:
-      tags: [Auth]
-      summary: 后台登录
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [username, password]
-              properties:
-                username: { type: string }
-                password: { type: string }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /auth/admin/logout:
-    post:
-      tags: [Auth]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /auth/mini/mock-login:
-    post:
-      tags: [Auth]
-      summary: 小程序模拟登录
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [code]
-              properties:
-                code: { type: string }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /auth/mini/logout:
-    post:
-      tags: [Auth]
-      security: [{ MiniToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /auth/mini/profile/detail:
-    get:
-      tags: [Auth]
-      security: [{ MiniToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /auth/mini/profile/update:
+  "/venue-admin/weekly-slots/{weeklySlotId}/update":
     put:
-      tags: [Auth]
-      security: [{ MiniToken: [] }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [contactName, phone]
-              properties:
-                contactName: { type: string }
-                phone: { type: string }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/list:
-    get:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/create:
-    post:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 创建场馆及首个管理员
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [venue, adminUsername, adminPassword]
-              properties:
-                venue: { $ref: '#/components/schemas/VenueWrite' }
-                adminUsername: { type: string }
-                adminPassword: { type: string }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/{venueId}/status:
-    patch:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/VenueId' }]
-      requestBody: { $ref: '#/components/requestBodies/Status' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/{venueId}/update:
-    put:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 更新场馆资料和预约规则
-      parameters: [{ $ref: '#/components/parameters/VenueId' }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/VenueWrite' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/{venueId}/admin-password:
-    patch:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 重置场馆管理员密码
-      parameters: [{ $ref: '#/components/parameters/VenueId' }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [password]
-              properties:
-                password: { type: string }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/{venueId}/admin:
-    put:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 更新场馆管理员用户名及可选新密码
-      parameters: [{ $ref: '#/components/parameters/VenueId' }]
-      requestBody: { $ref: '#/components/requestBodies/VenueAdmin' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/venues/{venueId}/service-fee-rate:
-    patch:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 更新场馆平台服务费率
-      parameters: [{ $ref: '#/components/parameters/VenueId' }]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [serviceFeeRatePercent]
-              properties:
-                serviceFeeRatePercent:
-                  type: number
-                  minimum: 0
-                  maximum: 30
-                  multipleOf: 0.01
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/sports/list:
-    get:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/sports/create:
-    post:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/Name' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/sports/{sportTypeId}:
-    put:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 更新平台运动类型名称
+      tags:
+      - schedule-controller
+      operationId: updateWeeklySlot
       parameters:
-        - name: sportTypeId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody: { $ref: '#/components/requestBodies/Name' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/sports/{sportTypeId}/status:
-    patch:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      parameters:
-        - name: sportTypeId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody: { $ref: '#/components/requestBodies/Status' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/reports/operations:
-    get:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 查询平台经营总报表，可筛选单个场馆
-      parameters:
-        - { name: venueId, in: query, schema: { type: integer, format: int64 } }
-        - { $ref: '#/components/parameters/StartDate' }
-        - { $ref: '#/components/parameters/EndDate' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /platform/reports/service-fees:
-    get:
-      tags: [Platform]
-      security: [{ AdminToken: [] }]
-      summary: 查询平台月度服务费，可筛选单个场馆
-      parameters:
-        - { name: venueId, in: query, schema: { type: integer, format: int64 } }
-        - { $ref: '#/components/parameters/BillingMonth' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/profile/detail:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/profile/update:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody:
+      - name: weeklySlotId
+        in: path
         required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/VenueWrite' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/profile/cover:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
             schema:
-              type: object
-              required: [file]
-              properties:
-                file: { type: string, format: binary }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sports/list:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sports/create:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/Name' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sports/{sportTypeId}:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 更新本场馆运动类型名称
-      parameters:
-        - name: sportTypeId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody: { $ref: '#/components/requestBodies/Name' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/courts/list:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/courts/create:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/Court' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/courts/{courtId}:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters:
-        - name: courtId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody: { $ref: '#/components/requestBodies/Court' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/courts/{courtId}/image:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters:
-        - name: courtId
-          in: path
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody:
+              "$ref": "#/components/schemas/WeeklySlotSaveRequest"
         required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required: [file]
-              properties:
-                file: { type: string, format: binary }
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/weekly-slots/list:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/weekly-slots/create:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/WeeklySlot' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/weekly-slots/{weeklySlotId}/update:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseWeeklySlotVO"
+  "/venue-admin/sports/{sportTypeId}":
     put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/WeeklySlotId' }]
-      requestBody: { $ref: '#/components/requestBodies/WeeklySlot' }
+      tags:
+      - venue-admin-controller
+      operationId: updateSportName
+      parameters:
+      - name: sportTypeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/weekly-slots/{weeklySlotId}/disable:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
+  "/venue-admin/sessions/{sessionSlotId}":
+    put:
+      tags:
+      - schedule-controller
+      operationId: updateSession
+      parameters:
+      - name: sessionSlotId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ExtraSlotCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSessionSlotResultVO"
+  "/venue-admin/roles/{roleId}":
+    put:
+      tags:
+      - permission-controller
+      operationId: updateRole
+      parameters:
+      - name: roleId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RoleSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueRoleVO"
     delete:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/WeeklySlotId' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/weekly-slots/copy-day:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody:
+      tags:
+      - permission-controller
+      operationId: deleteRole
+      parameters:
+      - name: roleId
+        in: path
         required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/recharge-plans/{planId}":
+    put:
+      tags:
+      - funds-controller
+      operationId: updateVenuePlan
+      parameters:
+      - name: planId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RechargePlanRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseRechargePlanVO"
+  "/venue-admin/profile/update":
+    put:
+      tags:
+      - venue-admin-controller
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VenueSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueVO"
+  "/venue-admin/employees/{employeeId}":
+    put:
+      tags:
+      - venue-admin-controller
+      operationId: updateEmployeeName
+      parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
+  "/venue-admin/employees/{employeeId}/roles":
+    get:
+      tags:
+      - permission-controller
+      operationId: listEmployeeRoles
+      parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListLong"
+    put:
+      tags:
+      - permission-controller
+      operationId: replaceEmployeeRoles
+      parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EmployeeRolesRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/courts/{courtId}":
+    put:
+      tags:
+      - venue-admin-controller
+      operationId: updateCourt
+      parameters:
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CourtSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseCourtVO"
+  "/venue-admin/bookings/{bookingId}/payment-status":
+    put:
+      tags:
+      - venue-booking-controller
+      operationId: updateOfflinePaymentStatus
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OfflineBookingPaymentStatusUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/venue-admin/bookings/{bookingId}/contact":
+    put:
+      tags:
+      - venue-booking-controller
+      operationId: updateOfflineContact
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookingContactUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/platform/venues/{venueId}/update":
+    put:
+      tags:
+      - platform-venue-controller
+      operationId: updateVenue
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VenueSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueVO"
+  "/platform/venues/{venueId}/admin":
+    put:
+      tags:
+      - platform-venue-controller
+      operationId: updateVenueAdmin
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VenueAdminUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/platform/sports/{sportTypeId}":
+    put:
+      tags:
+      - platform-venue-controller
+      operationId: updateSportName_1
+      parameters:
+      - name: sportTypeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
+  "/auth/mini/profile/update":
+    put:
+      tags:
+      - auth-controller
+      operationId: updateMiniProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UserProfileUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseUserProfileVO"
+  "/venue-admin/weekly-slots/create":
+    post:
+      tags:
+      - schedule-controller
+      operationId: createWeeklySlot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/WeeklySlotSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseWeeklySlotVO"
+  "/venue-admin/weekly-slots/copy-day":
+    post:
+      tags:
+      - schedule-controller
+      operationId: copyDay
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CopyDayRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListWeeklySlotVO"
+  "/venue-admin/sports/create":
+    post:
+      tags:
+      - venue-admin-controller
+      operationId: createSport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
+  "/venue-admin/sessions/{sessionSlotId}/open":
+    post:
+      tags:
+      - schedule-controller
+      operationId: openSession
+      parameters:
+      - name: sessionSlotId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/sessions/{sessionSlotId}/close":
+    post:
+      tags:
+      - schedule-controller
+      operationId: closeSession
+      parameters:
+      - name: sessionSlotId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/sessions/create":
+    post:
+      tags:
+      - schedule-controller
+      operationId: createExtraSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ExtraSlotCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSessionSlotResultVO"
+  "/venue-admin/sessions/close-day":
+    post:
+      tags:
+      - schedule-controller
+      operationId: closeDay
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CloseDayRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/roles":
+    get:
+      tags:
+      - permission-controller
+      operationId: listRoles
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListVenueRoleVO"
+    post:
+      tags:
+      - permission-controller
+      operationId: createRole
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RoleSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueRoleVO"
+  "/venue-admin/recharges/{rechargeId}/reverse":
+    post:
+      tags:
+      - funds-controller
+      operationId: reverseRecharge
+      parameters:
+      - name: rechargeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RechargeReverseRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/venue-admin/recharge-plans":
+    get:
+      tags:
+      - funds-controller
+      operationId: listVenuePlans
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListRechargePlanVO"
+    post:
+      tags:
+      - funds-controller
+      operationId: createVenuePlan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RechargePlanRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseRechargePlanVO"
+  "/venue-admin/profile/cover":
+    post:
+      tags:
+      - venue-admin-controller
+      operationId: uploadCover
+      requestBody:
         content:
           application/json:
             schema:
               type: object
-              required: [sourceDay, targetDays]
               properties:
-                sourceDay: { type: integer, minimum: 1, maximum: 7 }
-                targetDays: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/list:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseCoverUploadVO"
+  "/venue-admin/members/{customerId}/recharges":
     get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/Date' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/create:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/SessionSlot' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/{sessionSlotId}:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 编辑任意状态的具体场次，不改写预约快照
-      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
-      requestBody: { $ref: '#/components/requestBodies/SessionSlot' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/{sessionSlotId}/open:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 重新开启未来且未冲突的已关闭场次
-      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/{sessionSlotId}/close:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 关闭无有效预约的具体场次
-      parameters: [{ $ref: '#/components/parameters/SessionSlotId' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/sessions/close-day:
-    post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 关闭指定日期内无有效预约的具体场次
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/bookings/list:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/OptionalDate' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/reports/operations:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 查询当前场馆经营报表
+      tags:
+      - funds-controller
+      operationId: listAdminRecharges
       parameters:
-        - { $ref: '#/components/parameters/StartDate' }
-        - { $ref: '#/components/parameters/EndDate' }
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/reports/service-fees:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 查询当前场馆月度服务费
-      parameters: [{ $ref: '#/components/parameters/BillingMonth' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/bookings/create:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListMemberRechargeVO"
     post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 创建线下预约
+      tags:
+      - funds-controller
+      operationId: createAdminRecharge
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AdminRechargeRequest"
+        required: true
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/bookings/{bookingId}/contact:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 修改任意状态线下预约的联系人资料
-      parameters: [{ $ref: '#/components/parameters/BookingId' }]
-      requestBody: { $ref: '#/components/requestBodies/BookingContact' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/bookings/{bookingId}/cancel:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/venue-admin/employees/{employeeId}/binding-code":
     post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/BookingId' }]
+      tags:
+      - venue-admin-controller
+      operationId: issueBindingCode
+      parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/employees/list:
-    get:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/employees/create:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeBindingVO"
+  "/venue-admin/employees/create":
     post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      requestBody: { $ref: '#/components/requestBodies/Name' }
+      tags:
+      - venue-admin-controller
+      operationId: createEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/employees/{employeeId}:
-    put:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      summary: 更新员工姓名
-      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
-      requestBody: { $ref: '#/components/requestBodies/Name' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/employees/{employeeId}/binding-code:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeBindingVO"
+  "/venue-admin/courts/{courtId}/image":
     post:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
+      tags:
+      - venue-admin-controller
+      operationId: uploadCourtImage
+      parameters:
+      - name: courtId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /venue-admin/employees/{employeeId}/status:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseCourtVO"
+  "/venue-admin/courts/create":
+    post:
+      tags:
+      - venue-admin-controller
+      operationId: createCourt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CourtSaveRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseCourtVO"
+  "/venue-admin/bookings/{bookingId}/reschedule":
+    post:
+      tags:
+      - venue-booking-controller
+      operationId: rescheduleOfflineBooking
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OfflineBookingRescheduleRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/venue-admin/bookings/{bookingId}/cancel":
+    post:
+      tags:
+      - venue-booking-controller
+      operationId: cancelBooking
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookingCancelRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/venue-admin/bookings/offline":
+    post:
+      tags:
+      - venue-booking-controller
+      operationId: createOfflineBooking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OfflineBookingCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/venue-admin/bookings/offline/batch":
+    post:
+      tags:
+      - venue-booking-controller
+      operationId: createOfflineBookings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OfflineBookingBatchCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListBookingVO"
+  "/venue-admin/bookings/create":
+    post:
+      tags:
+      - venue-booking-controller
+      operationId: createOfflineBookingLegacy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/OfflineBookingCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/staff/web-login-tickets/{ticket}/confirm":
+    post:
+      tags:
+      - permission-controller
+      operationId: confirmWebLoginTicket
+      parameters:
+      - name: ticket
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/WebLoginConfirmRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/staff/verifications/verify":
+    post:
+      tags:
+      - staff-verification-controller
+      operationId: verify
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VerificationRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVerificationResultVO"
+  "/staff/recharges":
+    post:
+      tags:
+      - funds-controller
+      operationId: createStaffRecharge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/StaffRechargeRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/platform/venues/create":
+    post:
+      tags:
+      - platform-venue-controller
+      operationId: createVenue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VenueCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueVO"
+  "/platform/sports/create":
+    post:
+      tags:
+      - platform-venue-controller
+      operationId: createSport_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NameRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
+  "/platform/refunds/{refundId}/retry":
+    post:
+      tags:
+      - funds-controller
+      operationId: retryPlatformRefund
+      parameters:
+      - name: refundId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseRefundVO"
+  "/mock/recharges/notify":
+    post:
+      tags:
+      - mock-funds-controller
+      operationId: notifyRecharge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MockFundsNotificationRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/mock/payments/notify":
+    post:
+      tags:
+      - mock-funds-controller
+      operationId: notifyPayment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MockFundsNotificationRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/mini/staff/bind":
+    post:
+      tags:
+      - mini-venue-controller
+      operationId: bindEmployee
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EmployeeBindRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
+  "/mini/recharges/{rechargeId}/mock-pay":
+    post:
+      tags:
+      - funds-controller
+      operationId: mockPayRecharge
+      parameters:
+      - name: rechargeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/mini/recharges/create":
+    post:
+      tags:
+      - funds-controller
+      operationId: createMiniRecharge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MiniRechargeCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/mini/bookings/{bookingId}/payment-query":
+    post:
+      tags:
+      - mini-booking-controller
+      operationId: queryPayment
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/mini/bookings/{bookingId}/mock-pay":
+    post:
+      tags:
+      - mini-booking-controller
+      operationId: mockPay
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/mini/bookings/{bookingId}/cancel":
+    post:
+      tags:
+      - mini-booking-controller
+      operationId: cancelBooking_1
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/mini/bookings/create":
+    post:
+      tags:
+      - mini-booking-controller
+      operationId: createBooking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookingCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingVO"
+  "/auth/mini/mock-login":
+    post:
+      tags:
+      - auth-controller
+      operationId: loginMini
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/MiniLoginRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMiniLoginVO"
+  "/auth/mini/logout":
+    post:
+      tags:
+      - auth-controller
+      operationId: logoutMini
+      parameters:
+      - name: X-Mini-Token
+        in: header
+        description: 小程序会话令牌
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/auth/admin/web-login-tickets":
+    post:
+      tags:
+      - auth-controller
+      operationId: createWebLoginTicket
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseScanTicketVO"
+  "/auth/admin/web-login-tickets/{ticket}/consume":
+    post:
+      tags:
+      - auth-controller
+      operationId: consumeWebLoginTicket
+      parameters:
+      - name: ticket
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseAdminLoginVO"
+  "/auth/admin/logout":
+    post:
+      tags:
+      - auth-controller
+      operationId: logoutAdmin
+      parameters:
+      - name: X-Admin-Token
+        in: header
+        description: 后台会话令牌
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/auth/admin/login":
+    post:
+      tags:
+      - auth-controller
+      operationId: loginAdmin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/AdminLoginRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseAdminLoginVO"
+  "/venue-admin/employees/{employeeId}/status":
     patch:
-      tags: [VenueAdmin]
-      security: [{ AdminToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/EmployeeId' }]
-      requestBody: { $ref: '#/components/requestBodies/Status' }
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/sports:
-    get:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/venues:
-    get:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
+      tags:
+      - venue-admin-controller
+      operationId: updateEmployeeStatus
       parameters:
-        - { name: keyword, in: query, schema: { type: string } }
-        - { name: sportTypeId, in: query, schema: { type: integer, format: int64 } }
-        - { $ref: '#/components/parameters/OptionalDate' }
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EnableStatusUpdateRequest"
+        required: true
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/venues/{venueId}:
-    get:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
+  "/platform/venues/{venueId}/status":
+    patch:
+      tags:
+      - platform-venue-controller
+      operationId: updateStatus
       parameters:
-        - { $ref: '#/components/parameters/VenueId' }
-        - { name: sportTypeId, in: query, schema: { type: integer, format: int64 } }
-        - { $ref: '#/components/parameters/OptionalDate' }
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/VenueStatusUpdateRequest"
+        required: true
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/bookings/list:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueVO"
+  "/platform/venues/{venueId}/service-fee-rate":
+    patch:
+      tags:
+      - platform-venue-controller
+      operationId: updateServiceFeeRate
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ServiceFeeRateUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponsePlatformVenueVO"
+  "/platform/venues/{venueId}/admin-password":
+    patch:
+      tags:
+      - platform-venue-controller
+      operationId: resetAdminPassword
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PasswordResetRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/platform/sports/{sportTypeId}/status":
+    patch:
+      tags:
+      - platform-venue-controller
+      operationId: updateSportStatus
+      parameters:
+      - name: sportTypeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/EnableStatusUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
+  "/venue-admin/weekly-slots/list":
     get:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
+      tags:
+      - schedule-controller
+      operationId: listWeeklySlots
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/bookings/create:
-    post:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
-      summary: 创建待支付预约并占位
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/bookings/{bookingId}:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListWeeklySlotVO"
+  "/venue-admin/sports/list":
     get:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/BookingId' }]
+      tags:
+      - venue-admin-controller
+      operationId: listSports
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/bookings/{bookingId}/mock-pay:
-    post:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/BookingId' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/bookings/{bookingId}/cancel:
-    post:
-      tags: [Mini]
-      security: [{ MiniToken: [] }]
-      parameters: [{ $ref: '#/components/parameters/BookingId' }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /mini/staff/bind:
-    post:
-      tags: [Staff]
-      security: [{ MiniToken: [] }]
-      responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /staff/verifications/records:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
+  "/venue-admin/sessions/list":
     get:
-      tags: [Staff]
-      security: [{ MiniToken: [] }]
+      tags:
+      - schedule-controller
+      operationId: listSessions
+      parameters:
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
       responses:
-        '200': { $ref: '#/components/responses/Success' }
-  /staff/verifications/verify:
-    post:
-      tags: [Staff]
-      security: [{ MiniToken: [] }]
-      summary: 二维码或短码核销
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListSessionSlotVO"
+  "/venue-admin/reports/service-fees":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getVenueServiceFees
+      parameters:
+      - name: billingMonth
+        in: query
+        required: true
+        schema:
+          type: string
       responses:
-        '200': { $ref: '#/components/responses/Success' }
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseServiceFeeSettlementVO"
+  "/venue-admin/reports/receipts":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: listReceipts
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListReportReceiptVO"
+  "/venue-admin/reports/operations":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getVenueReport
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
+  "/venue-admin/reports/member-flows":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: listMemberFlows
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListReportMemberFlowVO"
+  "/venue-admin/reports/dashboard":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getVenueDashboard
+      parameters:
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 7
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
+  "/venue-admin/reports/bookings":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: listBookings
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListReportBookingVO"
+  "/venue-admin/profile/detail":
+    get:
+      tags:
+      - venue-admin-controller
+      operationId: getProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueVO"
+  "/venue-admin/permissions":
+    get:
+      tags:
+      - permission-controller
+      operationId: listPermissions
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListPermissionCatalogVO"
+  "/venue-admin/members/{customerId}/balance-flows":
+    get:
+      tags:
+      - funds-controller
+      operationId: getAdminBalanceFlows
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
+  "/venue-admin/exports/receipts":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: exportReceipts
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: byte
+  "/venue-admin/exports/member-flows":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: exportMemberFlows
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: byte
+  "/venue-admin/exports/bookings":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: exportBookings
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: byte
+  "/venue-admin/employees/list":
+    get:
+      tags:
+      - venue-admin-controller
+      operationId: listEmployees
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListEmployeeVO"
+  "/venue-admin/customers/{customerId}":
+    get:
+      tags:
+      - customer-controller
+      operationId: getVenueCustomer
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
+  "/venue-admin/customers/list":
+    get:
+      tags:
+      - customer-controller
+      operationId: listVenueCustomers
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListVenueCustomerVO"
+  "/venue-admin/customers/identify":
+    get:
+      tags:
+      - customer-controller
+      operationId: identifyVenueCustomer
+      parameters:
+      - name: memberCode
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: phone
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
+  "/venue-admin/courts/list":
+    get:
+      tags:
+      - venue-admin-controller
+      operationId: listCourts
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListCourtVO"
+  "/venue-admin/bookings/list":
+    get:
+      tags:
+      - venue-booking-controller
+      operationId: listBookings_1
+      parameters:
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListVenueBookingVO"
+  "/staff/verifications/records":
+    get:
+      tags:
+      - staff-verification-controller
+      operationId: listRecords
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListStaffVerificationRecordVO"
+  "/staff/venues":
+    get:
+      tags:
+      - permission-controller
+      operationId: listStaffVenues
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListStaffVenueVO"
+  "/staff/members":
+    get:
+      tags:
+      - customer-controller
+      operationId: identifyStaffMember
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: memberCode
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: phone
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
+  "/staff/members/{customerId}":
+    get:
+      tags:
+      - customer-controller
+      operationId: getStaffMember
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
+  "/staff/members/{customerId}/balance-flows":
+    get:
+      tags:
+      - customer-controller
+      operationId: getStaffBalanceFlows
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
+  "/staff/customers/identify":
+    get:
+      tags:
+      - customer-controller
+      operationId: identifyStaffVenueCustomer
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: memberCode
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: phone
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
+  "/platform/venues/list":
+    get:
+      tags:
+      - platform-venue-controller
+      operationId: listVenues
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListPlatformVenueVO"
+  "/platform/sports/list":
+    get:
+      tags:
+      - platform-venue-controller
+      operationId: listSports_1
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
+  "/platform/reports/service-fees":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getPlatformServiceFees
+      parameters:
+      - name: venueId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: billingMonth
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseServiceFeeSettlementVO"
+  "/platform/reports/operations":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getPlatformReport
+      parameters:
+      - name: venueId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
+  "/platform/reports/member-operations":
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getPlatformMemberOperations
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListReportVenueMemberOperationVO"
+  "/platform/refunds/list":
+    get:
+      tags:
+      - funds-controller
+      operationId: listPlatformRefunds
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListPlatformRefundVO"
+  "/platform/customer-summaries":
+    get:
+      tags:
+      - customer-controller
+      operationId: listPlatformSummaries
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListPlatformCustomerSummaryVO"
+  "/mini/venues":
+    get:
+      tags:
+      - mini-venue-controller
+      operationId: listVenues_1
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListPublicVenueVO"
+  "/mini/venues/{venueId}":
+    get:
+      tags:
+      - mini-venue-controller
+      operationId: getVenue
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponsePublicVenueDetailVO"
+  "/mini/sports":
+    get:
+      tags:
+      - mini-venue-controller
+      operationId: listSports_2
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
+  "/mini/recharges/{rechargeId}":
+    get:
+      tags:
+      - funds-controller
+      operationId: getMiniRecharge
+      parameters:
+      - name: rechargeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
+  "/mini/recharges/plans":
+    get:
+      tags:
+      - funds-controller
+      operationId: listMiniPlans
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListRechargePlanVO"
+  "/mini/memberships/{venueId}":
+    get:
+      tags:
+      - customer-controller
+      operationId: getMembership
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseMembershipVO"
+  "/mini/memberships/{venueId}/balance-flows":
+    get:
+      tags:
+      - funds-controller
+      operationId: getMiniBalanceFlows
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
+  "/mini/memberships/list":
+    get:
+      tags:
+      - customer-controller
+      operationId: listMemberships
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListMembershipVO"
+  "/mini/bookings/{bookingId}":
+    get:
+      tags:
+      - mini-booking-controller
+      operationId: getBooking
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBookingDetailVO"
+  "/mini/bookings/list":
+    get:
+      tags:
+      - mini-booking-controller
+      operationId: listBookings_2
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseListUserBookingVO"
+  "/auth/mini/profile/detail":
+    get:
+      tags:
+      - auth-controller
+      operationId: getMiniProfile
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseUserProfileVO"
+  "/auth/admin/web-login-tickets/{ticket}":
+    get:
+      tags:
+      - auth-controller
+      operationId: getWebLoginTicket
+      parameters:
+      - name: ticket
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseScanTicketVO"
+  "/venue-admin/weekly-slots/{weeklySlotId}/disable":
+    delete:
+      tags:
+      - schedule-controller
+      operationId: disableWeeklySlot
+      parameters:
+      - name: weeklySlotId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseBoolean"
+  "/venue-admin/employees/{employeeId}/binding":
+    delete:
+      tags:
+      - venue-admin-controller
+      operationId: unbindEmployee
+      parameters:
+      - name: employeeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
 components:
-  securitySchemes:
-    AdminToken:
-      type: apiKey
-      in: header
-      name: X-Admin-Token
-    MiniToken:
-      type: apiKey
-      in: header
-      name: X-Mini-Token
-  parameters:
-    VenueId:
-      name: venueId
-      in: path
-      required: true
-      schema: { type: integer, format: int64 }
-    BookingId:
-      name: bookingId
-      in: path
-      required: true
-      schema: { type: integer, format: int64 }
-    WeeklySlotId:
-      name: weeklySlotId
-      in: path
-      required: true
-      schema: { type: integer, format: int64 }
-    SessionSlotId:
-      name: sessionSlotId
-      in: path
-      required: true
-      schema: { type: integer, format: int64 }
-    EmployeeId:
-      name: employeeId
-      in: path
-      required: true
-      schema: { type: integer, format: int64 }
-    Date:
-      name: date
-      in: query
-      required: true
-      schema: { type: string, format: date }
-    OptionalDate:
-      name: date
-      in: query
-      required: false
-      schema: { type: string, format: date }
-    BillingMonth:
-      name: billingMonth
-      in: query
-      required: true
-      schema:
-        type: string
-        pattern: '^\d{4}-(0[1-9]|1[0-2])$'
-    StartDate:
-      name: startDate
-      in: query
-      required: true
-      schema: { type: string, format: date }
-    EndDate:
-      name: endDate
-      in: query
-      required: true
-      schema: { type: string, format: date }
   schemas:
-    VenueWrite:
+    WeeklySlotSaveRequest:
       type: object
-      required: [name, address, phone]
+      description: 周场次保存请求
       properties:
-        name: { type: string }
-        city: { type: string, default: 郑州市 }
-        address: { type: string }
-        latitude: { type: number }
-        longitude: { type: number }
-        phone: { type: string }
-        facilities: { type: string }
-        entryNotice: { type: string }
-        bookingDaysAhead: { type: integer, default: 7 }
-        minBookingMinutes: { type: integer, default: 30 }
-        cancelCutoffMinutes: { type: integer, default: 120 }
-  requestBodies:
-    Name:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [name]
-            properties:
-              name: { type: string }
-    Status:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [status]
-            properties:
-              status: { type: string }
-    Court:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [name, sportIds]
-            properties:
-              name: { type: string }
-              sportIds: { type: array, items: { type: integer, format: int64 } }
-              status: { type: string }
-    WeeklySlot:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [courtId, sportTypeId, dayOfWeek, startTime, endTime, priceFen]
-            properties:
-              courtId: { type: integer, format: int64 }
-              sportTypeId: { type: integer, format: int64 }
-              dayOfWeek: { type: integer, minimum: 1, maximum: 7 }
-              startTime: { type: string, format: time }
-              endTime: { type: string, format: time }
-              priceFen: { type: integer, minimum: 0 }
-    SessionSlot:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [courtId, sportTypeId, date, startTime, endTime, priceFen]
-            properties:
-              courtId: { type: integer, format: int64 }
-              sportTypeId: { type: integer, format: int64 }
-              date: { type: string, format: date }
-              startTime: { type: string, format: time }
-              endTime: { type: string, format: time }
-              priceFen: { type: integer, minimum: 0 }
-    BookingContact:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [contactName, contactPhone]
-            properties:
-              contactName: { type: string }
-              contactPhone: { type: string }
-    VenueAdmin:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [username]
-            properties:
-              username: { type: string }
-              password: { type: string, description: 留空时不修改 }
-  responses:
-    Success:
-      description: 成功
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [code, msg]
-            properties:
-              data: {}
-              code: { type: integer, example: 0 }
-              msg: { type: string, example: 成功 }
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        dayOfWeek:
+          type: integer
+          format: int32
+          description: 星期，取值 1 至 7
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+    ApiResponseWeeklySlotVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/WeeklySlotVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    WeeklySlotVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        dayOfWeek:
+          type: integer
+          format: int32
+          description: 星期，取值 1 至 7
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    NameRequest:
+      type: object
+      description: 名称请求
+      properties:
+        name:
+          type: string
+          description: 名称
+    ApiResponseSportTypeVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/SportTypeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    SportTypeVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        ownerVenueId:
+          type: integer
+          format: int64
+          description: 所属场馆 ID
+        name:
+          type: string
+          description: 名称
+        status:
+          type: string
+          description: 状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    ExtraSlotCreateRequest:
+      type: object
+      description: 临时场次创建请求
+      properties:
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        date:
+          type: string
+          format: date
+          description: 场次日期
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+    ApiResponseSessionSlotResultVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/SessionSlotResultVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    SessionSlotResultVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        slotDate:
+          type: string
+          format: date
+          description: 场次日期
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - OPEN
+          - HELD
+          - BOOKED
+          - CLOSED
+    RoleSaveRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 角色名称
+        status:
+          type: string
+          description: 启停状态
+          enum:
+          - ACTIVE
+          - DISABLED
+        permissions:
+          type: array
+          description: 固定权限编码
+          items:
+            type: string
+            enum:
+            - DASHBOARD_VIEW
+            - BOOKING_VIEW
+            - BOOKING_EDIT
+            - BOOKING_VERIFY
+            - ONLINE_BOOKING_CANCEL
+            - OFFLINE_PAYMENT_STATUS_EDIT
+            - CUSTOMER_VIEW
+            - MEMBER_FUNDS_VIEW
+            - MEMBER_RECHARGE
+            - MEMBER_RECHARGE_REVERSE
+            - RECHARGE_PLAN_EDIT
+            - REFUND_RETRY
+            - COURT_VIEW
+            - COURT_EDIT
+            - SCHEDULE_VIEW
+            - SCHEDULE_EDIT
+            - SESSION_VIEW
+            - SESSION_EDIT
+            - EMPLOYEE_VIEW
+            - EMPLOYEE_EDIT
+            - ROLE_MANAGE
+            - VENUE_PROFILE_VIEW
+            - VENUE_PROFILE_EDIT
+            - REPORT_VIEW
+            - REPORT_EXPORT
+    ApiResponseVenueRoleVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/VenueRoleVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueRoleVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 角色 ID
+        name:
+          type: string
+          description: 角色名称
+        status:
+          type: string
+          description: 启停状态
+          enum:
+          - ACTIVE
+          - DISABLED
+        permissions:
+          type: array
+          description: 权限编码
+          items:
+            type: string
+            enum:
+            - DASHBOARD_VIEW
+            - BOOKING_VIEW
+            - BOOKING_EDIT
+            - BOOKING_VERIFY
+            - ONLINE_BOOKING_CANCEL
+            - OFFLINE_PAYMENT_STATUS_EDIT
+            - CUSTOMER_VIEW
+            - MEMBER_FUNDS_VIEW
+            - MEMBER_RECHARGE
+            - MEMBER_RECHARGE_REVERSE
+            - RECHARGE_PLAN_EDIT
+            - REFUND_RETRY
+            - COURT_VIEW
+            - COURT_EDIT
+            - SCHEDULE_VIEW
+            - SCHEDULE_EDIT
+            - SESSION_VIEW
+            - SESSION_EDIT
+            - EMPLOYEE_VIEW
+            - EMPLOYEE_EDIT
+            - ROLE_MANAGE
+            - VENUE_PROFILE_VIEW
+            - VENUE_PROFILE_EDIT
+            - REPORT_VIEW
+            - REPORT_EXPORT
+        employeeCount:
+          type: integer
+          format: int64
+          description: 绑定员工数
+    RechargePlanRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 档位名称
+        paidAmountFen:
+          type: integer
+          format: int32
+          description: 实付金额，单位分
+        giftAmountFen:
+          type: integer
+          format: int32
+          description: 赠送金额，单位分
+        giftValidDays:
+          type: integer
+          format: int32
+          description: 赠送有效天数
+        status:
+          type: string
+          description: 档位状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    ApiResponseRechargePlanVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/RechargePlanVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    RechargePlanVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 档位 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        name:
+          type: string
+          description: 档位名称
+        paidAmountFen:
+          type: integer
+          format: int32
+          description: 实付金额，单位分
+        giftAmountFen:
+          type: integer
+          format: int32
+          description: 赠送金额，单位分
+        giftValidDays:
+          type: integer
+          format: int32
+          description: 赠送有效天数
+        status:
+          type: string
+          description: 档位状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    VenueSaveRequest:
+      type: object
+      description: 场馆资料和预约规则保存请求
+      properties:
+        name:
+          type: string
+          description: 场馆名称
+        city:
+          type: string
+          description: 所在城市
+        address:
+          type: string
+          description: 详细地址
+        latitude:
+          type: number
+          description: 纬度
+        longitude:
+          type: number
+          description: 经度
+        phone:
+          type: string
+          description: 联系电话
+        facilities:
+          type: string
+          description: 场馆设施说明
+        entryNotice:
+          type: string
+          description: 入场须知
+        bookingDaysAhead:
+          type: integer
+          format: int32
+          description: 可提前预约天数
+        minBookingMinutes:
+          type: integer
+          format: int32
+          description: 最晚提前预约分钟数
+        cancelCutoffMinutes:
+          type: integer
+          format: int32
+          description: 最晚提前取消分钟数
+    ApiResponseVenueVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/VenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        name:
+          type: string
+          description: 名称
+        coverPath:
+          type: string
+          description: 封面访问路径
+        city:
+          type: string
+          description: 所在城市
+        address:
+          type: string
+          description: 详细地址
+        latitude:
+          type: number
+          description: 纬度
+        longitude:
+          type: number
+          description: 经度
+        phone:
+          type: string
+          description: 联系电话
+        facilities:
+          type: string
+          description: 场馆设施说明
+        entryNotice:
+          type: string
+          description: 入场须知
+        bookingDaysAhead:
+          type: integer
+          format: int32
+          description: 可提前预约天数
+        minBookingMinutes:
+          type: integer
+          format: int32
+          description: 最晚提前预约分钟数
+        cancelCutoffMinutes:
+          type: integer
+          format: int32
+          description: 最晚提前取消分钟数
+        status:
+          type: string
+          description: 状态
+          enum:
+          - DRAFT
+          - ACTIVE
+          - SUSPENDED
+    ApiResponseEmployeeVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/EmployeeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    EmployeeVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        userId:
+          type: integer
+          format: int64
+          description: 用户 ID
+        name:
+          type: string
+          description: 名称
+        status:
+          type: string
+          description: 状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    EmployeeRolesRequest:
+      type: object
+      properties:
+        roleIds:
+          type: array
+          description: 角色 ID 列表
+          items:
+            type: integer
+            format: int64
+    ApiResponseBoolean:
+      type: object
+      properties:
+        data:
+          type: boolean
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CourtSaveRequest:
+      type: object
+      description: 场地保存请求
+      properties:
+        name:
+          type: string
+          description: 场地名称
+        sportIds:
+          type: array
+          description: 场地支持的运动类型 ID 列表
+          items:
+            type: integer
+            format: int64
+        status:
+          type: string
+          description: 场地启停状态，更新时使用
+          enum:
+          - ACTIVE
+          - DISABLED
+    ApiResponseCourtVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CourtVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CourtVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        name:
+          type: string
+          description: 名称
+        imagePath:
+          type: string
+          description: 场地图片公开路径
+        status:
+          type: string
+          description: 状态
+          enum:
+          - ACTIVE
+          - DISABLED
+        sportNames:
+          type: string
+          description: 运动名称列表
+        sportIds:
+          type: string
+          description: 运动类型 ID 列表
+    OfflineBookingPaymentStatusUpdateRequest:
+      type: object
+      description: 线下预约登记收款状态修改请求
+      properties:
+        paymentStatus:
+          type: string
+          description: 目标登记收款状态
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        reason:
+          type: string
+          description: 人工修改原因
+    ApiResponseBookingVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/BookingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    BookingVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        bookingNo:
+          type: string
+          description: 预约编号
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sessionSlotId:
+          type: integer
+          format: int64
+          description: 具体场次 ID
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 关联的场馆顾客档案 ID
+        source:
+          type: string
+          description: 预约来源
+          enum:
+          - ONLINE
+          - OFFLINE
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+        venueName:
+          type: string
+          description: 场馆名称
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        paymentStatus:
+          type: string
+          description: 预约整体收款或线下登记收款状态
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        paymentExpiresAt:
+          type: string
+          format: date-time
+          description: 支付过期时间
+        cancelledBy:
+          type: string
+          description: 取消操作方
+          enum:
+          - USER
+          - VENUE
+          - SYSTEM
+        cancelReason:
+          type: string
+          description: 取消原因
+        cancelledAt:
+          type: string
+          format: date-time
+          description: 取消时间
+        completedAt:
+          type: string
+          format: date-time
+          description: 完成时间
+    BookingContactUpdateRequest:
+      type: object
+      description: 线下预约联系人修改请求
+      properties:
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+    VenueAdminUpdateRequest:
+      type: object
+      description: 场馆管理员账号更新请求
+      properties:
+        username:
+          type: string
+          description: 管理员登录用户名
+        password:
+          type: string
+          description: 新登录密码，留空时不修改
+    UserProfileUpdateRequest:
+      type: object
+      description: 用户预约联系人资料更新请求
+      properties:
+        contactName:
+          type: string
+          description: 联系人姓名
+        phone:
+          type: string
+          description: 联系人手机号
+    ApiResponseUserProfileVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/UserProfileVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    EmployeeIdentityVO:
+      type: object
+      properties:
+        employeeId:
+          type: integer
+          format: int64
+          description: 员工 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        name:
+          type: string
+          description: 名称
+        status:
+          type: string
+          description: 状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    UserProfileVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        contactName:
+          type: string
+          description: 联系人姓名
+        phone:
+          type: string
+          description: 联系电话
+        staff:
+          "$ref": "#/components/schemas/EmployeeIdentityVO"
+          description: 员工身份
+    CopyDayRequest:
+      type: object
+      description: 周场次按星期复制请求
+      properties:
+        sourceDay:
+          type: integer
+          format: int32
+          description: 源星期，取值 1 至 7
+        targetDays:
+          type: array
+          description: 目标星期列表，取值 1 至 7
+          items:
+            type: integer
+            format: int32
+    ApiResponseListWeeklySlotVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/WeeklySlotVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CloseDayRequest:
+      type: object
+      description: 关闭指定日期场次请求
+      properties:
+        date:
+          type: string
+          format: date
+          description: 需要关闭场次的日期
+    RechargeReverseRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: 撤销原因
+        offlineFundsHandled:
+          type: boolean
+          description: 线下资金已处理
+    ApiResponseMemberRechargeVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/MemberRechargeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    MemberRechargeVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 充值 ID
+        rechargeNo:
+          type: string
+          description: 充值业务号
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 会员档案 ID
+        planId:
+          type: integer
+          format: int64
+          description: 档位 ID
+        planName:
+          type: string
+          description: 档位名称快照
+        paidAmountFen:
+          type: integer
+          format: int32
+          description: 实付金额，单位分
+        giftAmountFen:
+          type: integer
+          format: int32
+          description: 赠送金额，单位分
+        giftValidDays:
+          type: integer
+          format: int32
+          description: 赠送有效天数
+        giftExpiresAt:
+          type: string
+          format: date-time
+          description: 赠送到期时间
+        channel:
+          type: string
+          description: 充值渠道
+          enum:
+          - MOCK
+          - CASH
+          - WECHAT
+          - ALIPAY
+        status:
+          type: string
+          description: 充值状态
+          enum:
+          - PENDING
+          - SUCCESS
+          - FAILED
+          - CLOSED
+          - REVERSED
+        providerNo:
+          type: string
+          description: 渠道交易号
+        reverseReason:
+          type: string
+          description: 撤销原因
+        succeededAt:
+          type: string
+          format: date-time
+          description: 成功时间
+        reversedAt:
+          type: string
+          format: date-time
+          description: 撤销时间
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+    ApiResponseCoverUploadVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/CoverUploadVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CoverUploadVO:
+      type: object
+      properties:
+        coverPath:
+          type: string
+          description: 封面访问路径
+    AdminRechargeRequest:
+      type: object
+      properties:
+        planId:
+          type: integer
+          format: int64
+          description: 充值档位 ID
+        channel:
+          type: string
+          description: 充值渠道
+          enum:
+          - MOCK
+          - CASH
+          - WECHAT
+          - ALIPAY
+        idempotencyKey:
+          type: string
+          description: 客户端幂等键
+    ApiResponseEmployeeBindingVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/EmployeeBindingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    EmployeeBindingVO:
+      type: object
+      properties:
+        employeeId:
+          type: integer
+          format: int64
+          description: 员工 ID
+        bindingCode:
+          type: string
+          description: 一次性员工绑定码
+        expiresAt:
+          type: string
+          format: date-time
+          description: 过期时间
+    OfflineBookingRescheduleRequest:
+      type: object
+      description: 线下预约同价改期请求
+      properties:
+        sessionSlotId:
+          type: integer
+          format: int64
+          description: 目标具体场次 ID
+        reason:
+          type: string
+          description: 改期原因
+    BookingCancelRequest:
+      type: object
+      description: 场馆取消预约请求
+      properties:
+        reason:
+          type: string
+          description: 取消原因
+    OfflineBookingCreateRequest:
+      type: object
+      description: 场馆线下预约创建请求
+      properties:
+        sessionSlotId:
+          type: integer
+          format: int64
+          description: 具体场次 ID
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+        paymentStatus:
+          type: string
+          description: 线下登记收款状态，仅允许 UNPAID 或 PAID
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 可选的本场馆顾客档案 ID
+    OfflineBookingBatchCreateRequest:
+      type: object
+      description: 多日期线下预约创建请求
+      properties:
+        sessionSlotId:
+          type: integer
+          format: int64
+          description: 模板具体场次 ID
+        dates:
+          type: array
+          description: 待预约日期
+          items:
+            type: string
+            format: date
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+        paymentStatus:
+          type: string
+          description: 线下登记收款状态，仅允许 UNPAID 或 PAID
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 可选的本场馆顾客档案 ID
+    ApiResponseListBookingVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/BookingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    WebLoginConfirmRequest:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+    VerificationRequest:
+      type: object
+      description: 员工核销请求
+      properties:
+        credential:
+          type: string
+          description: 二维码内容或六位短码
+        method:
+          type: string
+          description: 核销方式
+          enum:
+          - QR
+          - SHORT_CODE
+    ApiResponseVerificationResultVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/VerificationResultVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VerificationResultVO:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+          description: 预约 ID
+        bookingNo:
+          type: string
+          description: 预约编号
+        venueName:
+          type: string
+          description: 场馆名称
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        completedAt:
+          type: string
+          format: date-time
+          description: 完成时间
+    StaffRechargeRequest:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        customerId:
+          type: integer
+          format: int64
+          description: 顾客 ID
+        planId:
+          type: integer
+          format: int64
+          description: 充值档位 ID
+        channel:
+          type: string
+          description: 充值渠道
+          enum:
+          - MOCK
+          - CASH
+          - WECHAT
+          - ALIPAY
+        clientIdempotencyKey:
+          type: string
+          description: 客户端幂等键
+    VenueCreateRequest:
+      type: object
+      description: 平台创建场馆请求
+      properties:
+        venue:
+          "$ref": "#/components/schemas/VenueSaveRequest"
+          description: 场馆资料和预约规则
+        adminUsername:
+          type: string
+          description: 首个场馆管理员用户名
+        adminPassword:
+          type: string
+          description: 首个场馆管理员密码
+    ApiResponseRefundVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/RefundVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    RefundVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        businessNo:
+          type: string
+          description: 退款业务号
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位为分
+        reason:
+          type: string
+          description: 原因
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PROCESSING
+          - SUCCESS
+          - FAILED
+          - CLOSED
+        retryCount:
+          type: integer
+          format: int32
+          description: 重试次数
+        nextRetryAt:
+          type: string
+          format: date-time
+          description: 下次重试时间
+        lastFailureReason:
+          type: string
+          description: 最近失败原因
+        refundedAt:
+          type: string
+          format: date-time
+          description: 退款时间
+    MockFundsNotificationRequest:
+      type: object
+      properties:
+        businessNo:
+          type: string
+          description: 支付或充值业务号
+        amountFen:
+          type: integer
+          format: int32
+          description: 通知金额，单位分
+        result:
+          type: string
+          description: 渠道结果
+          enum:
+          - SUCCESS
+          - FAILED
+          - UNKNOWN
+        signature:
+          type: string
+          description: 本地签名替身
+    EmployeeBindRequest:
+      type: object
+      description: 小程序员工身份绑定请求
+      properties:
+        bindingCode:
+          type: string
+          description: 一次性员工绑定码
+    MiniRechargeCreateRequest:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        planId:
+          type: integer
+          format: int64
+          description: 充值档位 ID
+        idempotencyKey:
+          type: string
+          description: 客户端幂等键
+    BookingCreateRequest:
+      type: object
+      description: 小程序预约创建请求
+      properties:
+        sessionSlotId:
+          type: integer
+          format: int64
+          description: 具体场次 ID
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+        idempotencyKey:
+          type: string
+          description: 客户端创建幂等键
+    MiniLoginRequest:
+      type: object
+      description: 小程序模拟登录请求
+      properties:
+        code:
+          type: string
+          description: 模拟微信登录 code
+    ApiResponseMiniLoginVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/MiniLoginVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    MiniLoginVO:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 会话令牌
+        profile:
+          "$ref": "#/components/schemas/UserProfileVO"
+          description: 用户资料
+    ApiResponseScanTicketVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/ScanTicketVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ScanTicketVO:
+      type: object
+      properties:
+        ticket:
+          type: string
+          description: 一次性票据
+        qrContent:
+          type: string
+          description: 二维码内容
+        qrDataUrl:
+          type: string
+          description: 二维码 PNG Data URL
+        status:
+          type: string
+          description: 票据状态
+          enum:
+          - PENDING
+          - CONFIRMED
+          - CONSUMED
+        expiresAt:
+          type: string
+          format: date-time
+          description: 过期时间
+    AdminLoginVO:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 会话令牌
+        principal:
+          "$ref": "#/components/schemas/AdminPrincipal"
+          description: 登录身份
+    AdminPrincipal:
+      type: object
+      properties:
+        accountId:
+          type: integer
+          format: int64
+        role:
+          type: string
+          enum:
+          - PLATFORM_ADMIN
+          - VENUE_ADMIN
+          - VENUE_EMPLOYEE
+        venueId:
+          type: integer
+          format: int64
+        displayName:
+          type: string
+        employeeId:
+          type: integer
+          format: int64
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+            - DASHBOARD_VIEW
+            - BOOKING_VIEW
+            - BOOKING_EDIT
+            - BOOKING_VERIFY
+            - ONLINE_BOOKING_CANCEL
+            - OFFLINE_PAYMENT_STATUS_EDIT
+            - CUSTOMER_VIEW
+            - MEMBER_FUNDS_VIEW
+            - MEMBER_RECHARGE
+            - MEMBER_RECHARGE_REVERSE
+            - RECHARGE_PLAN_EDIT
+            - REFUND_RETRY
+            - COURT_VIEW
+            - COURT_EDIT
+            - SCHEDULE_VIEW
+            - SCHEDULE_EDIT
+            - SESSION_VIEW
+            - SESSION_EDIT
+            - EMPLOYEE_VIEW
+            - EMPLOYEE_EDIT
+            - ROLE_MANAGE
+            - VENUE_PROFILE_VIEW
+            - VENUE_PROFILE_EDIT
+            - REPORT_VIEW
+            - REPORT_EXPORT
+          uniqueItems: true
+    ApiResponseAdminLoginVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/AdminLoginVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    AdminLoginRequest:
+      type: object
+      description: 后台登录请求
+      properties:
+        username:
+          type: string
+          description: 登录用户名
+        password:
+          type: string
+          description: 登录密码
+    EnableStatusUpdateRequest:
+      type: object
+      description: 启停状态更新请求
+      properties:
+        status:
+          type: string
+          description: 目标启停状态
+          enum:
+          - ACTIVE
+          - DISABLED
+    VenueStatusUpdateRequest:
+      type: object
+      description: 场馆状态更新请求
+      properties:
+        status:
+          type: string
+          description: 目标场馆状态
+          enum:
+          - DRAFT
+          - ACTIVE
+          - SUSPENDED
+    ServiceFeeRateUpdateRequest:
+      type: object
+      properties:
+        serviceFeeRatePercent:
+          type: number
+          description: 服务费率百分比，范围 0 至 30，支持两位小数
+    ApiResponsePlatformVenueVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PlatformVenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PlatformVenueVO:
+      type: object
+      properties:
+        venue:
+          "$ref": "#/components/schemas/VenueVO"
+          description: 场馆资料
+        serviceFeeRateBasisPoints:
+          type: integer
+          format: int32
+          description: 当前服务费率基点，525 表示 5.25%
+        adminUsername:
+          type: string
+          description: 场馆管理员登录用户名
+    PasswordResetRequest:
+      type: object
+      description: 场馆管理员密码重置请求
+      properties:
+        password:
+          type: string
+          description: 新登录密码
+    ApiResponseListSportTypeVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/SportTypeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListSessionSlotVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/SessionSlotVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    SessionSlotVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        courtName:
+          type: string
+          description: 场地名称
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          description: 开始时间
+        endAt:
+          type: string
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - OPEN
+          - HELD
+          - BOOKED
+          - CLOSED
+        bookingId:
+          type: integer
+          format: int64
+          description: 当前关联预约 ID
+        bookingSource:
+          type: string
+          description: 当前关联预约来源
+          enum:
+          - ONLINE
+          - OFFLINE
+        bookingStatus:
+          type: string
+          description: 当前关联预约状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        paymentStatus:
+          type: string
+          description: 当前关联预约的独立收款状态
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        contactName:
+          type: string
+          description: 当前关联预约联系人姓名
+        contactPhone:
+          type: string
+          description: 当前关联预约联系人手机号
+    ApiResponseListVenueRoleVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/VenueRoleVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseServiceFeeSettlementVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/ServiceFeeSettlementVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ServiceFeeBookingVO:
+      type: object
+      properties:
+        bookingNo:
+          type: string
+          description: 预约单号
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称快照
+        courtName:
+          type: string
+          description: 场地名称快照
+        startAt:
+          type: string
+          description: 场次开始时间，Asia/Shanghai
+        endAt:
+          type: string
+          description: 场次结束时间，Asia/Shanghai
+        status:
+          type: string
+          description: 预约状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        amountFen:
+          type: integer
+          format: int32
+          description: 预约金额，单位为分
+        serviceFeeRateBasisPoints:
+          type: integer
+          format: int32
+          description: 服务费率快照基点
+        serviceFeeYuan:
+          type: string
+          description: 精确平台服务费，单位为元，最多六位小数
+    ServiceFeeSettlementVO:
+      type: object
+      properties:
+        billingMonth:
+          type: string
+          description: 自然月账期，格式 yyyy-MM
+        currentServiceFeeRateBasisPoints:
+          type: integer
+          format: int32
+          description: 当前场馆服务费率基点，平台全量查询时为空
+        billableBookingCount:
+          type: integer
+          format: int64
+          description: 可计费预约数
+        bookingAmountFen:
+          type: integer
+          format: int64
+          description: 可计费预约总金额，单位为分
+        serviceFeeYuan:
+          type: string
+          description: 精确平台服务费总额，单位为元，最多六位小数
+        venues:
+          type: array
+          description: 平台按场馆汇总
+          items:
+            "$ref": "#/components/schemas/ServiceFeeVenueSummaryVO"
+        bookings:
+          type: array
+          description: 可计费预约逐笔明细
+          items:
+            "$ref": "#/components/schemas/ServiceFeeBookingVO"
+    ServiceFeeVenueSummaryVO:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        currentServiceFeeRateBasisPoints:
+          type: integer
+          format: int32
+          description: 场馆当前服务费率基点
+        billableBookingCount:
+          type: integer
+          format: int64
+          description: 可计费预约数
+        bookingAmountFen:
+          type: integer
+          format: int64
+          description: 可计费预约总金额，单位为分
+        serviceFeeYuan:
+          type: string
+          description: 精确平台服务费总额，单位为元，最多六位小数
+    ApiResponseListReportReceiptVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ReportReceiptVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportReceiptVO:
+      type: object
+      properties:
+        receiptDate:
+          type: string
+          description: 收款日期
+        operatorName:
+          type: string
+          description: 操作人
+        channel:
+          type: string
+          description: 真实收款渠道
+        businessType:
+          type: string
+          description: 收款业务类型
+        count:
+          type: integer
+          format: int64
+          description: 笔数
+        amountFen:
+          type: integer
+          format: int64
+          description: 实收金额，单位为分
+    ApiResponseReportOperationVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/ReportOperationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportOperationDailyVO:
+      type: object
+      properties:
+        reportDate:
+          type: string
+          description: 经营日期
+        onlineBookingAmountFen:
+          type: integer
+          format: int64
+          description: 线上预约经营金额，单位为分
+        offlineRegisteredAmountFen:
+          type: integer
+          format: int64
+          description: 线下登记经营金额，单位为分
+        availableSessionCount:
+          type: integer
+          format: int64
+          description: 未关闭的可经营场次数
+        bookedSessionCount:
+          type: integer
+          format: int64
+          description: 已预约场次数
+        utilizationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 场地利用率，万分比
+        bookingCount:
+          type: integer
+          format: int64
+          description: 预约总数
+        cancelledCount:
+          type: integer
+          format: int64
+          description: 已取消预约数
+        cancellationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 取消率，万分比
+        pendingVerificationCount:
+          type: integer
+          format: int64
+          description: 待核销预约数
+        offlineUnrecordedCount:
+          type: integer
+          format: int64
+          description: 线下未记录收款数
+        offlineUnpaidCount:
+          type: integer
+          format: int64
+          description: 线下未收款数
+        newMemberCount:
+          type: integer
+          format: int64
+          description: 新增会员数
+        rechargeInflowFen:
+          type: integer
+          format: int64
+          description: 成功充值实付流入，单位为分
+        balanceConsumptionFen:
+          type: integer
+          format: int64
+          description: 余额消费金额，单位为分
+    ReportOperationVO:
+      type: object
+      properties:
+        onlineBookingAmountFen:
+          type: integer
+          format: int64
+          description: 线上预约经营金额，单位为分
+        offlineRegisteredAmountFen:
+          type: integer
+          format: int64
+          description: 线下登记经营金额，单位为分
+        availableSessionCount:
+          type: integer
+          format: int64
+          description: 未关闭的可经营场次数
+        bookedSessionCount:
+          type: integer
+          format: int64
+          description: 已预约场次数
+        utilizationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 场地利用率，万分比
+        bookingCount:
+          type: integer
+          format: int64
+          description: 预约总数
+        cancelledCount:
+          type: integer
+          format: int64
+          description: 已取消预约数
+        cancellationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 取消率，万分比
+        pendingVerificationCount:
+          type: integer
+          format: int64
+          description: 待核销预约数
+        offlineUnrecordedCount:
+          type: integer
+          format: int64
+          description: 线下未记录收款数
+        offlineUnpaidCount:
+          type: integer
+          format: int64
+          description: 线下未收款数
+        newMemberCount:
+          type: integer
+          format: int64
+          description: 新增会员数
+        rechargeInflowFen:
+          type: integer
+          format: int64
+          description: 成功充值实付流入，单位为分
+        balanceConsumptionFen:
+          type: integer
+          format: int64
+          description: 余额消费金额，单位为分
+        repeatCustomerCount:
+          type: integer
+          format: int64
+          description: 区间内至少两笔有效预约的顾客数
+        repeatPurchaseRateBasisPoints:
+          type: integer
+          format: int32
+          description: 复购率，万分比
+        memberAvailableBalanceFen:
+          type: integer
+          format: int64
+          description: 当前会员可用余额，单位为分
+        memberFrozenBalanceFen:
+          type: integer
+          format: int64
+          description: 当前会员冻结余额，单位为分
+        daily:
+          type: array
+          description: 每日经营趋势，包含无数据日期
+          items:
+            "$ref": "#/components/schemas/ReportOperationDailyVO"
+    ApiResponseListReportMemberFlowVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ReportMemberFlowVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportMemberFlowVO:
+      type: object
+      properties:
+        flowId:
+          type: integer
+          format: int64
+          description: 流水 ID
+        memberCode:
+          type: string
+          description: 会员码
+        businessType:
+          type: string
+          description: 业务类型
+        direction:
+          type: string
+          description: 资金方向
+        amountFen:
+          type: integer
+          format: int64
+          description: 金额，单位为分
+        bookingNo:
+          type: string
+          description: 预约号
+        rechargeNo:
+          type: string
+          description: 充值单号
+        operatorName:
+          type: string
+          description: 操作人
+        occurredAt:
+          type: string
+          format: date-time
+          description: 发生时间，Asia/Shanghai
+    ApiResponseListReportBookingVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ReportBookingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportBookingVO:
+      type: object
+      properties:
+        bookingNo:
+          type: string
+          description: 预约号
+        sessionDate:
+          type: string
+          description: 场次日期
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        source:
+          type: string
+          description: 预约来源
+        contactName:
+          type: string
+          description: 联系人，按权限脱敏
+        contactPhone:
+          type: string
+          description: 手机号，按权限脱敏
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        status:
+          type: string
+          description: 预约状态
+        paymentStatus:
+          type: string
+          description: 收款状态
+        amountFen:
+          type: integer
+          format: int64
+          description: 预约总金额，单位为分
+        offlineRegisteredAmountFen:
+          type: integer
+          format: int64
+          description: 线下登记金额，单位为分
+        balanceConsumptionFen:
+          type: integer
+          format: int64
+          description: 余额消费，单位为分
+        externalPaymentFen:
+          type: integer
+          format: int64
+          description: 外部支付，单位为分
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间，Asia/Shanghai
+    ApiResponseListRechargePlanVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/RechargePlanVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListPermissionCatalogVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PermissionCatalogVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PermissionCatalogVO:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 权限编码
+          enum:
+          - DASHBOARD_VIEW
+          - BOOKING_VIEW
+          - BOOKING_EDIT
+          - BOOKING_VERIFY
+          - ONLINE_BOOKING_CANCEL
+          - OFFLINE_PAYMENT_STATUS_EDIT
+          - CUSTOMER_VIEW
+          - MEMBER_FUNDS_VIEW
+          - MEMBER_RECHARGE
+          - MEMBER_RECHARGE_REVERSE
+          - RECHARGE_PLAN_EDIT
+          - REFUND_RETRY
+          - COURT_VIEW
+          - COURT_EDIT
+          - SCHEDULE_VIEW
+          - SCHEDULE_EDIT
+          - SESSION_VIEW
+          - SESSION_EDIT
+          - EMPLOYEE_VIEW
+          - EMPLOYEE_EDIT
+          - ROLE_MANAGE
+          - VENUE_PROFILE_VIEW
+          - VENUE_PROFILE_EDIT
+          - REPORT_VIEW
+          - REPORT_EXPORT
+        name:
+          type: string
+          description: 权限名称
+        group:
+          type: string
+          description: 权限分组
+    ApiResponseListMemberRechargeVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/MemberRechargeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseBalanceAccountVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/BalanceAccountVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    BalanceAccountVO:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 会员档案 ID
+        paidBalanceFen:
+          type: integer
+          format: int64
+          description: 实付余额，单位分
+        giftBalanceFen:
+          type: integer
+          format: int64
+          description: 赠送余额，单位分
+        nextGiftExpiresAt:
+          type: string
+          format: date-time
+          description: 最近赠送到期时间
+        nextGiftExpiresAmountFen:
+          type: integer
+          format: int64
+          description: 最近到期赠送余额，单位分
+        flows:
+          type: array
+          description: 余额流水
+          items:
+            "$ref": "#/components/schemas/BalanceFlowVO"
+    BalanceFlowVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 流水 ID
+        lotId:
+          type: integer
+          format: int64
+          description: 余额批次 ID
+        balanceType:
+          type: string
+          description: 余额类型
+          enum:
+          - PAID
+          - GIFT
+        businessType:
+          type: string
+          description: 业务类型
+          enum:
+          - RECHARGE
+          - HOLD
+          - CONSUME
+          - RELEASE
+          - REFUND
+          - EXPIRE
+          - REVERSE
+        direction:
+          type: string
+          description: 收支方向
+          enum:
+          - CREDIT
+          - DEBIT
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位分
+        bookingId:
+          type: integer
+          format: int64
+          description: 预约 ID
+        rechargeId:
+          type: integer
+          format: int64
+          description: 充值 ID
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+    ApiResponseListLong:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: integer
+            format: int64
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListEmployeeVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/EmployeeVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseVenueCustomerVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/VenueCustomerVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueCustomerVO:
+      type: object
+      properties:
+        customerId:
+          type: integer
+          format: int64
+          description: 顾客档案 ID
+        contactName:
+          type: string
+          description: 联系人姓名
+        phone:
+          type: string
+          description: 完整手机号
+        status:
+          type: string
+          description: 顾客或会员状态
+          enum:
+          - CUSTOMER
+          - MEMBER
+        memberCode:
+          type: string
+          description: 场馆内会员码
+        activatedAt:
+          type: string
+          format: date-time
+          description: 首次充值激活会员的时间
+        createdAt:
+          type: string
+          format: date-time
+          description: 顾客建档时间
+    ApiResponseListVenueCustomerVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/VenueCustomerVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListCourtVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/CourtVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListVenueBookingVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/VenueBookingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueBookingVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        bookingNo:
+          type: string
+          description: 预约编号
+        venueName:
+          type: string
+          description: 场馆名称
+        source:
+          type: string
+          description: 预约来源
+          enum:
+          - ONLINE
+          - OFFLINE
+        contactName:
+          type: string
+          description: 联系人姓名
+        contactPhone:
+          type: string
+          description: 联系人手机号
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          description: 开始时间
+        endAt:
+          type: string
+          description: 结束时间
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        paymentStatus:
+          type: string
+          description: 支付状态
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        venueCustomerId:
+          type: integer
+          format: int64
+          description: 关联的场馆顾客档案 ID
+    ApiResponseListStaffVerificationRecordVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/StaffVerificationRecordVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    StaffVerificationRecordVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        bookingId:
+          type: integer
+          format: int64
+          description: 预约 ID
+        bookingNo:
+          type: string
+          description: 预约编号
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        contactName:
+          type: string
+          description: 联系人姓名
+        method:
+          type: string
+          description: 核销方式
+          enum:
+          - QR
+          - SHORT_CODE
+        verifiedAt:
+          type: string
+          description: 核销时间
+    ApiResponseListStaffVenueVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/StaffVenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    StaffVenueVO:
+      type: object
+      properties:
+        employeeId:
+          type: integer
+          format: int64
+          description: 员工 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        employeeName:
+          type: string
+          description: 员工姓名
+        permissions:
+          type: array
+          description: 实时权限
+          items:
+            type: string
+            enum:
+            - DASHBOARD_VIEW
+            - BOOKING_VIEW
+            - BOOKING_EDIT
+            - BOOKING_VERIFY
+            - ONLINE_BOOKING_CANCEL
+            - OFFLINE_PAYMENT_STATUS_EDIT
+            - CUSTOMER_VIEW
+            - MEMBER_FUNDS_VIEW
+            - MEMBER_RECHARGE
+            - MEMBER_RECHARGE_REVERSE
+            - RECHARGE_PLAN_EDIT
+            - REFUND_RETRY
+            - COURT_VIEW
+            - COURT_EDIT
+            - SCHEDULE_VIEW
+            - SCHEDULE_EDIT
+            - SESSION_VIEW
+            - SESSION_EDIT
+            - EMPLOYEE_VIEW
+            - EMPLOYEE_EDIT
+            - ROLE_MANAGE
+            - VENUE_PROFILE_VIEW
+            - VENUE_PROFILE_EDIT
+            - REPORT_VIEW
+            - REPORT_EXPORT
+    ApiResponseListPlatformVenueVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PlatformVenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListReportVenueMemberOperationVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/ReportVenueMemberOperationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportVenueMemberOperationVO:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        customerCount:
+          type: integer
+          format: int64
+          description: 顾客数
+        memberCount:
+          type: integer
+          format: int64
+          description: 会员数
+        newMemberCount:
+          type: integer
+          format: int64
+          description: 区间新增会员数
+        repeatCustomerCount:
+          type: integer
+          format: int64
+          description: 区间复购顾客数
+        repeatPurchaseRateBasisPoints:
+          type: integer
+          format: int32
+          description: 复购率，万分比
+        rechargeInflowFen:
+          type: integer
+          format: int64
+          description: 充值实付流入，单位为分
+        balanceConsumptionFen:
+          type: integer
+          format: int64
+          description: 余额消费金额，单位为分
+        memberAvailableBalanceFen:
+          type: integer
+          format: int64
+          description: 当前会员可用余额，单位为分
+        memberFrozenBalanceFen:
+          type: integer
+          format: int64
+          description: 当前会员冻结余额，单位为分
+    ApiResponseListPlatformRefundVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PlatformRefundVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PlatformRefundVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 退款 ID
+        businessNo:
+          type: string
+          description: 退款业务号
+        bookingId:
+          type: integer
+          format: int64
+          description: 预约 ID
+        bookingNo:
+          type: string
+          description: 预约单号
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位分
+        status:
+          type: string
+          description: 退款状态
+          enum:
+          - PROCESSING
+          - SUCCESS
+          - FAILED
+          - CLOSED
+        retryCount:
+          type: integer
+          format: int32
+          description: 重试次数
+        nextRetryAt:
+          type: string
+          format: date-time
+          description: 下次重试时间
+        lastFailureReason:
+          type: string
+          description: 最近失败原因
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新时间
+    ApiResponseListPlatformCustomerSummaryVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PlatformCustomerSummaryVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PlatformCustomerSummaryVO:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        customerCount:
+          type: integer
+          format: int64
+          description: 顾客关系总数，包含已激活会员
+        memberCount:
+          type: integer
+          format: int64
+          description: 已激活会员数
+    ApiResponseListPublicVenueVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/PublicVenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PublicVenueVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        name:
+          type: string
+          description: 名称
+        coverPath:
+          type: string
+          description: 封面访问路径
+        city:
+          type: string
+          description: 所在城市
+        address:
+          type: string
+          description: 详细地址
+        sportNames:
+          type: string
+          description: 运动名称列表
+        startingPriceFen:
+          type: integer
+          format: int32
+          description: 起步价格，单位为分
+        nextAvailableAt:
+          type: string
+          description: 下一个可预约时间
+    ApiResponsePublicVenueDetailVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/PublicVenueDetailVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    AvailableSlotVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        courtName:
+          type: string
+          description: 场地名称
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          description: 开始时间
+        endAt:
+          type: string
+          description: 结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 价格，单位为分
+    PublicVenueDetailVO:
+      type: object
+      properties:
+        venue:
+          "$ref": "#/components/schemas/VenueVO"
+          description: 场馆资料
+        sports:
+          type: array
+          description: 运动类型列表
+          items:
+            "$ref": "#/components/schemas/SportTypeVO"
+        courts:
+          type: array
+          description: 场地列表
+          items:
+            "$ref": "#/components/schemas/CourtVO"
+        slots:
+          type: array
+          description: 可预约场次列表
+          items:
+            "$ref": "#/components/schemas/AvailableSlotVO"
+    ApiResponseMembershipVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/MembershipVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    MembershipVO:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        status:
+          type: string
+          description: 顾客或会员状态
+          enum:
+          - CUSTOMER
+          - MEMBER
+        memberCode:
+          type: string
+          description: 场馆内会员码
+        memberQrDataUrl:
+          type: string
+          description: 会员码二维码 PNG Data URL
+        paidBalanceFen:
+          type: integer
+          format: int64
+          description: 实付余额，单位分；P1 固定为 0
+        giftBalanceFen:
+          type: integer
+          format: int64
+          description: 赠送余额，单位分；P1 固定为 0
+        expiringGiftBalanceFen:
+          type: integer
+          format: int64
+          description: 最近到期赠送余额，单位分
+        nextGiftExpiresAt:
+          type: string
+          format: date-time
+          description: 最近赠送余额到期时间
+    ApiResponseListMembershipVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/MembershipVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseBookingDetailVO:
+      type: object
+      properties:
+        data:
+          "$ref": "#/components/schemas/BookingDetailVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    BookingDetailVO:
+      type: object
+      properties:
+        booking:
+          "$ref": "#/components/schemas/BookingVO"
+          description: 预约信息
+        payment:
+          "$ref": "#/components/schemas/PaymentVO"
+          description: 支付信息
+        refund:
+          "$ref": "#/components/schemas/RefundVO"
+          description: 退款信息
+        composition:
+          "$ref": "#/components/schemas/PaymentCompositionVO"
+          description: 固定支付组成
+        credential:
+          "$ref": "#/components/schemas/CredentialVO"
+          description: 核销凭证
+    CredentialVO:
+      type: object
+      properties:
+        qr:
+          type: string
+          description: 二维码图片
+        shortCode:
+          type: string
+          description: 六位核销短码
+    PaymentCompositionLotVO:
+      type: object
+      properties:
+        holdId:
+          type: integer
+          format: int64
+          description: 冻结明细 ID
+        lotId:
+          type: integer
+          format: int64
+          description: 余额批次 ID
+        type:
+          type: string
+          description: 余额类型
+          enum:
+          - PAID
+          - GIFT
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位分
+        status:
+          type: string
+          description: 冻结状态
+          enum:
+          - FROZEN
+          - CONSUMED
+          - RELEASED
+        expiresAt:
+          type: string
+          format: date-time
+          description: 批次到期时间
+    PaymentCompositionVO:
+      type: object
+      properties:
+        totalAmountFen:
+          type: integer
+          format: int32
+          description: 预约总额，单位分
+        balanceAmountFen:
+          type: integer
+          format: int32
+          description: 余额总额，单位分
+        giftBalanceAmountFen:
+          type: integer
+          format: int32
+          description: 赠送余额，单位分
+        paidBalanceAmountFen:
+          type: integer
+          format: int32
+          description: 实付余额，单位分
+        externalAmountFen:
+          type: integer
+          format: int32
+          description: 外部支付额，单位分
+        lots:
+          type: array
+          description: 余额批次明细
+          items:
+            "$ref": "#/components/schemas/PaymentCompositionLotVO"
+    PaymentVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        businessNo:
+          type: string
+          description: 支付业务号
+        provider:
+          type: string
+          description: 支付渠道
+          enum:
+          - MOCK
+        providerNo:
+          type: string
+          description: 支付渠道流水号
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PENDING
+          - SUCCESS
+          - FAILED
+          - CLOSED
+        paidAt:
+          type: string
+          format: date-time
+          description: 支付时间
+    ApiResponseListUserBookingVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/UserBookingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    UserBookingVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 主键 ID
+        bookingNo:
+          type: string
+          description: 预约编号
+        venueName:
+          type: string
+          description: 场馆名称
+        courtName:
+          type: string
+          description: 场地名称
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          description: 开始时间
+        endAt:
+          type: string
+          description: 结束时间
+        amountFen:
+          type: integer
+          format: int32
+          description: 金额，单位为分
+        status:
+          type: string
+          description: 状态
+          enum:
+          - PENDING_PAYMENT
+          - CONFIRMED
+          - COMPLETED
+          - CANCELLED
+          - NO_SHOW
+          - ENDED_UNTRACKED
+        paymentExpiresAt:
+          type: string
+          description: 支付过期时间
+        paymentStatus:
+          type: string
+          description: 支付状态
+          enum:
+          - UNRECORDED
+          - UNPAID
+          - PAYING
+          - PAID
+          - REFUNDING
+          - REFUNDED
+          - PAYMENT_FAILED
+          - REFUND_FAILED
+        refundStatus:
+          type: string
+          description: 退款状态
+          enum:
+          - PROCESSING
+          - SUCCESS
+          - FAILED
+          - CLOSED

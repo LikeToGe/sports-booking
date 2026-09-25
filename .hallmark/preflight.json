@@ -1,9 +1,39 @@
 {
-  "date": "2026-09-03",
-  "framework": "Vue 3, TypeScript and Vite",
-  "entries": ["admin-web"],
-  "fonts": "Songti SC display, PingFang SC body and platform numeric fonts",
-  "motion": "CSS-only, no motion library",
-  "preserved": ["application routes", "API contracts", "Lucide icons"],
-  "introduced": ["Workbench admin shell", "shared pagination", "responsive data panels"]
+  "date": "2026-09-14",
+  "scope": "multi-page app",
+  "design_system": "design.md detected and intentionally replaced under P0-T3",
+  "frameworks": {
+    "admin": "Vue 3.5, TypeScript, Vue Router and Vite",
+    "miniapp": "native WeChat Mini Program"
+  },
+  "pages": {
+    "admin_views": 11,
+    "miniapp_pages": 10
+  },
+  "fonts": "No project web-font loader; existing styles referenced unavailable brand faces",
+  "palette": "Existing OKLCH variables with zero-chroma surfaces and green/black primary interaction",
+  "motion": "CSS transitions only; no motion library",
+  "spacing": "Named root tokens in tokens.css; page-level WXSS also contains raw rpx values",
+  "navigation": "Admin has grouped sidebar; miniapp currently has 3 tabs, while P1 requires 4 and P4 requires 5",
+  "preserved": [
+    "application routes and component ownership",
+    "Vue single-file components and native WeChat pages",
+    "Lucide as the admin icon set",
+    "licensed venue photography with source records"
+  ],
+  "introduced": [
+    "Workbench admin contract",
+    "Narrative Workflow booking contract",
+    "Ecosystem Index community allowance",
+    "shared Yuechang Functional tokens and eight-state rules",
+    "three distinct venue covers and two primary-venue detail images"
+  ],
+  "evidence": [
+    "admin-web/package.json:7-20",
+    "admin-web/src/styles.css:1-75",
+    "admin-web/src/App.vue:27-106",
+    "miniapp/app.json:2-33",
+    "miniapp/app.wxss:1-77",
+    "miniapp/pages/home/index.wxml:1-34"
+  ]
 }

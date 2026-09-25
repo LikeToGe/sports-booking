@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-09-14",
+    "scope": "app",
+    "macrostructure": "Workbench + Narrative Workflow + Ecosystem Index",
+    "theme": "custom",
+    "theme_axes": "cool-paper / Chinese-sans / semantic-blue",
+    "vibe": "强功能、低干扰、直接预约",
+    "enrichment": "licensed Unsplash venue photography",
+    "brief": "P0-T3 约场双端设计系统重建"
+  },
+  {
     "date": "2026-09-10",
     "scope": "app",
     "macrostructure": "Ecosystem Index + Workbench",
