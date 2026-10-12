@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.UgcMediaMapper">
+    <insert id="insertUpload" useGeneratedKeys="true" keyProperty="upload.id">
+        INSERT INTO s_ugc_upload
+            (owner_user_id, media_type, object_key, mime_type, size_bytes, sha256,
+             duration_seconds, status, expires_at)
+        VALUES (#{upload.ownerUserId}, #{upload.mediaType}, #{upload.objectKey}, #{upload.mimeType},
+                #{upload.sizeBytes}, #{upload.sha256}, #{upload.durationSeconds}, 'STAGED', #{upload.expiresAt})
+    </insert>
+
+    <select id="selectUploadsForUpdate" resultType="com.sportsbooking.admin.base.po.UgcUpload">
+        SELECT * FROM s_ugc_upload WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY id FOR UPDATE
+    </select>
+
+    <update id="markUploadsAttached">
+        UPDATE s_ugc_upload SET status = 'ATTACHED'
+        WHERE owner_user_id = #{userId} AND status = 'STAGED' AND expires_at > UTC_TIMESTAMP(3)
+          AND id IN <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+
+    <select id="selectExpiredUploads" resultType="com.sportsbooking.admin.base.po.UgcUpload">
+        SELECT * FROM s_ugc_upload WHERE status = 'STAGED' AND expires_at &lt;= UTC_TIMESTAMP(3)
+        ORDER BY expires_at, id LIMIT 100 FOR UPDATE SKIP LOCKED
+    </select>
+
+    <update id="markUploadPurged">
+        UPDATE s_ugc_upload SET status = 'PURGED' WHERE id = #{id} AND status = 'STAGED'
+    </update>
+
+    <insert id="insertPostMedia">
+        INSERT INTO s_post_media
+            (revision_id, position, media_type, storage_provider, object_key, mime_type,
+             size_bytes, sha256, duration_seconds, moderation_status, cleanup_status)
+        VALUES <foreach collection="media" item="m" separator=",">
+            (#{m.revisionId}, #{m.position}, #{m.mediaType}, #{m.storageProvider}, #{m.objectKey},
+             #{m.mimeType}, #{m.sizeBytes}, #{m.sha256}, #{m.durationSeconds},
+             #{m.moderationStatus}, 'ACTIVE')
+        </foreach>
+    </insert>
+
+    <insert id="insertReviewMedia">
+        INSERT INTO s_venue_review_media
+            (revision_id, position, storage_provider, object_key, mime_type,
+             size_bytes, sha256, moderation_status, cleanup_status)
+        VALUES <foreach collection="media" item="m" separator=",">
+            (#{m.revisionId}, #{m.position}, #{m.storageProvider}, #{m.objectKey},
+             #{m.mimeType}, #{m.sizeBytes}, #{m.sha256}, #{m.moderationStatus}, 'ACTIVE')
+        </foreach>
+    </insert>
+
+    <select id="selectPostMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT * FROM s_post_media WHERE revision_id = #{revisionId} ORDER BY position
+    </select>
+    <select id="selectPostMediaById" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT * FROM s_post_media WHERE id = #{mediaId} AND cleanup_status != 'PURGED'
+    </select>
+    <select id="selectReviewMediaById" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT id,revision_id,position,'IMAGE' AS mediaType,storage_provider,object_key,mime_type,
+               size_bytes,sha256,moderation_status,cleanup_status
+        FROM s_venue_review_media WHERE id = #{mediaId} AND cleanup_status != 'PURGED'
+    </select>
+
+    <select id="selectPostMediaByRevisions" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT * FROM s_post_media WHERE revision_id IN
+        <foreach collection="revisionIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY revision_id, position
+    </select>
+
+    <select id="selectReviewMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.id, m.revision_id, m.position, 'IMAGE' AS mediaType, m.storage_provider,
+               m.object_key, m.mime_type, m.size_bytes, m.sha256, NULL AS durationSeconds,
+               m.moderation_status, m.cleanup_status, m.purge_after, m.legal_hold
+        FROM s_venue_review_media m WHERE m.revision_id = #{revisionId} ORDER BY m.position
+    </select>
+
+    <select id="selectReviewMediaByRevisions" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.id, m.revision_id, m.position, 'IMAGE' AS mediaType, m.storage_provider,
+               m.object_key, m.mime_type, m.size_bytes, m.sha256, NULL AS durationSeconds,
+               m.moderation_status, m.cleanup_status, m.purge_after, m.legal_hold
+        FROM s_venue_review_media m WHERE m.revision_id IN
+        <foreach collection="revisionIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY m.revision_id, m.position
+    </select>
+
+    <select id="selectPublicPostMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.* FROM s_post_media m JOIN s_post p ON p.public_revision_id = m.revision_id
+        JOIN s_post_revision r ON r.id = m.revision_id
+        WHERE m.id = #{mediaId} AND p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND r.moderation_status = 'APPROVED' AND m.moderation_status = 'APPROVED'
+          AND m.cleanup_status = 'ACTIVE'
+          AND (p.author_type != 'USER' OR EXISTS (
+              SELECT 1 FROM s_user_account u WHERE u.id = p.author_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL))
+          AND (p.author_type != 'USER' OR NOT EXISTS (
+              SELECT 1 FROM s_user_block b
+              WHERE (b.blocker_user_id = #{userId} AND b.blocked_user_id = p.author_id)
+                 OR (b.blocker_user_id = p.author_id AND b.blocked_user_id = #{userId})))
+    </select>
+
+    <select id="selectOwnedPostMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.* FROM s_post_media m JOIN s_post_revision r ON r.id = m.revision_id
+        JOIN s_post p ON p.id = r.post_id
+        WHERE m.id = #{mediaId} AND p.author_type = 'USER' AND p.author_id = #{userId}
+          AND p.deleted_at IS NULL AND m.cleanup_status = 'ACTIVE'
+          AND EXISTS (SELECT 1 FROM s_user_account u WHERE u.id = p.author_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
+    </select>
+
+    <select id="selectPublicReviewMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.id, m.revision_id, m.position, 'IMAGE' AS mediaType, m.storage_provider,
+               m.object_key, m.mime_type, m.size_bytes, m.sha256
+        FROM s_venue_review_media m JOIN s_venue_review r ON r.public_revision_id = m.revision_id
+        JOIN s_venue_review_revision rev ON rev.id = m.revision_id
+        WHERE m.id = #{mediaId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED' AND m.moderation_status = 'APPROVED'
+          AND m.cleanup_status = 'ACTIVE'
+    </select>
+
+    <select id="selectOwnedReviewMedia" resultType="com.sportsbooking.admin.base.bo.UgcMediaBO">
+        SELECT m.id, m.revision_id, m.position, 'IMAGE' AS mediaType, m.storage_provider,
+               m.object_key, m.mime_type, m.size_bytes, m.sha256
+        FROM s_venue_review_media m JOIN s_venue_review_revision rev ON rev.id = m.revision_id
+        JOIN s_venue_review r ON r.id = rev.review_id
+        WHERE m.id = #{mediaId} AND r.user_id = #{userId} AND r.deleted_at IS NULL
+          AND m.cleanup_status = 'ACTIVE'
+    </select>
+
+    <insert id="insertDetectionJob">
+        INSERT INTO s_content_detection_job (content_type, revision_id, auto_publish)
+        VALUES (#{contentType}, #{revisionId}, #{autoPublish})
+    </insert>
+
+    <select id="selectDetectionStatus" resultType="java.lang.String">
+        SELECT status FROM s_content_detection_job
+        WHERE content_type = #{contentType} AND revision_id = #{revisionId} LIMIT 1
+    </select>
+
+    <select id="selectQueuedJobsForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentDetectionJobBO">
+        SELECT id, content_type, revision_id, auto_publish FROM s_content_detection_job
+        WHERE status = 'QUEUED' ORDER BY id LIMIT 100 FOR UPDATE SKIP LOCKED
+    </select>
+
+    <update id="setJobResult">
+        UPDATE s_content_detection_job SET status = #{status}, completed_at = UTC_TIMESTAMP(3)
+        WHERE id = #{jobId} AND status = 'QUEUED'
+    </update>
+
+    <update id="approvePostMedia">
+        UPDATE s_post_media SET moderation_status = 'APPROVED'
+        WHERE revision_id = #{revisionId} AND moderation_status IN ('PENDING','REJECTED')
+    </update>
+
+    <update id="approveReviewMedia">
+        UPDATE s_venue_review_media SET moderation_status = 'APPROVED'
+        WHERE revision_id = #{revisionId} AND moderation_status IN ('PENDING','REJECTED')
+    </update>
+
+    <update id="rejectPostMedia">
+        UPDATE s_post_media SET moderation_status = 'REJECTED'
+        WHERE revision_id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+
+    <update id="rejectReviewMedia">
+        UPDATE s_venue_review_media SET moderation_status = 'REJECTED'
+        WHERE revision_id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+
+    <update id="markPostDeleted">
+        UPDATE s_post_media m JOIN s_post_revision r ON r.id = m.revision_id
+        SET m.cleanup_status = 'PENDING', m.purge_after = #{purgeAfter}
+        WHERE r.post_id = #{postId} AND m.cleanup_status = 'ACTIVE'
+    </update>
+
+    <update id="markPostPurgeAfter">
+        UPDATE s_post SET purge_after = #{purgeAfter} WHERE id = #{postId} AND deleted_at IS NOT NULL
+    </update>
+
+    <update id="markReviewDeleted">
+        UPDATE s_venue_review_media m JOIN s_venue_review_revision r ON r.id = m.revision_id
+        SET m.cleanup_status = 'PENDING', m.purge_after = #{purgeAfter}
+        WHERE r.review_id = #{reviewId} AND m.cleanup_status = 'ACTIVE'
+    </update>
+
+    <update id="markReviewPurgeAfter">
+        UPDATE s_venue_review SET purge_after = #{purgeAfter}
+        WHERE id = #{reviewId} AND deleted_at IS NOT NULL
+    </update>
+    <update id="markCommentPurgeAfter">
+        UPDATE s_post_comment SET purge_after = #{purgeAfter}
+        WHERE id = #{commentId} AND deleted_at IS NOT NULL
+    </update>
+    <update id="markReplyPurgeAfter">
+        UPDATE s_venue_review_reply SET deleted_at = UTC_TIMESTAMP(3), purge_after = #{purgeAfter}
+        WHERE id = #{replyId} AND content_status = 'DELETED'
+    </update>
+
+    <select id="selectPurgeablePostObjects" resultType="java.lang.String">
+        SELECT m.object_key FROM s_post_media m
+        JOIN s_post_revision r ON r.id = m.revision_id JOIN s_post p ON p.id = r.post_id
+        LEFT JOIN s_user_account u ON p.author_type = 'USER' AND u.id = p.author_id
+        WHERE m.cleanup_status != 'PURGED' GROUP BY m.object_key
+        HAVING SUM(CASE WHEN m.cleanup_status != 'PENDING' OR m.legal_hold = TRUE OR p.legal_hold = TRUE
+                            OR COALESCE(u.legal_hold,FALSE) = TRUE
+                            OR m.purge_after IS NULL OR m.purge_after > UTC_TIMESTAMP(3)
+                        THEN 1 ELSE 0 END) = 0
+        LIMIT 100
+    </select>
+
+    <select id="selectPurgeableReviewObjects" resultType="java.lang.String">
+        SELECT m.object_key FROM s_venue_review_media m
+        JOIN s_venue_review_revision rev ON rev.id = m.revision_id
+        JOIN s_venue_review r ON r.id = rev.review_id
+        JOIN s_user_account u ON u.id = r.user_id
+        WHERE m.cleanup_status != 'PURGED' GROUP BY m.object_key
+        HAVING SUM(CASE WHEN m.cleanup_status != 'PENDING' OR m.legal_hold = TRUE OR r.legal_hold = TRUE
+                            OR u.legal_hold = TRUE
+                            OR m.purge_after IS NULL OR m.purge_after > UTC_TIMESTAMP(3)
+                        THEN 1 ELSE 0 END) = 0
+        LIMIT 100
+    </select>
+
+    <update id="markPostObjectPurged">
+        UPDATE s_post_media SET cleanup_status = 'PURGED'
+        WHERE object_key = #{objectKey} AND cleanup_status = 'PENDING'
+    </update>
+
+    <update id="markReviewObjectPurged">
+        UPDATE s_venue_review_media SET cleanup_status = 'PURGED'
+        WHERE object_key = #{objectKey} AND cleanup_status = 'PENDING'
+    </update>
+    <update id="revivePostMedia">
+        UPDATE s_post_media m JOIN s_post_revision r ON r.id = m.revision_id
+        SET m.cleanup_status = 'ACTIVE', m.purge_after = NULL
+        WHERE r.post_id = #{postId} AND m.cleanup_status = 'PENDING'
+    </update>
+    <update id="reviveReviewMedia">
+        UPDATE s_venue_review_media m JOIN s_venue_review_revision r ON r.id = m.revision_id
+        SET m.cleanup_status = 'ACTIVE', m.purge_after = NULL
+        WHERE r.review_id = #{reviewId} AND m.cleanup_status = 'PENDING'
+    </update>
+    <select id="hasPurgedMedia" resultType="java.lang.Integer">
+        <choose>
+            <when test="targetType == 'POST'">
+                SELECT EXISTS (SELECT 1 FROM s_post_media m JOIN s_post_revision r ON r.id = m.revision_id
+                    WHERE r.post_id = #{targetId} AND m.cleanup_status = 'PURGED')
+            </when>
+            <when test="targetType == 'REVIEW'">
+                SELECT EXISTS (SELECT 1 FROM s_venue_review_media m JOIN s_venue_review_revision r ON r.id = m.revision_id
+                    WHERE r.review_id = #{targetId} AND m.cleanup_status = 'PURGED')
+            </when>
+            <otherwise>SELECT 0</otherwise>
+        </choose>
+    </select>
+</mapper>

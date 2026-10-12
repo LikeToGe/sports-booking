@@ -25,6 +25,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Component;
  * @author gjm
  */
 @Component
+@Profile("demo")
 @Order(2)
 public class DemoDataRunner implements CommandLineRunner {
     private final VenueService venueService;
@@ -67,18 +69,32 @@ public class DemoDataRunner implements CommandLineRunner {
         }
         if (venueService.listPlatformVenues().isEmpty()) {
             List<SportType> sports = venueCatalogService.listGlobalSports();
+            SportType basketball = findSport(sports, "篮球", "篮球1");
+            SportType badminton = findSport(sports, "羽毛球");
+            SportType tennis = findSport(sports, "网球");
+            SportType tableTennis = findSport(sports, "乒乓球");
             seedVenue("郑东运动中心", "郑东新区商务内环路 22 号", "0371-5555-1001",
-                    new BigDecimal("34.7751000"), new BigDecimal("113.7285000"), "venue1", sports.get(0), sports.get(1));
+                    new BigDecimal("34.7751000"), new BigDecimal("113.7285000"), "venue1", badminton, badminton);
             seedVenue("二七全民健身馆", "二七区大学中路 86 号", "0371-5555-1002",
-                    new BigDecimal("34.7138000"), new BigDecimal("113.6389000"), "venue2", sports.get(1), sports.get(4));
+                    new BigDecimal("34.7138000"), new BigDecimal("113.6389000"), "venue2", badminton, tableTennis);
             seedVenue("高新活力球馆", "高新区科学大道 57 号", "0371-5555-1003",
-                    new BigDecimal("34.8105000"), new BigDecimal("113.5696000"), "venue3", sports.get(0), sports.get(2));
+                    new BigDecimal("34.8105000"), new BigDecimal("113.5696000"), "venue3", basketball, tennis);
         }
         if (bookingMapper.selectCount(null) == 0) {
             for (Venue venue : venueService.listPlatformVenues()) {
                 createDemoBooking(venue);
             }
         }
+    }
+
+    /**
+     * 演示场景固定使用真实运动名称，避免依赖数据库插入顺序把场馆配到测试或停用类型。
+     */
+    private SportType findSport(List<SportType> sports, String... names) {
+        return sports.stream()
+                .filter(item -> java.util.Arrays.stream(names).anyMatch(name -> name.equals(item.name)))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("演示数据缺少运动类型: " + String.join(" / ", names)));
     }
 
     /**
@@ -98,7 +114,9 @@ public class DemoDataRunner implements CommandLineRunner {
 
         Court firstCourt = venueCatalogService.createCourt(venue.id, firstSport.name + " 1 号场",
                 List.of(firstSport.id));
-        Court secondCourt = venueCatalogService.createCourt(venue.id, secondSport.name + " 1 号场",
+        // 同运动的两片场地使用不同序号，避免触发场馆内名称唯一约束。
+        String secondCourtName = secondSport.name + (firstSport.id.equals(secondSport.id) ? " 2 号场" : " 1 号场");
+        Court secondCourt = venueCatalogService.createCourt(venue.id, secondCourtName,
                 List.of(secondSport.id));
         for (int day = 1; day <= 7; day++) {
             addSlot(venue.id, firstCourt.id, firstSport.id, day, 9, 10, 6000);

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PostInteractionMapper">
+    <select id="selectCommentForUpdate" resultType="com.sportsbooking.admin.base.po.PostComment">
+        SELECT * FROM s_post_comment WHERE id = #{commentId} FOR UPDATE
+    </select>
+    <select id="selectComment" resultType="com.sportsbooking.admin.base.po.PostComment">
+        SELECT * FROM s_post_comment WHERE id = #{commentId}
+    </select>
+    <select id="selectCommentRevision" resultType="com.sportsbooking.admin.base.po.PostCommentRevision">
+        SELECT * FROM s_post_comment_revision WHERE id = #{revisionId}
+    </select>
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="comment.id">
+        INSERT INTO s_post_comment (post_id, author_user_id, parent_comment_id, content_status)
+        VALUES (#{comment.postId}, #{comment.authorUserId}, #{comment.parentCommentId}, #{comment.contentStatus})
+    </insert>
+    <insert id="insertCommentRevision" useGeneratedKeys="true" keyProperty="revision.id">
+        INSERT INTO s_post_comment_revision (comment_id, revision_no, body, moderation_status)
+        VALUES (#{revision.commentId}, #{revision.revisionNo}, #{revision.body}, #{revision.moderationStatus})
+    </insert>
+    <update id="setCommentCurrent">
+        UPDATE s_post_comment SET current_revision_id = #{revisionId},
+            content_status = CASE WHEN public_revision_id IS NULL THEN 'PENDING' ELSE content_status END,
+            updated_at = UTC_TIMESTAMP(3) WHERE id = #{commentId} AND deleted_at IS NULL
+    </update>
+    <update id="publishComment">
+        UPDATE s_post_comment SET public_revision_id = #{revisionId},
+            content_status = CASE WHEN content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{commentId} AND current_revision_id = #{revisionId} AND deleted_at IS NULL
+    </update>
+    <update id="decideComment">
+        UPDATE s_post_comment_revision SET moderation_status = #{status}
+        WHERE id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+    <update id="deleteComment">
+        UPDATE s_post_comment SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3), updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{commentId} AND author_user_id = #{userId} AND deleted_at IS NULL
+    </update>
+    <select id="selectPublicComments" resultType="com.sportsbooking.admin.base.bo.PostCommentBO">
+        SELECT c.id, c.post_id, c.author_user_id, c.parent_comment_id, r.id AS revisionId,
+               CASE WHEN c.content_status = 'DELETED' THEN '评论已删除' ELSE r.body END AS body,
+               c.content_status, c.created_at, u.nickname AS authorName, r.moderation_status AS moderationStatus
+        FROM s_post_comment c JOIN s_post_comment_revision r ON r.id = c.public_revision_id
+        JOIN s_post p ON p.id = c.post_id
+        JOIN s_user_account u ON u.id = c.author_user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        WHERE c.post_id = #{postId} AND p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND r.moderation_status = 'APPROVED'
+          AND (c.content_status = 'PUBLISHED' OR (c.content_status = 'DELETED' AND c.parent_comment_id IS NULL
+              AND EXISTS (SELECT 1 FROM s_post_comment child
+                  WHERE child.parent_comment_id = c.id AND child.content_status = 'PUBLISHED')))
+          AND (c.parent_comment_id IS NULL OR EXISTS (
+              SELECT 1 FROM s_post_comment parent JOIN s_user_account pu ON pu.id = parent.author_user_id
+              WHERE parent.id = c.parent_comment_id AND parent.content_status IN ('PUBLISHED','DELETED')
+                AND pu.status = 'ACTIVE' AND pu.deleted_at IS NULL
+                AND NOT EXISTS (SELECT 1 FROM s_user_block pb
+                    WHERE (pb.blocker_user_id = #{userId} AND pb.blocked_user_id = parent.author_user_id)
+                       OR (pb.blocker_user_id = parent.author_user_id AND pb.blocked_user_id = #{userId}))))
+          AND NOT EXISTS (SELECT 1 FROM s_user_block b
+                          WHERE (b.blocker_user_id = #{userId} AND b.blocked_user_id = c.author_user_id)
+                             OR (b.blocker_user_id = c.author_user_id AND b.blocked_user_id = #{userId}))
+        ORDER BY c.created_at, c.id LIMIT 200
+    </select>
+    <insert id="insertLike">
+        INSERT IGNORE INTO s_post_like (post_id, user_id) VALUES (#{postId}, #{userId})
+    </insert>
+    <delete id="deleteLike">DELETE FROM s_post_like WHERE post_id = #{postId} AND user_id = #{userId}</delete>
+    <select id="countLikes" resultType="int">SELECT COUNT(*) FROM s_post_like WHERE post_id = #{postId}</select>
+    <insert id="insertBlock">INSERT IGNORE INTO s_user_block (blocker_user_id, blocked_user_id) VALUES (#{userId}, #{blockedUserId})</insert>
+    <delete id="deleteBlock">DELETE FROM s_user_block WHERE blocker_user_id = #{userId} AND blocked_user_id = #{blockedUserId}</delete>
+    <select id="selectBlockedUsers" resultType="com.sportsbooking.admin.base.po.UserAccount">
+        SELECT u.id,u.nickname,u.avatar_url FROM s_user_block b JOIN s_user_account u ON u.id = b.blocked_user_id
+        WHERE b.blocker_user_id = #{userId} ORDER BY b.created_at DESC,b.blocked_user_id
+    </select>
+    <select id="isBlocked" resultType="java.lang.Integer">
+        SELECT EXISTS (SELECT 1 FROM s_user_block
+            WHERE (blocker_user_id = #{userId} AND blocked_user_id = #{otherUserId})
+               OR (blocker_user_id = #{otherUserId} AND blocked_user_id = #{userId}))
+    </select>
+    <select id="selectModerationQueue" resultType="com.sportsbooking.admin.base.bo.VenueReviewModerationBO">
+        SELECT 'COMMENT' AS contentType, c.id AS reviewId, rev.id AS revisionId, rev.body,
+               pub.body AS publicBody, c.content_status AS contentStatus,
+               rev.moderation_status AS moderationStatus, rev.created_at AS submittedAt
+        FROM s_post_comment c JOIN s_post_comment_revision rev ON rev.id = c.current_revision_id
+        LEFT JOIN s_post_comment_revision pub ON pub.id = c.public_revision_id
+        WHERE c.deleted_at IS NULL AND (rev.moderation_status = 'PENDING' OR c.content_status IN ('PUBLISHED','HIDDEN'))
+        ORDER BY (rev.moderation_status = 'PENDING') DESC, rev.created_at, c.id LIMIT 100
+    </select>
+    <update id="setCommentStatus">
+        UPDATE s_post_comment SET content_status = #{status}, updated_at = UTC_TIMESTAMP(3),
+            deleted_at = CASE WHEN #{status} = 'DELETED' THEN UTC_TIMESTAMP(3) ELSE deleted_at END
+        WHERE id = #{commentId} AND deleted_at IS NULL
+    </update>
+    <insert id="insertModerationLog">
+        INSERT INTO s_content_moderation_log (content_type,content_id,revision_id,action,reason,operator_admin_id)
+        VALUES ('COMMENT',#{commentId},#{revisionId},#{action},#{reason},#{adminId})
+    </insert>
+    <update id="setCommentsEnabled">
+        UPDATE s_post SET comments_enabled = #{enabled}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND deleted_at IS NULL
+    </update>
+    <select id="hasActiveRecruitment" resultType="java.lang.Integer">
+        SELECT EXISTS (SELECT 1 FROM s_post_recruitment r JOIN s_booking b ON b.id = r.booking_id
+            WHERE r.post_id = #{postId} AND r.status IN ('RECRUITING','FULL') AND b.status = 'CONFIRMED'
+              AND b.start_at > UTC_TIMESTAMP(3))
+    </select>
+    <update id="detachBlockedMembers">
+        UPDATE s_post_recruitment_member m JOIN s_post_recruitment r ON r.id = m.recruitment_id
+        JOIN s_post p ON p.id = r.post_id
+        SET m.status = 'REMOVED', m.decided_at = UTC_TIMESTAMP(3)
+        WHERE p.author_type = 'USER' AND m.status IN ('APPLIED','APPROVED')
+          AND ((p.author_id = #{userId} AND m.user_id = #{blockedUserId})
+             OR (p.author_id = #{blockedUserId} AND m.user_id = #{userId}))
+    </update>
+    <select id="isCommentOwner" resultType="boolean">SELECT EXISTS (SELECT 1 FROM s_post_comment WHERE id = #{commentId} AND author_user_id = #{userId})</select>
+</mapper>

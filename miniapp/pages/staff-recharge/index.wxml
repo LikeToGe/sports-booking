@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page staff-recharge-page">
   <view class="screen-head"><text class="screen-title">员工人工充值</text><text class="muted">为 {{customerName}} 登记一笔真实收款充值。</text></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>

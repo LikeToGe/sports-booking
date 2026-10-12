@@ -1,25 +1,36 @@
-.venue-page { min-height: 100vh; background: var(--paper-2); }
-.hero-image { width: 100%; height: 360rpx; background: var(--paper-2); }
-.detail-body { display: grid; align-content: start; gap: 24rpx; padding-top: 0; }
-.venue-summary { display: grid; gap: 22rpx; margin-top: -36rpx; padding: 28rpx; }
+.venue-page { min-height: 100vh; background: var(--paper); }
+.hero-image { width: 100%; height: 430rpx; background: var(--paper-2); }
+.detail-body { display: grid; align-content: start; gap: 28rpx; padding-top: 0; }
+.venue-summary { display: grid; gap: 22rpx; margin-top: 0; padding: 28rpx; border: 1px solid var(--rule); border-radius: 0; background: var(--surface); color: var(--ink); box-shadow: none; }
+.venue-summary .screen-title { color: var(--ink); font-size: 46rpx; }
+.venue-summary .muted { color: var(--muted); }
 .venue-head, .booking-head, .court-head { display: flex; align-items: start; justify-content: space-between; gap: 20rpx; }
 .venue-head > view, .booking-head > view { display: grid; gap: 8rpx; min-width: 0; }
 .address, .hint { font-size: 24rpx; }
-.map-button { flex: 0 0 auto; min-width: 112rpx; }
-.facility-line { padding-top: 20rpx; border-top: 2rpx solid var(--rule-2); color: var(--ink-2); }
-.booking-panel { display: grid; gap: 22rpx; padding: 28rpx; }
-.date-button { min-height: 88rpx; padding: 12rpx 18rpx; border: 2rpx solid var(--rule); border-radius: 999rpx; background: var(--paper); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.map-button { flex: 0 0 auto; min-width: 112rpx; border-color: var(--color-primary); color: var(--color-primary); }
+.facility-line { padding-top: 20rpx; border-top: 1rpx solid var(--rule); color: var(--ink-2); }
+.booking-panel { display: grid; gap: 22rpx; padding: 26rpx 22rpx 30rpx; border: 1rpx solid var(--rule); border-radius: 28rpx; background: var(--surface); box-shadow: var(--shadow); }
+.booking-head { position: sticky; top: 0; z-index: 2; margin: -26rpx -22rpx 0; padding: 26rpx 22rpx 16rpx; background: var(--surface); }
+.date-button { min-height: 82rpx; padding: 12rpx 18rpx; border: 1rpx solid var(--ink); border-radius: 14rpx; background: var(--color-primary); color: var(--color-primary-ink); font-size: 24rpx; font-variant-numeric: tabular-nums; }
 .sport-strip { width: 100%; white-space: nowrap; }
-.sport-chip { display: inline-flex; min-height: 88rpx; margin-right: 12rpx; padding: 0 22rpx; border: 2rpx solid var(--rule); border-radius: 999rpx; background: var(--surface); color: var(--ink-2); line-height: 84rpx; }
-.sport-chip.is-active { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
-.court-groups { display: grid; gap: 28rpx; }
-.court-group { display: grid; gap: 12rpx; }
-.court-head { align-items: baseline; padding-bottom: 12rpx; border-bottom: 2rpx solid var(--rule-2); font-weight: 600; }
+.sport-chip { display: inline-flex; min-height: 78rpx; margin-right: 10rpx; padding: 0 20rpx; border: 1rpx solid var(--rule); border-radius: 14rpx; background: transparent; color: var(--ink-2); line-height: 76rpx; }
+.sport-chip.is-active { border-color: var(--ink); background: var(--color-primary); color: var(--color-primary-ink); }
+.court-groups { display: grid; gap: 14rpx; }
+.court-group { display: grid; gap: 14rpx; padding: 20rpx; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.court-head { align-items: baseline; padding-bottom: 14rpx; border-bottom: 1rpx solid var(--rule-2); font-weight: 700; }
 .court-title { display: flex; align-items: center; gap: 14rpx; min-width: 0; }
-.court-image { width: 72rpx; height: 56rpx; border-radius: 0; background: var(--paper-2); }
-.court-head .muted { font-size: 24rpx; font-weight: 400; }
-.slot-list { display: grid; }
-.slot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 18rpx; width: 100%; min-height: 88rpx; padding: 0; border-bottom: 2rpx solid var(--rule-2); background: transparent; color: var(--ink); text-align: left; }
-.slot-time { font-variant-numeric: tabular-nums; font-weight: 600; }
-.book-label { color: var(--signal-strong); font-size: 24rpx; }
-.notice { display: grid; gap: 12rpx; padding: 28rpx; }
+.court-image { width: 72rpx; height: 56rpx; border-radius: 10rpx; background: var(--paper-2); }
+.court-head .muted { font-size: 22rpx; font-weight: 400; }
+.slot-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10rpx; }
+.slot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8rpx; width: 100%; min-height: 86rpx; padding: 0 16rpx; border: 1rpx solid var(--rule); border-radius: 14rpx; background: var(--surface-card); color: var(--ink); text-align: left; }
+.slot-time { grid-column: 1 / -1; padding-top: 12rpx; font-variant-numeric: tabular-nums; font-weight: 700; }
+.book-label { color: var(--signal-strong); font-size: 21rpx; font-weight: 700; }
+.slot-row .price { font-size: 23rpx; }
+.notice { display: grid; gap: 12rpx; padding: 26rpx 0; border: 0; border-top: 1rpx solid var(--rule); border-radius: 0; background: transparent; box-shadow: none; }
+.reviews-section { display: grid; gap: 18rpx; padding: 28rpx 0; }
+.review-score { display: flex; align-items: baseline; gap: 16rpx; }
+.review-score strong { color: var(--signal-strong); font-size: 52rpx; }
+.review-preview { display: grid; gap: 8rpx; padding: 20rpx 0; border-top: 1rpx solid var(--rule-2); }
+.review-preview > view { display: flex; justify-content: space-between; gap: 20rpx; }
+.venue-load-error { display: grid; align-content: start; gap: 20rpx; }
+.venue-loading { min-height: 55vh; }

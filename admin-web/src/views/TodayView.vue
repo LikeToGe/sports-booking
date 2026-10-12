@@ -25,6 +25,10 @@ const canViewSessions = hasPermission("SESSION_VIEW");
 const canEditSessions = hasPermission("SESSION_EDIT");
 const canEditBookings = hasPermission("BOOKING_EDIT");
 const canEditOfflinePayment = hasPermission("OFFLINE_PAYMENT_STATUS_EDIT");
+const priorityCount = computed(() => {
+  if (!report.value) return 0;
+  return report.value.pendingVerificationCount + report.value.offlineUnrecordedCount + report.value.offlineUnpaidCount;
+});
 
 const courts = computed(() => [...new Map(sessions.value.map(item => [item.courtId, item.courtName])).entries()]
   .map(([id, name]) => ({ id, name })));
@@ -78,6 +82,7 @@ function cellLabel(slot: SessionView) {
 }
 
 function cellTone(slot: SessionView) {
+  if (slot.status === "BOOKED" && slot.bookingSource === "ONLINE" && slot.bookingStatus === "CONFIRMED") return "info";
   return statusTone(slot.paymentStatus || slot.bookingStatus || slot.status);
 }
 
@@ -136,11 +141,20 @@ onMounted(() => Promise.all([canViewSessions ? load() : Promise.resolve(), loadR
 </script>
 
 <template>
-  <section class="page">
+  <section class="page dashboard-page" :class="{ 'without-schedule': !canViewSessions }">
+    <div class="dashboard-header">
     <header class="page-header"><div><h1>今日运营</h1><p>{{ canViewSessions ? "查看经营趋势，并按时间和场地处理当日运营。" : "查看场馆核心经营指标与趋势。" }}</p></div></header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+    </div>
+    <section v-if="report" class="ops-focus" aria-label="今日重点">
+      <div class="ops-focus-lead"><span>接下来要处理</span><strong>{{ priorityCount ? `还有 ${priorityCount} 项待处理` : "当前没有待处理事项" }}</strong><small>履约、收款与会员经营</small></div>
+      <div class="ops-focus-item" data-tone="warning"><span>待核销</span><strong>{{ report.pendingVerificationCount }}</strong><small>线上预约</small></div>
+      <div class="ops-focus-item" data-tone="danger"><span>待登记</span><strong>{{ report.offlineUnrecordedCount + report.offlineUnpaidCount }}</strong><small>线下收款</small></div>
+      <div class="ops-focus-item" data-tone="active"><span>新增会员</span><strong>{{ report.newMemberCount }}</strong><small>场馆会员</small></div>
+      <div class="ops-focus-item"><span>会员余额消费</span><strong>{{ money(report.balanceConsumptionFen) }}</strong><small>按会员消费口径</small></div>
+    </section>
     <dl v-if="report" class="dashboard-metrics" aria-label="经营核心指标">
-      <div><dt>线上预约经营金额</dt><dd>{{ money(report.onlineBookingAmountFen) }}</dd></div><div><dt>线下登记经营金额</dt><dd>{{ money(report.offlineRegisteredAmountFen) }}</dd></div><div><dt>场地利用率</dt><dd>{{ percent(report.utilizationRateBasisPoints) }}</dd></div><div><dt>线上待核销</dt><dd>{{ report.pendingVerificationCount }}</dd></div><div><dt>线下待登记</dt><dd>{{ report.offlineUnrecordedCount + report.offlineUnpaidCount }}</dd></div><div><dt>新增会员</dt><dd>{{ report.newMemberCount }}</dd></div><div><dt>充值实付流入</dt><dd>{{ money(report.rechargeInflowFen) }}</dd></div><div><dt>会员余额消费</dt><dd>{{ money(report.balanceConsumptionFen) }}</dd></div>
+      <div><dt>线上预约经营金额</dt><dd>{{ money(report.onlineBookingAmountFen) }}</dd></div><div><dt>线下登记经营金额</dt><dd>{{ money(report.offlineRegisteredAmountFen) }}</dd></div><div><dt>场地利用率</dt><dd>{{ percent(report.utilizationRateBasisPoints) }}</dd></div><div><dt>充值实付流入</dt><dd>{{ money(report.rechargeInflowFen) }}</dd></div>
     </dl>
     <section v-if="report" class="data-panel trend-panel" aria-labelledby="trend-title">
       <header class="data-panel-head"><div><h2 id="trend-title">经营趋势</h2><p>线上经营与线下登记金额合计</p></div><div class="tabs" role="tablist" aria-label="趋势区间"><button class="button" :class="{ secondary: trendDays !== 7 }" type="button" role="tab" :aria-selected="trendDays === 7" @click="setTrend(7)">7 天</button><button class="button" :class="{ secondary: trendDays !== 30 }" type="button" role="tab" :aria-selected="trendDays === 30" @click="setTrend(30)">30 天</button></div></header>
@@ -148,12 +162,13 @@ onMounted(() => Promise.all([canViewSessions ? load() : Promise.resolve(), loadR
       <details class="trend-data"><summary>查看趋势数据表</summary><div class="table-wrap"><table><thead><tr><th>日期</th><th>线上经营</th><th>线下登记</th><th>合计</th></tr></thead><tbody><tr v-for="day in trendRows" :key="day.reportDate"><td data-label="日期">{{ day.reportDate }}</td><td data-label="线上经营">{{ money(day.onlineBookingAmountFen) }}</td><td data-label="线下登记">{{ money(day.offlineRegisteredAmountFen) }}</td><td data-label="合计">{{ money(day.onlineBookingAmountFen + day.offlineRegisteredAmountFen) }}</td></tr></tbody></table></div></details>
     </section>
     <template v-if="canViewSessions">
+    <div class="dashboard-schedule">
     <div class="filter-bar" aria-label="日视图筛选">
       <label class="field"><span>日期</span><input v-model="selectedDate" type="date" @change="load"></label>
       <label class="field"><span>运动</span><select v-model="selectedSportId" @change="load"><option value="">全部运动</option><option v-for="sport in sports" :key="sport.id" :value="String(sport.id)">{{ sport.name }}</option></select></label>
       <button class="icon-button filter-action" type="button" aria-label="刷新日视图" title="刷新日视图" :disabled="loading" @click="load"><RefreshCw :size="19" aria-hidden="true" /></button>
     </div>
-    <section class="data-panel" aria-label="时间和场地日视图">
+    <section class="data-panel" aria-label="时间和场地日视图" :aria-busy="loading">
       <header class="data-panel-head"><div><h2>时间 × 场地</h2><p>{{ selectedDate }}，点击场次执行操作</p></div><span class="record-count">{{ sessions.length }} 场</span></header>
       <div v-if="sessions.length" class="day-grid-wrap">
         <div class="day-grid" :style="{ '--court-count': String(courts.length) }">
@@ -165,13 +180,21 @@ onMounted(() => Promise.all([canViewSessions ? load() : Promise.resolve(), loadR
                 <strong class="slot-state"><component :is="cellIcon(sessionMap.get(`${startAt}:${court.id}`)!)" :size="16" aria-hidden="true" />{{ cellLabel(sessionMap.get(`${startAt}:${court.id}`)!) }}</strong>
                 <span>{{ sessionMap.get(`${startAt}:${court.id}`)?.sportName }} · {{ money(sessionMap.get(`${startAt}:${court.id}`)?.priceFen) }}</span>
               </button>
-              <span v-else class="grid-empty">—</span>
+              <span v-else class="grid-empty">无场次</span>
             </template>
           </template>
         </div>
       </div>
       <div v-else-if="!loading" class="empty-state"><CalendarDays :size="28" aria-hidden="true" /><strong>这一天没有场次</strong><span>可在“具体场次”中临时加场。</span></div>
-      <div v-else class="empty-state" aria-live="polite"><span>正在加载日视图...</span></div>
+      <div v-else class="schedule-skeleton" aria-live="polite" aria-label="正在加载日视图"><span v-for="item in 6" :key="item"></span></div>
+      <div v-if="sessions.length" class="mobile-session-list">
+        <button v-for="slot in sessions" :key="slot.id" class="mobile-session" type="button" @click="openActions(slot)">
+          <time :datetime="slot.startAt">{{ time(slot.startAt) }}–{{ time(slot.endAt) }}</time>
+          <strong>{{ slot.courtName }}</strong>
+          <span class="status status-with-icon" :data-tone="cellTone(slot)"><component :is="cellIcon(slot)" :size="14" aria-hidden="true" />{{ cellLabel(slot) }}</span>
+          <small>{{ slot.sportName }} · {{ money(slot.priceFen) }}</small>
+        </button>
+      </div>
     </section>
 
     <dialog ref="drawer" class="drawer">
@@ -179,7 +202,7 @@ onMounted(() => Promise.all([canViewSessions ? load() : Promise.resolve(), loadR
       <div v-if="selected" class="drawer-body">
         <p v-if="actionError" class="error-banner" role="alert">{{ actionError }}</p>
         <div class="detail-list">
-          <div><span>时间</span><strong>{{ time(selected.startAt) }}–{{ time(selected.endAt) }}</strong></div>
+          <div><span>时间</span><strong>{{ time(selected.startAt) }} - {{ time(selected.endAt) }}</strong></div>
           <div><span>场地</span><strong>{{ selected.courtName }} · {{ selected.sportName }}</strong></div>
           <div><span>状态</span><strong>{{ cellLabel(selected) }}</strong></div>
         </div>
@@ -200,19 +223,63 @@ onMounted(() => Promise.all([canViewSessions ? load() : Promise.resolve(), loadR
         <button v-if="canEditSessions && selected.status === 'CLOSED'" class="button secondary" type="button" @click="changeSlot('open')">重新开放场次</button>
       </div>
     </dialog>
+    </div>
     </template>
   </section>
 </template>
 
 <style scoped>
-.dashboard-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border: 1px solid var(--color-rule-2); background: var(--color-surface); }
-.dashboard-metrics > div { min-width: 0; padding: var(--space-md); border-inline-end: 1px solid var(--color-rule-2); border-block-end: 1px solid var(--color-rule-2); }
+.dashboard-page { grid-template-columns: minmax(0, 1fr) 16rem; grid-template-areas: "header header" "metrics metrics" "schedule focus" "trend trend"; align-items: start; }
+.dashboard-header { grid-area: header; display: grid; gap: var(--space-md); }
+
+.dashboard-page > .dashboard-metrics { grid-area: metrics; }
+.dashboard-page > .trend-panel { grid-area: trend; min-width: 0; }
+.dashboard-schedule { grid-area: schedule; display: grid; align-content: start; gap: var(--space-md); min-width: 0; }
+.dashboard-schedule > .data-panel { min-width: 0; }
+.ops-focus { grid-area: focus; display: grid; padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-surface); }
+.ops-focus-lead, .ops-focus-item { display: grid; align-content: start; gap: var(--space-xs); padding-block: var(--space-md); }
+.ops-focus-lead { padding-block-start: 0; }
+.ops-focus-lead span { font-size: var(--text-base); font-weight: 600; }
+.ops-focus-lead strong { font-size: var(--text-sm); font-weight: 500; color: var(--color-muted); }
+.ops-focus-lead small, .ops-focus-item small { color: var(--color-muted); font-size: var(--text-xs); }
+.ops-focus-item { border-block-start: 1px solid var(--color-rule); grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }
+.ops-focus-item span { font-size: var(--text-sm); }
+.ops-focus-item small { grid-column: 1 / -1; }
+.ops-focus-item strong { font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ops-focus-item[data-tone="warning"] strong, .ops-focus-item[data-tone="danger"] strong { color: var(--color-warning-strong); }
+.dashboard-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border: 1px solid var(--color-rule); background: var(--color-surface); }
+.dashboard-metrics > div { min-width: 0; padding: var(--space-lg); border-inline-end: 1px solid var(--color-rule); }
+.dashboard-metrics > div:last-child { border: 0; }
 .dashboard-metrics dt { color: var(--color-muted); font-size: var(--text-xs); }
-.dashboard-metrics dd { margin: var(--space-xs) 0 0; overflow-wrap: anywhere; font-family: var(--font-numeric); font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums; }
-.trend-chart { width: 100%; height: 10rem; border-block: 1px solid var(--color-rule-2); }
+.dashboard-metrics dd { margin: var(--space-sm) 0 0; overflow-wrap: anywhere; color: var(--color-ink); font-size: var(--text-2xl); font-weight: 600; font-variant-numeric: tabular-nums; }
+.trend-chart { width: 100%; height: 10rem; padding: var(--space-md); }
 .trend-chart line { stroke: var(--color-rule); stroke-width: 1; }
-.trend-chart polyline { fill: none; stroke: var(--color-signal); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.trend-chart polyline { fill: none; stroke: var(--color-primary); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.trend-panel :deep(.data-panel-head > .tabs) { display: flex; flex-shrink: 0; width: auto; }
+.trend-panel :deep(.tabs .button) { min-width: 56px; padding-inline: var(--space-xs); }
+.mobile-session-list { display: none; }
 .trend-data { padding: var(--space-md); }
 .trend-data summary { cursor: pointer; font-weight: 600; }
-@media (max-width: 59.999rem) { .dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.schedule-skeleton { display: grid; gap: var(--space-sm); padding: var(--space-lg); }
+.schedule-skeleton span { display: block; height: var(--day-row-height); border-radius: var(--radius-control); background: var(--color-paper-2); }
+.without-schedule { grid-template-areas: "header header" "metrics metrics" "trend focus"; }
+@media (max-width: 75rem) {
+  .dashboard-page, .without-schedule { grid-template-columns: 1fr; grid-template-areas: "header" "metrics" "schedule" "focus" "trend"; }
+  .ops-focus { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+  .ops-focus-lead { grid-column: 1 / -1; }
+}
+@media (max-width: 40rem) {
+  .day-grid-wrap { display: none; }
+  .mobile-session-list { display: grid; padding: 0 var(--space-md); }
+  .mobile-session { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xs); padding: var(--space-md) 0; border: 0; border-bottom: 1px solid var(--color-rule); background: transparent; color: var(--color-ink); text-align: left; cursor: pointer; }
+  .mobile-session time { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .mobile-session strong { text-align: right; font-size: var(--text-sm); }
+  .mobile-session small { color: var(--color-muted); text-align: right; }
+  .ops-focus { grid-template-columns: 1fr; }
+
+  .dashboard-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-metrics > div { padding: var(--space-md); }
+  .dashboard-metrics dd { font-size: var(--text-xl); }
+  .ops-focus { padding: var(--space-md); }
+}
 </style>

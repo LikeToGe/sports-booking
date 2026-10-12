@@ -1,0 +1,4 @@
+.agreement-page { display: grid; align-content: start; gap: 28rpx; }
+.agreement-section { display: grid; gap: 18rpx; padding: 26rpx 0; border-bottom: 2rpx solid var(--rule); }
+.agreement-text { white-space: pre-wrap; line-height: 1.65; overflow-wrap: anywhere; }
+.agreement-check { display: flex; align-items: center; gap: 16rpx; min-height: 88rpx; }

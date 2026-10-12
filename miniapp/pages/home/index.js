@@ -1,8 +1,18 @@
 const { request, dateInZhengzhou, money, time, assetUrl } = require("../../utils/api");
 
+// 按郑州日历日期生成快捷入口，UTC 计算只用于避免设备时区改变日期。
+function upcomingDates(today) {
+  const start = new Date(`${today}T00:00:00Z`).getTime();
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(start + index * 86400000);
+    return { date: day.toISOString().slice(0, 10), day: day.getUTCDate(), label: index === 0 ? "今天" : `周${"日一二三四五六"[day.getUTCDay()]}` };
+  });
+}
+
 Page({
   data: {
     sports: [],
+    dateOptions: upcomingDates(dateInZhengzhou()),
     venues: [],
     selectedSportId: null,
     date: dateInZhengzhou(),
@@ -22,7 +32,7 @@ Page({
   },
 
   async load() {
-    this.setData({ loading: true, error: "" });
+    this.setData({ loading: true, error: "", dateOptions: upcomingDates(dateInZhengzhou()) });
     try {
       const [sports, venues] = await Promise.all([request("/mini/sports"), this.fetchVenues()]);
       this.setData({ sports, venues });
@@ -60,7 +70,8 @@ Page({
   },
 
   async selectDate(event) {
-    this.setData({ date: event.detail.value, dateLabel: event.detail.value.slice(5) });
+    const date = event.detail.value || event.currentTarget.dataset.date;
+    this.setData({ date, dateLabel: date.slice(5) });
     await this.search();
   },
 

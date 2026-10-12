@@ -1,0 +1,15 @@
+<operation-toast />
+<view class="page community-page">
+  <view class="screen-head"><text class="screen-title">社区记录</text></view>
+  <scroll-view class="community-tabs" scroll-x><button class="tab {{mode === 'messages' ? 'is-active' : ''}}" data-mode="messages" bindtap="selectMode">消息</button><block wx:if="{{ugcEnabled}}"><button class="tab {{mode === 'posts' ? 'is-active' : ''}}" data-mode="posts" bindtap="selectMode">我的发布</button><button class="tab {{mode === 'reports' ? 'is-active' : ''}}" data-mode="reports" bindtap="selectMode">举报</button><button class="tab {{mode === 'decisions' ? 'is-active' : ''}}" data-mode="decisions" bindtap="selectMode">内容处置</button><button class="tab {{mode === 'appeals' ? 'is-active' : ''}}" data-mode="appeals" bindtap="selectMode">申诉</button><button class="tab {{mode === 'blocks' ? 'is-active' : ''}}" data-mode="blocks" bindtap="selectMode">拉黑名单</button></block></scroll-view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{message}}" role="status">{{message}}</view>
+  <view wx:for="{{rows}}" wx:key="id" class="community-row">
+    <block wx:if="{{mode === 'messages'}}"><view class="row-head"><text class="section-title">{{item.title}}</text><text class="muted">{{item.readAt ? '已读' : '未读'}}</text></view><text>{{item.content}}</text><button class="button-secondary" data-id="{{item.id}}" bindtap="openMessage">查看</button></block>
+    <block wx:elif="{{mode === 'posts'}}"><view class="row-head"><text>{{item.statusLabel}}</text><text>{{item.moderationStatus === 'PENDING' ? '新版审核中' : item.moderationStatus === 'REJECTED' ? '新版未通过' : ''}}</text></view><text class="row-body">{{item.body}}</text><view class="row-actions"><button wx:if="{{item.contentStatus === 'PUBLISHED'}}" class="button-secondary" data-id="{{item.id}}" bindtap="openPost">查看</button><button class="button-secondary" data-id="{{item.id}}" bindtap="editPost">编辑</button><button class="button-secondary" data-id="{{item.id}}" bindtap="removePost">删除</button></view></block>
+    <block wx:elif="{{mode === 'blocks'}}"><text>{{item.nickname}}</text><button class="button-secondary" data-id="{{item.userId}}" bindtap="unblock">解除拉黑</button></block>
+    <block wx:else><view class="row-head"><text>{{item.targetLabel}} #{{item.targetId}}</text><text>{{item.statusLabel}}</text></view><text>{{item.actionLabel || item.reason}}</text><text class="row-body">{{item.description || item.decisionReason}}</text><button wx:if="{{mode === 'decisions' && !item.status}}" class="button-secondary" data-id="{{item.id}}" bindtap="appeal">申诉</button></block>
+    <text class="muted">{{item.timeLabel}}</text>
+  </view>
+  <view wx:if="{{!rows.length && !loading && !error}}" class="empty">暂无记录</view>
+</view>

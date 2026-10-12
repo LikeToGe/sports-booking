@@ -10,4 +10,8 @@ import com.sportsbooking.admin.base.po.Notification;
  * @author gjm
  */
 public interface NotificationMapper extends BaseMapper<Notification> {
+    java.util.List<Notification> selectUserNotifications(@org.apache.ibatis.annotations.Param("userId") long userId);
+    int markRead(@org.apache.ibatis.annotations.Param("id") long id, @org.apache.ibatis.annotations.Param("userId") long userId);
+    java.util.List<Notification> selectUndeliveredContent();
+    int markMockSent(@org.apache.ibatis.annotations.Param("id") long id);
 }

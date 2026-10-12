@@ -10,7 +10,8 @@ public enum NotificationType {
     BOOKING_CONFIRMED("BOOKING_CONFIRMED", "预约确认"),
     BOOKING_CANCELLED("BOOKING_CANCELLED", "预约取消"),
     SESSION_REMINDER("SESSION_REMINDER", "场次提醒"),
-    BALANCE_EXPIRY_REMINDER("BALANCE_EXPIRY_REMINDER", "赠送余额到期提醒");
+    BALANCE_EXPIRY_REMINDER("BALANCE_EXPIRY_REMINDER", "赠送余额到期提醒"),
+    CONTENT_ACTIVITY("CONTENT_ACTIVITY", "内容互动");
 
     private final String key;
     private final String description;

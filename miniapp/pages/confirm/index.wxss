@@ -1,6 +1,9 @@
-.confirm-page, .form { display: grid; align-content: start; gap: 24rpx; }
-.summary { display: grid; gap: 14rpx; padding: 28rpx; }
-.summary-total { display: flex; align-items: baseline; justify-content: space-between; gap: 20rpx; margin-top: 8rpx; padding-top: 20rpx; border-top: 2rpx solid var(--rule-2); }
-.total { font-size: 46rpx; white-space: nowrap; }
-.form-panel { display: grid; gap: 24rpx; padding: 28rpx; }
-.rule { display: grid; gap: 10rpx; padding: 22rpx 24rpx; border-radius: 16rpx; background: var(--signal-soft); font-size: 26rpx; }
+.confirm-page, .form { display: grid; align-content: start; gap: 22rpx; }
+.confirm-page .screen-head { border-bottom: 1rpx solid var(--rule); }
+.summary { display: grid; gap: 14rpx; padding: 26rpx; border: 1px solid var(--rule); border-radius: 26rpx; background: var(--surface); color: var(--ink); box-shadow: none; }
+.summary .muted { color: var(--muted); }
+.summary-total { display: flex; align-items: baseline; justify-content: space-between; gap: 20rpx; margin-top: 8rpx; padding-top: 20rpx; border-top: 1rpx solid var(--rule); }
+.total { color: var(--color-primary); font-size: 46rpx; white-space: nowrap; }
+.form-panel { display: grid; gap: 24rpx; padding: 26rpx; box-shadow: none; }
+.rule { display: grid; gap: 10rpx; padding: 22rpx 24rpx; border-radius: 16rpx; background: var(--accent-soft); color: var(--ink-2); font-size: 26rpx; }
+.confirm-load-error { display: grid; align-content: start; gap: 20rpx; }

@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page web-login-page">
   <view class="screen-head"><text class="screen-title">Web 后台登录</text><text class="muted">选择场馆身份并确认一次性登录票据。</text></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>

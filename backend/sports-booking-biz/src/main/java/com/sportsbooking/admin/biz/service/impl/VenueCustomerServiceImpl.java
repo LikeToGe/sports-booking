@@ -32,10 +32,13 @@ public class VenueCustomerServiceImpl implements VenueCustomerService {
 
     private final VenueCustomerMapper venueCustomerMapper;
     private final CredentialService credentialService;
+    private final com.sportsbooking.admin.base.mapper.UserAccountMapper users;
 
-    public VenueCustomerServiceImpl(VenueCustomerMapper venueCustomerMapper, CredentialService credentialService) {
+    public VenueCustomerServiceImpl(VenueCustomerMapper venueCustomerMapper, CredentialService credentialService,
+                                   com.sportsbooking.admin.base.mapper.UserAccountMapper users) {
         this.venueCustomerMapper = venueCustomerMapper;
         this.credentialService = credentialService;
+        this.users = users;
     }
 
     /**
@@ -49,6 +52,10 @@ public class VenueCustomerServiceImpl implements VenueCustomerService {
     @Override
     @Transactional
     public VenueCustomer ensureCustomer(long venueId, long userId) {
+        var user = users.selectForUpdate(userId);
+        if (user == null || user.status != com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE || user.deletedAt != null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED,ErrorCode.USER_DISABLED);
+        }
         VenueCustomer existing = venueCustomerMapper.selectByVenueAndUser(venueId, userId);
         if (existing != null) {
             return existing;

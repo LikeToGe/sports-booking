@@ -7,7 +7,8 @@ package com.sportsbooking.admin.base.enums;
  * @author gjm
  */
 public enum NotificationStatus {
-    MOCK_SENT("MOCK_SENT", "模拟发送成功");
+    MOCK_SENT("MOCK_SENT", "模拟发送成功"),
+    PENDING_DELIVERY("PENDING_DELIVERY", "待投递");
 
     private final String key;
     private final String description;

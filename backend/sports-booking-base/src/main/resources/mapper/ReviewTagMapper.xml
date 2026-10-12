@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.ReviewTagMapper">
+    <select id="selectAll" resultType="com.sportsbooking.admin.base.po.ReviewTag">
+        SELECT * FROM s_review_tag ORDER BY id
+    </select>
+
+    <select id="selectActiveBySport" resultType="com.sportsbooking.admin.base.po.ReviewTag">
+        SELECT t.* FROM s_review_tag t
+        JOIN s_review_tag_sport rel ON rel.tag_id = t.id
+        WHERE t.status = 'ACTIVE' AND rel.sport_type_id = #{sportTypeId}
+        ORDER BY t.id
+    </select>
+
+    <select id="selectTagSports" resultType="com.sportsbooking.admin.base.bo.ReviewTagSportBO">
+        SELECT tag_id AS tagId, sport_type_id AS sportTypeId FROM s_review_tag_sport ORDER BY tag_id, sport_type_id
+    </select>
+
+    <select id="selectActivePlatformSportIds" resultType="java.lang.Long">
+        SELECT id FROM s_sport_type
+        WHERE owner_venue_id IS NULL AND status = 'ACTIVE' AND id IN
+        <foreach collection="sportTypeIds" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
+    <delete id="deleteSports">
+        DELETE FROM s_review_tag_sport WHERE tag_id = #{tagId}
+    </delete>
+
+    <insert id="insertSports">
+        INSERT INTO s_review_tag_sport (tag_id, sport_type_id) VALUES
+        <foreach collection="sportTypeIds" item="sportTypeId" separator=",">
+            (#{tagId}, #{sportTypeId})
+        </foreach>
+    </insert>
+</mapper>

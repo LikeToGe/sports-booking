@@ -1,0 +1,25 @@
+<operation-toast />
+<view class="page review-page">
+  <view class="screen-head"><text class="screen-title">场地评价</text><text class="muted">{{review ? '修改评价' : '发布评价'}}</text></view>
+  <view wx:if="{{loading}}" class="empty">正在加载评价...</view>
+  <block wx:else>
+    <view class="score-list surface">
+      <view class="score-row"><text>总体</text><view><button data-field="overallScore" data-delta="-1" bindtap="adjustScore" aria-label="降低总体评分">−</button><strong>{{overallScore}}</strong><button data-field="overallScore" data-delta="1" bindtap="adjustScore" aria-label="提高总体评分">+</button></view></view>
+      <view class="score-row"><text>场地</text><view><button data-field="courtScore" data-delta="-1" bindtap="adjustScore" aria-label="降低场地评分">−</button><strong>{{courtScore}}</strong><button data-field="courtScore" data-delta="1" bindtap="adjustScore" aria-label="提高场地评分">+</button></view></view>
+      <view class="score-row"><text>环境</text><view><button data-field="environmentScore" data-delta="-1" bindtap="adjustScore" aria-label="降低环境评分">−</button><strong>{{environmentScore}}</strong><button data-field="environmentScore" data-delta="1" bindtap="adjustScore" aria-label="提高环境评分">+</button></view></view>
+      <view class="score-row"><text>服务</text><view><button data-field="serviceScore" data-delta="-1" bindtap="adjustScore" aria-label="降低服务评分">−</button><strong>{{serviceScore}}</strong><button data-field="serviceScore" data-delta="1" bindtap="adjustScore" aria-label="提高服务评分">+</button></view></view>
+    </view>
+    <label class="field"><text class="field-label">评价内容</text><textarea class="review-body field-control" value="{{body}}" maxlength="2000" placeholder="说说这次到场体验" bindinput="editBody" /></label>
+    <view wx:if="{{selectedImages.length || existingImages.length}}" class="review-images">
+      <image wx:for="{{selectedImages.length ? selectedImages : existingImages}}" wx:key="path" src="{{item.path}}" mode="aspectFill" />
+    </view>
+    <view class="image-actions"><button class="button-secondary" disabled="{{saving}}" bindtap="chooseImages">选择图片</button><button wx:if="{{selectedImages.length || existingImages.length}}" class="button-secondary" disabled="{{saving}}" bindtap="clearImages">移除图片</button></view>
+    <view wx:if="{{tags.length}}" class="tag-section"><text class="field-label">体验标签</text><view><button wx:for="{{tags}}" wx:key="id" class="tag-button {{item.selected ? 'is-selected' : ''}}" data-id="{{item.id}}" bindtap="toggleTag">{{item.name}}</button></view></view>
+    <view class="anonymous-row"><text>匿名公开</text><switch checked="{{anonymous}}" color="#2f855a" bindchange="toggleAnonymous" /></view>
+    <view wx:if="{{review}}" class="status status-warning">{{review.moderationStatus === 'PENDING' ? '审核中' : review.moderationStatus === 'REJECTED' ? '未通过审核' : '已公开'}}</view>
+    <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+    <view wx:if="{{message}}" class="status status-active" aria-live="polite">{{message}}</view>
+    <button class="button-primary" disabled="{{saving}}" bindtap="save">{{saving ? '正在提交' : review ? '提交修改' : '发布评价'}}</button>
+    <button wx:if="{{review}}" class="button-danger" disabled="{{saving}}" bindtap="remove">删除评价</button>
+  </block>
+</view>

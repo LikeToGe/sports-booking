@@ -10,6 +10,10 @@ import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.base.model.MiniPrincipal;
 import com.sportsbooking.admin.biz.service.AuthService;
 import com.sportsbooking.admin.biz.service.SessionService;
+import com.sportsbooking.admin.biz.service.TokenService;
+import com.sportsbooking.admin.biz.service.RedisLockService;
+import com.sportsbooking.admin.biz.service.PostRecruitmentService;
+import com.sportsbooking.admin.biz.constants.RedisLockType;
 import com.sportsbooking.admin.biz.pojo.vo.AdminLoginVO;
 import com.sportsbooking.admin.biz.pojo.vo.EmployeeIdentityVO;
 import com.sportsbooking.admin.biz.pojo.vo.MiniLoginVO;
@@ -18,6 +22,10 @@ import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.po.Employee;
 import com.sportsbooking.admin.base.mapper.EmployeeMapper;
+import com.sportsbooking.admin.base.mapper.BookingMapper;
+import com.sportsbooking.admin.base.mapper.VenueCustomerMapper;
+import com.sportsbooking.admin.base.po.Booking;
+import java.util.List;
 import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,15 +45,27 @@ public class AuthServiceImpl implements AuthService {
     private final EmployeeMapper employeeMapper;
     private final SessionService sessionService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final BookingMapper bookingMapper;
+    private final VenueCustomerMapper venueCustomerMapper;
+    private final TokenService tokens;
+    private final RedisLockService locks;
+    private final PostRecruitmentService recruitments;
 
     public AuthServiceImpl(AdminAccountMapper adminAccountMapper, UserAccountMapper userAccountMapper,
                            EmployeeMapper employeeMapper, SessionService sessionService,
-                           BCryptPasswordEncoder passwordEncoder) {
+                           BCryptPasswordEncoder passwordEncoder, BookingMapper bookingMapper,
+                           VenueCustomerMapper venueCustomerMapper, TokenService tokens, RedisLockService locks,
+                           PostRecruitmentService recruitments) {
         this.adminAccountMapper = adminAccountMapper;
         this.userAccountMapper = userAccountMapper;
         this.employeeMapper = employeeMapper;
         this.sessionService = sessionService;
         this.passwordEncoder = passwordEncoder;
+        this.bookingMapper = bookingMapper;
+        this.venueCustomerMapper = venueCustomerMapper;
+        this.tokens = tokens;
+        this.locks = locks;
+        this.recruitments = recruitments;
     }
 
     /**
@@ -76,8 +96,14 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public MiniLoginVO loginMini(String code) {
         String mockOpenid = "mock:" + requireText(code);
+        if (Integer.valueOf(1).equals(userAccountMapper.hasIdentityTombstone(tokens.hash(mockOpenid)))) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+        }
         UserAccount user = userAccountMapper.selectOne(new QueryWrapper<UserAccount>()
                 .eq("mock_openid", mockOpenid));
+        if (user != null && user.deletedAt != null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+        }
         if (user == null) {
             // 模拟登录首次进入时创建用户；正式 code2Session 接入后仍按微信标识幂等建档。
             user = new UserAccount();
@@ -118,12 +144,41 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserProfileVO updateMiniProfile(long userId, String contactName, String phone) {
-        UserAccount user = requireActiveUser(userId);
+        UserAccount user = userAccountMapper.selectForUpdate(userId);
+        if (user == null || user.status != EnableStatus.ACTIVE || user.deletedAt != null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+        }
         user.contactName = requireText(contactName);
         user.phone = requireText(phone);
         user.updatedAt = LocalDateTime.now();
         userAccountMapper.updateById(user);
         return getMiniProfile(userId);
+    }
+
+    @Override
+    public void closeMiniAccount(long userId) {
+        List<String> balanceKeys = venueCustomerMapper.selectUserMemberships(userId).stream()
+                .map(customer -> RedisLockType.MEMBER_BALANCE.key(customer.getCustomerId())).toList();
+        locks.execute(balanceKeys, () -> {
+            UserAccount user = userAccountMapper.selectForUpdate(userId);
+            if (user == null || user.status != EnableStatus.ACTIVE || user.deletedAt != null) {
+                throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+            }
+            if (Integer.valueOf(1).equals(userAccountMapper.hasUnfinishedBookings(userId))
+                    || Integer.valueOf(1).equals(userAccountMapper.hasUnsettledFunds(userId))) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+            }
+            userAccountMapper.insertIdentityTombstone(userId, tokens.hash(user.mockOpenid));
+            if (userAccountMapper.closeAccount(userId) != 1) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+            }
+            userAccountMapper.detachEmployees(userId);
+            userAccountMapper.hidePosts(userId);
+            userAccountMapper.hideComments(userId);
+            userAccountMapper.hideReviews(userId);
+            recruitments.closeForUser(userId);
+            return null;
+        });
     }
 
     /**
@@ -134,7 +189,7 @@ public class AuthServiceImpl implements AuthService {
      */
     private UserAccount requireActiveUser(long userId) {
         UserAccount user = userAccountMapper.selectById(userId);
-        if (user == null || user.status != EnableStatus.ACTIVE) {
+        if (user == null || user.status != EnableStatus.ACTIVE || user.deletedAt != null) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
         }
         return user;

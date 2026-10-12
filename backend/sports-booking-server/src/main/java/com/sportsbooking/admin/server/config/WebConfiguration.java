@@ -35,7 +35,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/platform/**", "/venue-admin/**", "/mini/**", "/staff/**",
-                        "/auth/admin/logout", "/auth/mini/logout", "/auth/mini/profile/**");
+                        "/auth/admin/logout", "/auth/mini/logout", "/auth/mini/profile/**", "/auth/mini/close-account");
     }
 
     /**

@@ -9,6 +9,8 @@ import com.sportsbooking.admin.biz.service.SessionService;
 import com.sportsbooking.admin.biz.service.PermissionService;
 import com.sportsbooking.admin.biz.service.TokenService;
 import com.sportsbooking.admin.biz.constants.AuthConstants;
+import com.sportsbooking.admin.base.mapper.UserAccountMapper;
+import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import java.time.Duration;
 import java.util.Map;
@@ -34,14 +36,17 @@ public class SessionServiceImpl implements SessionService {
     private final TokenService tokenService;
     private final PermissionService permissionService;
     private final Duration ttl;
+    private final UserAccountMapper userAccountMapper;
 
     public SessionServiceImpl(StringRedisTemplate redisTemplate, ObjectMapper objectMapper,
                               TokenService tokenService, PermissionService permissionService,
+                              UserAccountMapper userAccountMapper,
                               @Value("${app.session.ttl-hours}") long ttlHours) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.tokenService = tokenService;
         this.permissionService = permissionService;
+        this.userAccountMapper = userAccountMapper;
         this.ttl = Duration.ofHours(ttlHours);
     }
 
@@ -102,7 +107,10 @@ public class SessionServiceImpl implements SessionService {
      */
     @Override
     public MiniPrincipal requireMini(String token) {
-        return read(MINI_SESSION_KIND, token, MiniPrincipal.class);
+        MiniPrincipal principal = read(MINI_SESSION_KIND, token, MiniPrincipal.class);
+        var user = userAccountMapper.selectById(principal.getUserId());
+        if (user == null || user.status != EnableStatus.ACTIVE || user.deletedAt != null) throw unauthorized();
+        return principal;
     }
 
     /**

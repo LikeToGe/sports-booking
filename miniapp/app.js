@@ -12,6 +12,7 @@ App({
     token: "",
     profile: null,
     loginPromise: null,
+    operationFeedback: { version: 0, visible: false, tone: "success", message: "" },
   },
 
   onLaunch() {
@@ -35,6 +36,20 @@ App({
     wx.setStorageSync("yuechangApiBase", apiBase);
     wx.removeStorageSync("yuechangMiniToken");
     return apiBase;
+  },
+
+  showOperationFeedback(success, message) {
+    const current = this.globalData.operationFeedback;
+    this.globalData.operationFeedback = {
+      version: current.version + 1,
+      visible: true,
+      tone: success ? "success" : "error",
+      message: success ? "操作成功" : message,
+    };
+    if (this.operationFeedbackTimer) clearTimeout(this.operationFeedbackTimer);
+    this.operationFeedbackTimer = setTimeout(() => {
+      this.globalData.operationFeedback = { ...this.globalData.operationFeedback, visible: false };
+    }, success ? 1800 : 5000);
   },
 
   ensureLogin() {

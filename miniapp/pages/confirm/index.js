@@ -1,7 +1,7 @@
 const { request, money, date, time } = require("../../utils/api");
 
 Page({
-  data: { slot: null, contactName: "", contactPhone: "", idempotencyKey: "", loading: false, error: "" },
+  data: { slot: null, contactName: "", contactPhone: "", idempotencyKey: "", loading: true, error: "" },
   async onLoad() {
     const slot = wx.getStorageSync("yuechangPendingSlot");
     if (!slot) return wx.navigateBack();
@@ -13,6 +13,7 @@ Page({
       const profile = await request("/auth/mini/profile/detail");
       this.setData({ contactName: profile.contactName || "", contactPhone: profile.phone || "" });
     } catch (error) { this.setData({ error: error.message }); }
+    finally { this.setData({ loading: false }); }
   },
   onName(event) { this.setData({ contactName: event.detail.value }); },
   onPhone(event) { this.setData({ contactPhone: event.detail.value }); },

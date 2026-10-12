@@ -9,6 +9,10 @@ import com.sportsbooking.admin.server.controller.booking.VenueBookingController;
 import com.sportsbooking.admin.server.controller.customer.CustomerController;
 import com.sportsbooking.admin.server.controller.funds.FundsController;
 import com.sportsbooking.admin.server.controller.funds.MockFundsController;
+import com.sportsbooking.admin.server.controller.review.VenueReviewController;
+import com.sportsbooking.admin.server.controller.post.PostController;
+import com.sportsbooking.admin.server.controller.moderation.ContentModerationController;
+import com.sportsbooking.admin.server.controller.moderation.ContentModerationSettingController;
 import com.sportsbooking.admin.server.controller.schedule.ScheduleController;
 import com.sportsbooking.admin.server.controller.venue.MiniVenueController;
 import com.sportsbooking.admin.server.controller.venue.PlatformVenueController;
@@ -34,6 +38,10 @@ class ControllerPathTest {
                 CustomerController.class,
                 FundsController.class,
                 MockFundsController.class,
+                VenueReviewController.class,
+                PostController.class,
+                ContentModerationController.class,
+                ContentModerationSettingController.class,
                 ScheduleController.class,
                 MiniVenueController.class,
                 PlatformVenueController.class,

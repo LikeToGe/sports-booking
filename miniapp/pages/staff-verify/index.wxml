@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page verify-page">
   <view class="screen-head"><text class="screen-title">场馆工作</text><text class="muted">核销线上预约或识别本场馆顾客。</text></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>

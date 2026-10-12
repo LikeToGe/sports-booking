@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page payment-page">
   <view class="screen-head"><text class="screen-title">预约支付</text><text class="muted">支付组成由预约创建结果固定。</text></view>
   <view wx:if="{{error}}" class="error" role="alert"><text>{{error}}</text><button class="inline-action" bindtap="load">重新加载</button></view>

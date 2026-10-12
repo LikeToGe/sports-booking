@@ -15,6 +15,13 @@ import CustomersView from "./views/CustomersView.vue";
 import PlatformRefundsView from "./views/PlatformRefundsView.vue";
 import RechargePlansView from "./views/RechargePlansView.vue";
 import RolesView from "./views/RolesView.vue";
+import PlatformModerationView from "./views/PlatformModerationView.vue";
+import ReviewTagsView from "./views/ReviewTagsView.vue";
+import VenueReviewsView from "./views/VenueReviewsView.vue";
+import ContentSettingsView from "./views/ContentSettingsView.vue";
+import ContentGovernanceView from "./views/ContentGovernanceView.vue";
+import ContentRestrictionsView from "./views/ContentRestrictionsView.vue";
+import OfficialPostsView from "./views/OfficialPostsView.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +31,15 @@ export const router = createRouter({
     { path: "/platform/sports", component: PlatformSportsView, meta: { role: "PLATFORM_ADMIN" } },
     { path: "/platform/reports", component: ReportsView, meta: { role: "PLATFORM_ADMIN" } },
     { path: "/platform/refunds", component: PlatformRefundsView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/moderation", component: PlatformModerationView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/content-reports", component: ContentGovernanceView, props: { kind: "reports" }, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/content-appeals", component: ContentGovernanceView, props: { kind: "appeals" }, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/content-restrictions", component: ContentRestrictionsView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/official-posts", component: OfficialPostsView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/official-posts", component: OfficialPostsView, meta: { role: "VENUE_ADMIN", permission: "POST_PUBLISH" } },
+    { path: "/platform/content-settings", component: ContentSettingsView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/platform/review-tags", component: ReviewTagsView, meta: { role: "PLATFORM_ADMIN" } },
+    { path: "/venue-reviews", component: VenueReviewsView, meta: { role: "VENUE_ADMIN", permission: "REVIEW_MANAGE" } },
     { path: "/today", component: TodayView, meta: { role: "VENUE_ADMIN", permission: "DASHBOARD_VIEW" } },
     { path: "/bookings", component: BookingsView, meta: { role: "VENUE_ADMIN", permission: "BOOKING_VIEW" } },
     { path: "/customers", component: CustomersView, meta: { role: "VENUE_ADMIN", permission: "CUSTOMER_VIEW" } },

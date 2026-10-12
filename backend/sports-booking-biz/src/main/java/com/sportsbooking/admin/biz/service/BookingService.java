@@ -159,6 +159,9 @@ public interface BookingService {
      * @author gjm
      */
     BookingDetailVO getUserBooking(long userId, long bookingId);
+
+    /** 返回本人已完成线上预约的评价资格事实，不暴露给客户端。 */
+    Booking requireReviewEligibleBooking(long userId, long bookingId);
     /**
      * 功能描述: 查询场馆指定日期预约。
      * 创建时间: 2026/08/28 16:29

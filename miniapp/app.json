@@ -6,6 +6,13 @@
     "pages/payment/index",
     "pages/bookings/index",
     "pages/booking/index",
+    "pages/review/index",
+    "pages/content-agreement/index",
+    "pages/community/index",
+    "pages/community/user",
+    "pages/venue-reviews/index",
+    "pages/posts/index",
+    "pages/posts/detail",
     "pages/membership/index",
     "pages/mine/index",
     "pages/staff-bind/index",
@@ -16,22 +23,42 @@
   ],
   "window": {
     "navigationBarTitleText": "约场",
-    "navigationBarBackgroundColor": "#111111",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f5f5f5",
+    "navigationBarBackgroundColor": "#f5f7f4",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7f4",
     "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#707072",
-    "selectedColor": "#007d48",
+    "custom": true,
+    "color": "#5e6c63",
+    "selectedColor": "#285741",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/index", "text": "订场" },
-      { "pagePath": "pages/bookings/index", "text": "预约" },
-      { "pagePath": "pages/membership/index", "text": "会员" },
-      { "pagePath": "pages/mine/index", "text": "我的" }
+      {
+        "pagePath": "pages/home/index",
+        "text": "订场"
+      },
+      {
+        "pagePath": "pages/posts/index",
+        "text": "动态"
+      },
+      {
+        "pagePath": "pages/bookings/index",
+        "text": "预约"
+      },
+      {
+        "pagePath": "pages/membership/index",
+        "text": "会员"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的"
+      }
     ]
   },
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "operation-toast": "/components/operation-toast/index"
+  }
 }

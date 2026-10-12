@@ -140,4 +140,11 @@ public class AuthController {
                 AuthContext.getMiniUserId(), body.getContactName(), body.getPhone()
         ));
     }
+
+    @PostMapping("/mini/close-account")
+    public ApiResponse<Boolean> closeMiniAccount(@RequestHeader(AuthConstants.MINI_TOKEN_HEADER) String token) {
+        authService.closeMiniAccount(AuthContext.getMiniUserId());
+        sessionService.deleteMiniSession(token);
+        return ApiResponse.success(true);
+    }
 }

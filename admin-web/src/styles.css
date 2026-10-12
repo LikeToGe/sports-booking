@@ -1,4 +1,4 @@
-/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Nike-design-analysis · design-system: design.md · designed-as-app
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: A / Fresh Sport · design-system: design.md · designed-as-app
  * pre-emit critique: P5 H5 E4 S5 R5 V4
  * contrast: pass (40–41) · slop: pass (42–49) · mobile: pass (34, 49, 50–57) · icons: pass (30)
  */
@@ -90,6 +90,38 @@ h2 {
 }
 
 .skip-link:focus { transform: translateY(0); }
+
+.operation-toast {
+  position: fixed;
+  inset-block-start: var(--space-md);
+  inset-inline-start: 50%;
+  z-index: var(--z-toast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: var(--control-height);
+  max-width: min(34rem, calc(100vw - 2rem));
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  color: var(--color-ink);
+  font-weight: 600;
+  transform: translateX(-50%);
+}
+
+.operation-toast.is-success {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success-strong);
+}
+
+.operation-toast.is-error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-strong);
+}
 
 .sidebar {
   position: fixed;
@@ -1489,4 +1521,384 @@ tbody tr:last-child td {
     width: var(--touch-target);
     min-width: var(--touch-target);
   }
+}
+
+/* Hallmark · shared theme primitives · app pages share one visual system. */
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body,
+.app-shell,
+.workspace {
+  background: var(--color-paper);
+}
+
+.sidebar {
+  background: var(--color-ink);
+  box-shadow: var(--shadow-raised);
+}
+
+.brand-mark {
+  background: var(--color-primary);
+  color: var(--color-primary-ink);
+  box-shadow: none;
+}
+
+.primary-nav a {
+  color: var(--color-sidebar-text);
+}
+
+.primary-nav a.router-link-active {
+  background: var(--color-primary);
+  color: var(--color-primary-ink);
+  box-shadow: none;
+}
+
+.primary-nav a:hover {
+  background: var(--color-dark-surface);
+  color: var(--color-sidebar-text);
+}
+
+.workspace-bar {
+  border-block-start: 0;
+  background: var(--color-surface);
+  box-shadow: 0 1px 0 var(--color-rule-2);
+}
+
+.workspace-role {
+  border-color: var(--color-rule);
+  background: var(--color-paper);
+}
+
+.workspace-role i {
+  background: var(--color-primary);
+}
+
+.page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: var(--space-lg) var(--space-xl);
+  border-block-end-color: var(--color-ink);
+  border: 1px solid var(--color-rule);
+  border-block-end: 3px solid var(--color-ink);
+  background: var(--color-surface);
+}
+
+.page-header > div:first-child {
+  min-width: 0;
+}
+
+.page-header > .toolbar {
+  justify-content: end;
+}
+
+.page > .filter-bar,
+.page > form.toolbar,
+.page > form.report-filters {
+  padding: var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.page-header h1,
+.data-panel-head h2,
+.form-panel h2 {
+  letter-spacing: 0;
+}
+
+.data-panel,
+.form-panel,
+.table-wrap,
+.dashboard-metrics,
+.empty-state {
+  border-color: var(--color-rule);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.data-panel-head,
+.pagination-bar,
+th,
+td {
+  border-color: var(--color-rule-2);
+}
+
+.data-panel-head {
+  border-inline-start: 3px solid var(--color-primary);
+}
+
+th {
+  background: var(--color-paper-2);
+}
+
+.button {
+  background: var(--color-primary);
+  color: var(--color-primary-ink);
+  box-shadow: none;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  box-shadow: none;
+}
+
+.button:active:not(:disabled) {
+  background: var(--color-primary-active);
+}
+
+.button.secondary,
+.button.danger,
+.icon-button.compact {
+  border-color: var(--color-rule-strong);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.button.secondary:hover:not(:disabled),
+.icon-button:hover:not(:disabled) {
+  background: var(--color-paper-2);
+}
+
+.button.danger {
+  color: var(--color-danger-strong);
+}
+
+.field input,
+.field select,
+.field textarea {
+  border-color: var(--color-rule-strong);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  border-color: var(--color-brand-strong);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 35%, transparent);
+}
+
+.tabs {
+  border-color: var(--color-rule);
+  background: var(--color-paper-2);
+}
+
+.tabs .button {
+  background: var(--color-primary);
+  color: var(--color-primary-ink);
+}
+
+.tabs .button.secondary {
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.tabs .button.secondary:hover:not(:disabled) {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.status {
+  border-color: var(--color-rule);
+}
+
+.status[data-tone="active"] {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+  color: var(--color-success-strong);
+}
+
+.status[data-tone="warning"] {
+  border-color: var(--color-warning);
+  background: var(--color-warning-soft);
+  color: var(--color-warning-strong);
+}
+
+.status[data-tone="danger"] {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-strong);
+}
+
+.slot-cell[data-tone="active"] {
+  background: var(--color-success-soft);
+  box-shadow: inset var(--space-2xs) 0 var(--color-success);
+}
+
+.slot-cell[data-tone="warning"] {
+  background: var(--color-warning-soft);
+  box-shadow: inset var(--space-2xs) 0 var(--color-warning);
+}
+
+.slot-cell[data-tone="danger"] {
+  background: var(--color-danger-soft);
+  box-shadow: inset var(--space-2xs) 0 var(--color-danger);
+}
+
+.dashboard-metrics dd,
+.metric-strip strong {
+  color: var(--color-brand-strong);
+}
+
+.trend-chart polyline {
+  stroke: var(--color-brand-strong);
+}
+
+.error-banner {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.saved-message {
+  color: var(--color-success-strong);
+}
+
+.modal,
+.drawer {
+  border-color: var(--color-rule);
+  box-shadow: var(--shadow-overlay);
+}
+
+@media (min-width: 60rem) {
+  .main-content {
+    padding: var(--space-xl) clamp(var(--space-xl), 3vw, var(--space-3xl)) var(--space-3xl);
+  }
+}
+
+@media (max-width: 59.999rem) {
+  .page-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+  }
+
+  .page-header > .toolbar {
+    justify-content: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .icon-button,
+  .primary-nav a,
+  .field input,
+  .field select,
+  .field textarea {
+    transition-duration: var(--dur-reduced) !important;
+  }
+}
+
+/* Final polish: keep the workbench calm while making the next action obvious. */
+.workspace-bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-sticky-nav);
+}
+
+.page {
+  gap: var(--space-lg);
+}
+
+.page-header {
+  padding: var(--space-md) 0 var(--space-lg);
+  border: 0;
+  border-block-end: var(--rule-emphasis) solid var(--color-ink);
+  background: transparent;
+}
+
+.page-header h1 {
+  font-size: var(--text-2xl);
+}
+
+.page > .filter-bar,
+.page > form.toolbar,
+.page > form.report-filters {
+  padding: 0 0 var(--space-md);
+  border: 0;
+  border-block-end: 1px solid var(--color-rule);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.data-panel,
+.form-panel,
+.dashboard-metrics {
+  box-shadow: none;
+}
+
+.data-panel-head {
+  border-inline-start: 0;
+}
+
+.button,
+.icon-button {
+  transition: background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+
+.button:active:not(:disabled),
+.icon-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.empty-state strong {
+  color: var(--color-ink);
+}
+
+/* A · 清爽运动：浅色分组导航与无装饰边条的工作画布。 */
+.sidebar { inset-block: 0; inset-inline-start: 0; width: var(--sidebar-width); border-inline-end: 1px solid var(--color-rule); border-radius: 0; background: var(--color-sidebar); color: var(--color-ink); box-shadow: none; }
+.brand-block { min-height: 5rem; border-block-end: 0; }
+.brand-caption, .account-block span, .nav-group h2 { color: var(--color-sidebar-muted); }
+.primary-nav a { color: var(--color-sidebar-text); font-weight: 500; }
+.primary-nav a.router-link-active { border: 0; padding-inline: var(--space-sm); border-radius: var(--radius-control); background: var(--color-primary-soft); color: var(--color-primary); font-weight: 600; }
+.primary-nav a:hover, .primary-nav a.router-link-active:hover { background: var(--color-primary-soft); color: var(--color-primary); }
+.sidebar a:focus-visible, .sidebar button:focus-visible { outline-color: var(--color-focus); }
+.account-block { border-block-start-color: var(--color-rule); }
+.mobile-header { background: var(--color-surface); color: var(--color-ink); }
+.mobile-page-name { color: var(--color-muted); border-color: var(--color-rule); }
+.page-header { border: 0; padding: 0; }
+.page-header h1 { font-size: var(--text-xl); font-weight: 600; }
+.page-header p { font-size: var(--text-sm); }
+.data-panel, .form-panel, .dashboard-metrics, .modal { border-radius: var(--radius-card); }
+.data-panel-head { background: var(--color-surface); }
+.drawer { border-radius: 0; }
+.workspace-role { border-color: var(--color-rule); border-radius: var(--radius-control); }
+.workspace-role i { background: var(--color-success); }
+th { background: var(--color-paper-2); font-weight: 500; }
+.status { border-color: transparent; border-radius: var(--radius-sm); }
+.status[data-tone="active"], .status[data-tone="warning"], .status[data-tone="danger"] { border-color: transparent; }
+.day-grid { gap: var(--space-2xs); padding: var(--space-md); }
+.grid-corner, .grid-court, .grid-time, .grid-empty, .slot-cell { border: 0; }
+.grid-corner, .grid-court, .grid-time { background: var(--color-surface); }
+.slot-cell { border: 1px solid var(--color-rule); border-radius: var(--radius-control); }
+.slot-cell[data-tone="active"], .slot-cell[data-tone="warning"], .slot-cell[data-tone="danger"] { box-shadow: none; border-color: transparent; }
+.slot-cell[data-tone="info"] { background: var(--color-info-soft); color: var(--color-info-strong); border-color: transparent; }
+.slot-cell[data-tone="active"] .slot-state { color: var(--color-success-strong); }
+.slot-cell[data-tone="warning"] .slot-state { color: var(--color-warning-strong); }
+.slot-cell[data-tone="danger"] .slot-state { color: var(--color-danger-strong); }
+@media (min-width: 60rem) {
+  .workspace { margin-inline-start: var(--sidebar-width); }
+  .main-content { padding: var(--space-lg) var(--space-xl) var(--space-3xl); }
+}
+@media (max-width: 59.999rem) {
+  .page-header { padding: 0; }
+  .page-header h1 { font-size: var(--text-xl); }
+}
+
+/* 分段选择按实际按钮数量排列，日期与报表均可横向浏览。 */
+.data-panel-head > .tabs { display: flex; flex-shrink: 0; }
+.field input { min-width: 0; }
+.status[data-tone="info"] { background: var(--color-info-soft); color: var(--color-info-strong); }
+@media (max-width: 59.999rem) {
+  .tabs { display: flex; width: auto; overflow-x: auto; }
+  .tabs .button { min-width: var(--touch-target); padding-inline: var(--space-xs); flex-shrink: 0; }
 }

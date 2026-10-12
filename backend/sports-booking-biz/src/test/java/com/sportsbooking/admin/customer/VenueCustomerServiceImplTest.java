@@ -34,8 +34,17 @@ import org.springframework.dao.DuplicateKeyException;
 class VenueCustomerServiceImplTest {
     private final VenueCustomerMapper venueCustomerMapper = mock(VenueCustomerMapper.class);
     private final CredentialService credentialService = mock(CredentialService.class);
+    private final com.sportsbooking.admin.base.mapper.UserAccountMapper users =
+            mock(com.sportsbooking.admin.base.mapper.UserAccountMapper.class);
     private final VenueCustomerServiceImpl service = new VenueCustomerServiceImpl(
-            venueCustomerMapper, credentialService);
+            venueCustomerMapper, credentialService, users);
+
+    @org.junit.jupiter.api.BeforeEach
+    void activeUser() {
+        var user = new com.sportsbooking.admin.base.po.UserAccount();
+        user.status = com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE;
+        when(users.selectForUpdate(org.mockito.ArgumentMatchers.anyLong())).thenReturn(user);
+    }
 
     @Test
     void ensuresOneCustomerForRepeatedBookingsInSameVenue() {

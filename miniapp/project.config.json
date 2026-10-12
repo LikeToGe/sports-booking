@@ -2,7 +2,7 @@
   "description": "约场微信小程序",
   "miniprogramRoot": "./",
   "projectname": "yuechang-miniapp",
-  "appid": "touristappid",
+  "appid": "wxbb82fb2a7b99dac9",
   "setting": {
     "urlCheck": false,
     "es6": true,
@@ -32,5 +32,6 @@
     "ignore": [],
     "include": []
   },
-  "editorSetting": {}
+  "editorSetting": {},
+  "isGameTourist": false
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.NotificationMapper">
+    <select id="selectUserNotifications" resultType="com.sportsbooking.admin.base.po.Notification">
+        SELECT * FROM s_notification WHERE user_id = #{userId} ORDER BY created_at DESC, id DESC LIMIT 100
+    </select>
+    <update id="markRead">UPDATE s_notification SET read_at = UTC_TIMESTAMP(3) WHERE id = #{id} AND user_id = #{userId} AND read_at IS NULL</update>
+    <select id="selectUndeliveredContent" resultType="com.sportsbooking.admin.base.po.Notification">
+        SELECT n.* FROM s_notification n
+        LEFT JOIN s_notification_delivery d ON d.notification_id = n.id AND d.channel = 'MOCK'
+        WHERE n.type = 'CONTENT_ACTIVITY' AND d.id IS NULL ORDER BY n.id LIMIT 100
+    </select>
+    <update id="markMockSent">
+        UPDATE s_notification SET status = 'MOCK_SENT' WHERE id = #{id} AND status = 'PENDING_DELIVERY'
+    </update>
+</mapper>

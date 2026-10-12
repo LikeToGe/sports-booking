@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="venue-page" wx:if="{{venue}}">
   <image class="hero-image" src="{{venue.coverPath || '/assets/venues/venue-1.jpg'}}" mode="aspectFill" aria-label="{{venue.name}}场馆封面" />
   <view class="page detail-body">
@@ -14,6 +15,14 @@
       <view wx:if="{{!loading && !groups.length}}" class="empty"><text class="empty-title">当天没有可预约场次</text><text>更换日期或运动类型后再查看。</text></view>
     </view>
 
+    <view wx:if="{{ugcEnabled}}" class="reviews-section">
+      <view class="section-head"><view><text class="section-title">场地评价</text><text class="muted">{{reviewSummary.reviewCount || 0}} 条已公开</text></view><button class="inline-action" bindtap="openReviews">查看全部</button></view>
+      <view wx:if="{{reviewSummary.reviewCount}}" class="review-score"><strong>{{reviewSummary.overallScore}}</strong><text>总体评分</text></view>
+      <view wx:for="{{reviews}}" wx:key="id" class="review-preview"><view><strong>{{item.overallScore}} 星</strong><text class="muted">{{item.sportName}} · {{item.visitMonth}}</text></view><text>{{item.body}}</text></view>
+      <view wx:if="{{!reviewSummary.reviewCount}}" class="empty"><text>暂无公开评价</text></view>
+    </view>
     <view class="notice surface"><text class="section-title">入场须知</text><text class="muted">{{venue.entryNotice || '请按预约时间到场，如需帮助请联系场馆。'}}</text></view>
   </view>
 </view>
+<view wx:elif="{{loading}}" class="page empty venue-loading" aria-live="polite"><text class="empty-title">正在加载场馆</text><text>正在整理可预约场次。</text></view>
+<view wx:elif="{{error}}" class="page venue-load-error"><view class="error" role="alert">{{error}}</view><button class="button-secondary retry-button" bindtap="load">重新加载</button></view>

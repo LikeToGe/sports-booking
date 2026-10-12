@@ -10,6 +10,11 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportsbooking.admin.base.enums.AdminRole;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
+import com.sportsbooking.admin.base.mapper.UserAccountMapper;
+import com.sportsbooking.admin.base.po.UserAccount;
+import com.sportsbooking.admin.base.model.MiniPrincipal;
+import com.sportsbooking.admin.base.enums.EnableStatus;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.sportsbooking.admin.biz.service.PermissionService;
 import com.sportsbooking.admin.biz.service.TokenService;
 import com.sportsbooking.admin.biz.service.impl.SessionServiceImpl;
@@ -26,6 +31,7 @@ class SessionServiceImplTest {
     private final PermissionService permissionService = mock(PermissionService.class);
     private final TokenService tokenService = mock(TokenService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserAccountMapper users = mock(UserAccountMapper.class);
     private SessionServiceImpl service;
 
     @BeforeEach
@@ -33,7 +39,7 @@ class SessionServiceImplTest {
         when(redisTemplate.opsForValue()).thenReturn(values);
         when(tokenService.generate()).thenReturn("token");
         when(tokenService.hash(any())).thenReturn("hash");
-        service = new SessionServiceImpl(redisTemplate, objectMapper, tokenService, permissionService, 12);
+        service = new SessionServiceImpl(redisTemplate, objectMapper, tokenService, permissionService, users, 12);
     }
 
     @Test
@@ -63,5 +69,17 @@ class SessionServiceImplTest {
         assertThat(actual.getAccountId()).isEqualTo(3L);
         assertThat(actual.getRole()).isEqualTo(AdminRole.VENUE_ADMIN);
         assertThat(actual.getVenueId()).isEqualTo(4L);
+    }
+
+    @Test
+    void rejectsExistingMiniTokenAfterAccountClosure() throws Exception {
+        when(values.get(any())).thenReturn(objectMapper.writeValueAsString(new MiniPrincipal(8L)));
+        UserAccount user = new UserAccount();
+        user.status = EnableStatus.ACTIVE;
+        when(users.selectById(8L)).thenReturn(user);
+        assertThat(service.requireMini("token").getUserId()).isEqualTo(8L);
+        user.deletedAt = java.time.LocalDateTime.now();
+        assertThatThrownBy(() -> service.requireMini("token"))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
     }
 }

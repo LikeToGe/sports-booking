@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.UserAccountMapper">
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.UserAccount">
+        SELECT * FROM s_user_account WHERE id = #{userId} FOR UPDATE
+    </select>
+    <select id="hasUnsettledFunds" resultType="java.lang.Integer">
+        SELECT (EXISTS (SELECT 1 FROM s_member_balance_lot l JOIN s_venue_customer c ON c.id = l.venue_customer_id
+            WHERE c.user_id = #{userId} AND (l.frozen_amount_fen != 0
+                OR (l.status = 'ACTIVE' AND l.available_amount_fen != 0
+                    AND (l.type = 'PAID' OR l.expires_at > UTC_TIMESTAMP(3)))))
+            OR EXISTS (SELECT 1 FROM s_member_recharge r JOIN s_venue_customer c ON c.id = r.venue_customer_id
+                WHERE c.user_id = #{userId} AND r.status = 'PENDING'))
+    </select>
+    <select id="hasUnfinishedBookings" resultType="java.lang.Integer">
+        SELECT EXISTS (SELECT 1 FROM s_booking WHERE user_id = #{userId}
+            AND (status = 'PENDING_PAYMENT' OR (status = 'CONFIRMED' AND end_at > UTC_TIMESTAMP(3))))
+    </select>
+    <select id="hasIdentityTombstone" resultType="java.lang.Integer">
+        SELECT EXISTS (SELECT 1 FROM s_user_identity_tombstone WHERE identity_hash = #{identityHash})
+    </select>
+    <insert id="insertIdentityTombstone">
+        INSERT INTO s_user_identity_tombstone (identity_hash,user_id) VALUES (#{identityHash},#{userId})
+    </insert>
+    <update id="closeAccount">
+        UPDATE s_user_account SET status = 'DISABLED', deleted_at = UTC_TIMESTAMP(3),
+            contact_name = NULL, phone = NULL, nickname = '已注销', avatar_url = NULL, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{userId} AND status = 'ACTIVE' AND deleted_at IS NULL
+    </update>
+    <update id="detachEmployees">
+        UPDATE s_employee SET user_id = NULL, updated_at = UTC_TIMESTAMP(3) WHERE user_id = #{userId}
+    </update>
+    <update id="hidePosts">
+        UPDATE s_post SET content_status = 'HIDDEN', updated_at = UTC_TIMESTAMP(3)
+        WHERE author_type = 'USER' AND author_id = #{userId} AND deleted_at IS NULL
+    </update>
+    <update id="hideComments">
+        UPDATE s_post_comment SET content_status = 'HIDDEN', updated_at = UTC_TIMESTAMP(3)
+        WHERE author_user_id = #{userId} AND deleted_at IS NULL
+    </update>
+    <update id="hideReviews">
+        UPDATE s_venue_review SET content_status = 'HIDDEN', updated_at = UTC_TIMESTAMP(3)
+        WHERE user_id = #{userId} AND deleted_at IS NULL
+    </update>
+</mapper>

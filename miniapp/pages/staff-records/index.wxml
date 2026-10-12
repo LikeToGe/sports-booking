@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page records-page">
   <view class="screen-head"><text class="screen-title">我的核销记录</text><text class="muted">仅展示本人在所选场馆完成的核销。</text></view>
   <view wx:if="{{error}}" class="error">{{error}}</view>

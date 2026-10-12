@@ -90,6 +90,10 @@ class BookingServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        com.sportsbooking.admin.base.po.UserAccount activeUser = new com.sportsbooking.admin.base.po.UserAccount();
+        activeUser.id = 1L;
+        activeUser.status = EnableStatus.ACTIVE;
+        when(userAccountMapper.selectForUpdate(anyLong())).thenReturn(activeUser);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment(any())).thenReturn(1L);
         when(bookingMapper.selectCount(any())).thenReturn(0L);
@@ -103,6 +107,24 @@ class BookingServiceImplTest {
                 courtMapper, sportTypeMapper, venueService, venueCustomerService, memberFundsService,
                 notificationService, credentialService, paymentService,
                 scheduleService, redisLockService, redisTemplate, 10, 2, 5);
+    }
+
+    @Test
+    void onlyCompletedOwnOnlineBookingCanBeReviewed() {
+        Booking booking = new Booking();
+        booking.id = 15L;
+        booking.userId = 9L;
+        booking.source = BookingSource.ONLINE;
+        booking.status = BookingStatus.COMPLETED;
+        booking.completedAt = Instant.now();
+        when(bookingMapper.selectById(15L)).thenReturn(booking);
+
+        assertThat(service.requireReviewEligibleBooking(9L, 15L)).isSameAs(booking);
+        assertThatThrownBy(() -> service.requireReviewEligibleBooking(8L, 15L))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.NOT_FOUND.getDescription());
+        booking.status = BookingStatus.NO_SHOW;
+        assertThatThrownBy(() -> service.requireReviewEligibleBooking(9L, 15L))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.REVIEW_NOT_ELIGIBLE.getDescription());
     }
 
     @Test
@@ -251,6 +273,7 @@ class BookingServiceImplTest {
 
         assertThat(result.contactName).isEqualTo("新联系人");
         assertThat(result.contactPhone).isEqualTo("13800000009");
+        verify(redisLockService).execute(any(), any());
         verify(bookingMapper).updateById(booking);
     }
 

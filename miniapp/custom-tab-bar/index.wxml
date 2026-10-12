@@ -1,0 +1,6 @@
+<view class="tab-bar" role="tablist">
+  <button wx:for="{{entries}}" wx:key="route" class="tab {{route === item.route ? 'is-selected' : ''}}" data-route="{{item.route}}" bindtap="change" hover-class="tab-pressed" role="tab" aria-label="{{item.label}}" aria-selected="{{route === item.route}}">
+    <view class="tab-icon-wrap"><image class="tab-icon" src="/assets/icons/{{item.icon}}.svg" mode="aspectFit" aria-hidden="true" /></view>
+    <text class="tab-label">{{item.label}}</text>
+  </button>
+</view>

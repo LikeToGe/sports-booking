@@ -1,0 +1,17 @@
+.post-detail { display: grid; align-content: start; gap: 24rpx; }
+.post-card { display: grid; gap: 18rpx; padding: 24rpx; }
+.post-meta { display: flex; justify-content: space-between; gap: 16rpx; }
+.post-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+.detail-media { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
+.detail-media image { width: 100%; aspect-ratio: 1; }
+.detail-media video { grid-column: 1 / -1; width: 100%; aspect-ratio: 16 / 9; }
+.comments-section { display: grid; gap: 16rpx; margin-top: 24rpx; }
+.comment-row { display: grid; gap: 12rpx; padding: 18rpx 0; border-top: 2rpx solid var(--rule-2); overflow-wrap: anywhere; }
+.comment-input { width: 100%; min-height: 140rpx; padding: 18rpx; border: 2rpx solid var(--rule); }
+.comment-row.is-reply { margin-left: 28rpx; padding-left: 20rpx; border-left: 2rpx solid var(--rule); }
+.detail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; }
+.detail-actions .button-secondary { min-height: 72rpx; font-size: 24rpx; padding: 0 20rpx; }
+.inline-action { background: transparent; padding: 12rpx; font-size: 24rpx; }
+.recruitment-section { display: grid; gap: 20rpx; padding: 28rpx 0; border-bottom: 2rpx solid var(--rule); }
+.member-row { display: grid; gap: 12rpx; }
+.comments-toggle { display: flex; align-items: center; justify-content: space-between; }

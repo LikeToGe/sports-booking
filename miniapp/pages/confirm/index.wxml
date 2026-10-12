@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page confirm-page" wx:if="{{slot}}">
   <view class="screen-head"><text class="screen-title">确认预约</text><text class="muted">确认场次和联系人。</text></view>
   <view class="summary surface"><text class="muted">{{slot.venueName}}</text><text class="section-title">{{slot.courtName}} · {{slot.sportName}}</text><text>{{slot.dateLabel}}　{{slot.time}}</text><view class="summary-total"><text class="muted">预约总额</text><text class="price total">{{slot.price}}</text></view></view>
@@ -6,3 +7,5 @@
   <view class="rule"><text>取消规则</text><text class="muted">超过场馆规定的取消截止时间后不可自行取消。</text></view>
   <button class="button-primary" disabled="{{loading || !contactName || !contactPhone}}" bindtap="submit">{{loading ? '正在创建预约' : '确认预约'}}</button>
 </view>
+<view wx:elif="{{loading}}" class="page empty" aria-live="polite"><text class="empty-title">正在准备预约</text><text>正在读取联系人信息。</text></view>
+<view wx:elif="{{error}}" class="page confirm-load-error"><view class="error" role="alert">{{error}}</view><button class="button-secondary retry-button" bindtap="onLoad">重新加载</button></view>

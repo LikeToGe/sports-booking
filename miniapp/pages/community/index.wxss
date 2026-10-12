@@ -1,0 +1,7 @@
+.community-page { display: grid; align-content: start; gap: 24rpx; }
+.community-tabs { white-space: nowrap; }
+.tab { display: inline-flex; min-height: 80rpx; border-bottom: 4rpx solid transparent; padding: 0 20rpx; background: transparent; border-radius: 0; }
+.tab.is-active { border-bottom-color: var(--accent); color: var(--accent-strong); }
+.community-row { display: grid; gap: 18rpx; padding: 24rpx 0; border-bottom: 2rpx solid var(--rule); }
+.row-head, .row-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 16rpx; }
+.row-body { white-space: pre-wrap; overflow-wrap: anywhere; }

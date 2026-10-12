@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.VenueReviewRevisionMapper">
+    <update id="decidePending">
+        UPDATE s_venue_review_revision SET moderation_status = #{status}
+        WHERE id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+
+    <insert id="insertReplyRevision" useGeneratedKeys="true" keyProperty="revision.id">
+        INSERT INTO s_venue_review_reply_revision
+            (reply_id, revision_no, body, moderation_status, created_at)
+        VALUES (#{revision.replyId}, #{revision.revisionNo}, #{revision.body}, 'PENDING', UTC_TIMESTAMP(3))
+    </insert>
+
+    <select id="selectReplyById" resultType="com.sportsbooking.admin.base.po.VenueReviewReplyRevision">
+        SELECT * FROM s_venue_review_reply_revision WHERE id = #{revisionId}
+    </select>
+
+    <select id="selectLatestReplyRevision" resultType="com.sportsbooking.admin.base.po.VenueReviewReplyRevision">
+        SELECT * FROM s_venue_review_reply_revision
+        WHERE reply_id = #{replyId} ORDER BY revision_no DESC LIMIT 1
+    </select>
+</mapper>

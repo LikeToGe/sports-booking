@@ -1,17 +1,18 @@
+<operation-toast />
 <view class="page membership-page">
-  <view class="screen-head"><text class="screen-title">会员</text><text class="muted">每个场馆的顾客与会员关系独立。</text></view>
+  <view class="screen-head"><text class="screen-title">会员</text></view>
   <view wx:if="{{error}}" class="error" role="alert"><text>{{error}}</text><button class="inline-action" bindtap="load">重新加载</button></view>
   <block wx:if="{{current}}">
     <label class="field"><text class="field-label">选择场馆</text><picker disabled="{{switching || creatingRecharge || payingRecharge}}" mode="selector" range="{{memberships}}" range-key="venueName" value="{{selectedIndex}}" bindchange="selectMembership"><view class="field-control venue-picker">{{switching ? '正在切换...' : current.venueName}}</view></picker></label>
-    <view class="member-identity surface">
-      <view class="section-head"><view><text class="section-title">{{current.venueName}}</text><text class="member-status">{{current.statusLabel}}</text></view><text class="member-code">{{current.memberCode}}</text></view>
+    <view class="member-wallet surface">
+      <view class="section-head"><view><text class="section-title">{{current.venueName}}</text><text class="member-status">{{current.statusLabel}}</text></view><button class="member-code-toggle" bindtap="toggleMemberCode" aria-expanded="{{showMemberCode}}">{{showMemberCode ? '收起会员码' : '会员码'}}</button></view>
+      <view class="balance-band" aria-label="会员余额"><view><text>实付余额</text><text class="balance-value">{{current.paidBalance}}</text></view><view><text>赠送余额</text><text class="balance-value">{{current.giftBalance}}</text></view></view>
+    </view>
+    <view wx:if="{{showMemberCode}}" class="member-identity surface">
+      <text class="section-title">{{current.venueName}}</text><text class="member-code">{{current.memberCode}}</text>
       <image wx:if="{{current.memberQrDataUrl}}" class="member-qr" src="{{current.memberQrDataUrl}}" mode="aspectFit" aria-label="{{current.venueName}}会员码" />
       <text wx:if="{{current.memberQrDataUrl}}" class="muted">到店时向场馆员工出示此码。</text>
       <text wx:else class="muted">首次充值成功后生成会员码。</text>
-    </view>
-    <view class="balance-band surface" aria-label="会员余额">
-      <view><text>实付余额</text><strong>{{current.paidBalance}}</strong></view>
-      <view><text>赠送余额</text><strong>{{current.giftBalance}}</strong></view>
     </view>
     <view wx:if="{{current.hasExpiry}}" class="expiry-notice"><text>近期到期</text><strong>{{current.expiringGiftBalance}}</strong><text>{{current.nextGiftExpiresAtLabel}} 到期</text></view>
 

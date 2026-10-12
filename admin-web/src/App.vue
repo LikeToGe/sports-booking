@@ -14,14 +14,20 @@ import {
   Menu,
   Settings2,
   ShieldCheck,
+  ShieldAlert,
+  SlidersHorizontal,
   Tags,
+  MessageSquareReply,
   WalletCards,
   UsersRound,
   UserRoundSearch,
   X,
+  CircleCheck,
+  CircleX,
 } from "@lucide/vue";
 import { api } from "./api";
 import { auth, clearSession, hasPermission } from "./auth";
+import { operationFeedback } from "./feedback";
 
 const route = useRoute();
 const router = useRouter();
@@ -31,6 +37,15 @@ const isPublic = computed(() => Boolean(route.meta.public));
 const platformGroups = [
   { label: "经营", links: [{ to: "/platform/reports", label: "经营总报表", icon: ChartNoAxesCombined }] },
   { label: "平台资金异常", links: [{ to: "/platform/refunds", label: "退款异常", icon: CircleDollarSign }] },
+  { label: "内容治理", links: [
+    { to: "/platform/moderation", label: "内容治理", icon: ShieldAlert },
+    { to: "/platform/content-reports", label: "内容举报", icon: ShieldAlert },
+    { to: "/platform/content-appeals", label: "内容申诉", icon: MessageSquareReply },
+    { to: "/platform/content-restrictions", label: "账号内容权限", icon: ShieldCheck },
+    { to: "/platform/official-posts", label: "官方动态", icon: MessageSquareReply },
+    { to: "/platform/content-settings", label: "审核配置", icon: SlidersHorizontal },
+    { to: "/platform/review-tags", label: "评价标签", icon: Tags },
+  ] },
   { label: "平台资源", links: [
     { to: "/platform/venues", label: "场馆管理", icon: Building2 },
     { to: "/platform/sports", label: "运动类型", icon: Tags },
@@ -49,6 +64,10 @@ const venueGroups = [
   ] },
   { label: "财务报表", links: [
     { to: "/reports", label: "经营报表", icon: ChartNoAxesCombined, permission: "REPORT_VIEW" },
+  ] },
+  { label: "内容运营", links: [
+    { to: "/venue-reviews", label: "场地评价", icon: MessageSquareReply, permission: "REVIEW_MANAGE" },
+    { to: "/official-posts", label: "官方动态", icon: MessageSquareReply, permission: "POST_PUBLISH" },
   ] },
   { label: "场馆设置", links: [
     { to: "/courts", label: "场地管理", icon: Dumbbell, permission: "COURT_VIEW" },
@@ -76,6 +95,11 @@ async function logout() {
 </script>
 
 <template>
+  <div v-if="operationFeedback.visible" :key="operationFeedback.sequence" class="operation-toast" :class="`is-${operationFeedback.tone}`" role="status" aria-live="polite">
+    <CircleCheck v-if="operationFeedback.tone === 'success'" :size="18" aria-hidden="true" />
+    <CircleX v-else :size="18" aria-hidden="true" />
+    <span>{{ operationFeedback.message }}</span>
+  </div>
   <RouterView v-if="isPublic" />
   <div v-else class="app-shell">
     <a class="skip-link" href="#main">跳到主要内容</a>

@@ -25,6 +25,8 @@ public enum VenuePermission {
     ROLE_MANAGE("管理角色", "权限"),
     VENUE_PROFILE_VIEW("查看场馆资料", "场馆"),
     VENUE_PROFILE_EDIT("编辑场馆资料", "场馆"),
+    REVIEW_MANAGE("管理评价回复", "内容运营"),
+    POST_PUBLISH("发布场馆动态", "内容运营"),
     REPORT_VIEW("查看报表", "报表"),
     REPORT_EXPORT("导出报表", "报表");
 

@@ -1,1 +1,5 @@
-{ "navigationBarTitleText": "找场馆" }
+{
+  "navigationBarTitleText": "约场",
+  "navigationBarBackgroundColor": "#f5f7f4",
+  "navigationBarTextStyle": "black"
+}

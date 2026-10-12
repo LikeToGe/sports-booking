@@ -1,0 +1,4 @@
+.user-page { display: grid; align-content: start; gap: 24rpx; }
+.avatar { width: 112rpx; height: 112rpx; border-radius: 50%; }
+.sport { margin-right: 20rpx; }
+.user-post { display: grid; gap: 12rpx; padding: 24rpx 0; border-bottom: 2rpx solid var(--rule); overflow-wrap: anywhere; }

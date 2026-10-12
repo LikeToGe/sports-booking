@@ -1,0 +1,5 @@
+.operation-toast { position: fixed; top: calc(24rpx + env(safe-area-inset-top)); left: 24rpx; right: 24rpx; z-index: 999; display: flex; align-items: center; justify-content: center; gap: 12rpx; min-height: 76rpx; padding: 0 24rpx; border: 1rpx solid var(--rule); border-radius: 999rpx; background: var(--surface); box-shadow: 0 14rpx 36rpx rgba(23,56,43,.18); color: var(--ink); font-size: 25rpx; font-weight: 700; pointer-events: none; }
+.operation-toast-success { border-color: var(--success); background: var(--success-soft); color: var(--success-strong); }
+.operation-toast-error { border-color: var(--danger); background: var(--danger-soft); color: var(--danger-strong); }
+.operation-icon { display: inline-flex; align-items: center; justify-content: center; width: 34rpx; height: 34rpx; border-radius: 50%; background: currentColor; color: var(--surface); font-size: 22rpx; line-height: 1; }
+.operation-message { max-width: 620rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -160,6 +160,12 @@ public class BookingServiceImpl implements BookingService {
                 sessionSlotVenueId(sessionSlotId), userId);
         Booking created = redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId),
                 RedisLockType.MEMBER_BALANCE.key(venueCustomer.id)), () -> {
+            // 与注销共用用户行锁，已认证但尚未写入的并发请求不能复活已注销账号。
+            UserAccount user = userAccountMapper.selectForUpdate(userId);
+            if (user == null || user.status != com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE
+                    || user.deletedAt != null) {
+                throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+            }
             if (clientKey != null) {
                 Booking existing = bookingMapper.selectOne(new QueryWrapper<Booking>()
                         .eq("user_id", userId).eq("client_idempotency_key", clientKey));
@@ -185,7 +191,6 @@ public class BookingServiceImpl implements BookingService {
             }
             Court court = courtMapper.selectById(slot.courtId);
             SportType sport = sportTypeMapper.selectById(slot.sportTypeId);
-            UserAccount user = userAccountMapper.selectById(userId);
             String name = requireText(contactName);
             String phone = requireText(contactPhone);
 
@@ -318,18 +323,19 @@ public class BookingServiceImpl implements BookingService {
      *
      * @author gjm
      */
-    @Transactional
     @Override
     public Booking updateOfflineContact(long venueId, long bookingId, String contactName, String contactPhone) {
-        Booking booking = requiredLockedBooking(bookingId);
-        if (booking.venueId != venueId || booking.source != BookingSource.OFFLINE) {
-            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
-        }
-        booking.contactName = requireText(contactName);
-        booking.contactPhone = requireText(contactPhone);
-        booking.updatedAt = LocalDateTime.now();
-        bookingMapper.updateById(booking);
-        return booking;
+        return redisLockService.execute(List.of(RedisLockType.BOOKING.key(bookingId)), () -> {
+            Booking booking = requiredLockedBooking(bookingId);
+            if (booking.venueId != venueId || booking.source != BookingSource.OFFLINE) {
+                throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
+            }
+            booking.contactName = requireText(contactName);
+            booking.contactPhone = requireText(contactPhone);
+            booking.updatedAt = LocalDateTime.now();
+            bookingMapper.updateById(booking);
+            return booking;
+        });
     }
 
     /**
@@ -561,6 +567,20 @@ public class BookingServiceImpl implements BookingService {
         }
         return new BookingDetailVO(BookingVO.from(booking), PaymentVO.from(payment), RefundVO.from(refund),
                 memberFundsService.getComposition(booking), credential);
+    }
+
+    /** 评价只接受本人已核销完成的线上预约，线下登记和未到场均不具备资格。 */
+    @Override
+    public Booking requireReviewEligibleBooking(long userId, long bookingId) {
+        Booking booking = bookingMapper.selectById(bookingId);
+        if (booking == null || booking.userId == null || booking.userId != userId) {
+            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
+        }
+        if (booking.source != BookingSource.ONLINE || booking.status != BookingStatus.COMPLETED
+                || booking.completedAt == null) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.REVIEW_NOT_ELIGIBLE);
+        }
+        return booking;
     }
 
     /**

@@ -43,7 +43,8 @@ class RedisLockServiceTest {
         assertThat(RedisLockType.ROOT_PREFIX).isEqualTo("sports-booking:lock:");
         assertThat(RedisLockType.values()).containsExactly(
                 RedisLockType.SESSION_SLOT, RedisLockType.BOOKING,
-                RedisLockType.MEMBER_BALANCE, RedisLockType.RECHARGE);
+                RedisLockType.MEMBER_BALANCE, RedisLockType.RECHARGE, RedisLockType.RECRUITMENT);
+        assertThat(RedisLockType.RECRUITMENT.key(9L)).isEqualTo("sports-booking:lock:recruitment:9");
         assertThat(RedisLockType.SESSION_SLOT.getBusinessPrefix()).isEqualTo("session-slot:");
         assertThat(RedisLockType.BOOKING.getBusinessPrefix()).isEqualTo("booking:");
         assertThat(RedisLockType.values()).allSatisfy(type -> {

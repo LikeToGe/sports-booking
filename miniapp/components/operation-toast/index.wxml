@@ -1,0 +1,4 @@
+<view wx:if="{{visible}}" class="operation-toast operation-toast-{{tone}}" role="status" aria-live="polite">
+  <text class="operation-icon">{{tone === 'success' ? '✓' : '!'}}</text>
+  <text class="operation-message">{{message}}</text>
+</view>

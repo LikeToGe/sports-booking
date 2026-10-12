@@ -1,43 +1,54 @@
-/* Hallmark · genre: modern-minimal · macrostructures: Workbench + Narrative Workflow + Ecosystem Index
- * design-system: design.md · designed-as-app · theme: Yuechang Functional
- * pre-emit critique: P5 H5 E5 S5 R5 V4 · letter-spacing: 0
+/* Hallmark · macrostructure: Workbench + Narrative Workflow · theme: A / Fresh Sport
+ * 约场双端视觉真源：清透绿白、森林绿主操作、浅绿选中态。小程序 app.wxss 使用等价 sRGB 值。
  */
 :root {
-  --color-paper: oklch(98% 0.006 255);
-  --color-paper-2: oklch(96% 0.009 255);
-  --color-surface: oklch(99% 0.004 255);
-  --color-surface-strong: oklch(93% 0.012 255);
-  --color-ink: oklch(20% 0.018 255);
-  --color-ink-2: oklch(34% 0.016 255);
-  --color-muted: oklch(46% 0.014 255);
-  --color-rule: oklch(82% 0.013 255);
-  --color-rule-2: oklch(90% 0.01 255);
-  --color-rule-strong: oklch(65% 0.018 255);
-  --color-primary: oklch(54% 0.18 255);
-  --color-primary-hover: oklch(49% 0.19 255);
-  --color-primary-active: oklch(43% 0.18 255);
-  --color-primary-soft: oklch(94% 0.03 255);
-  --color-primary-ink: oklch(98% 0.006 255);
-  --color-info: oklch(54% 0.18 255);
-  --color-info-strong: oklch(38% 0.15 255);
-  --color-info-soft: oklch(94% 0.03 255);
-  --color-success: oklch(52% 0.14 150);
-  --color-success-strong: oklch(36% 0.105 150);
-  --color-success-soft: oklch(94% 0.035 150);
-  --color-warning: oklch(66% 0.16 65);
-  --color-warning-strong: oklch(38% 0.105 55);
-  --color-warning-soft: oklch(95% 0.038 75);
-  --color-danger: oklch(55% 0.2 28);
-  --color-danger-strong: oklch(38% 0.15 28);
-  --color-danger-soft: oklch(95% 0.035 28);
-  --color-disabled-surface: oklch(93% 0.008 255);
-  --color-disabled-ink: oklch(57% 0.01 255);
-  --color-focus: oklch(50% 0.2 255);
-  --color-scrim: oklch(20% 0.018 255 / 58%);
+  --color-paper: #f5f7f4;
+  --color-paper-2: #edf2eb;
+  --color-surface: #ffffff;
+  --color-surface-strong: #e6efe4;
+  --color-ink: #233c31;
+  --color-ink-2: #52665a;
+  --color-muted: #5e6c63;
+  --color-rule: #dfe5de;
+  --color-rule-2: #e8ece6;
+  --color-rule-strong: #7b8b7e;
+  --color-highlight: #d4ec8b;
+  --color-highlight-ink: #253a24;
+  --color-primary: #285741;
+  --color-primary-hover: #214b37;
+  --color-primary-active: #193e2d;
+  --color-primary-soft: #e6efe4;
+  --color-primary-ink: #ffffff;
+  --color-info: #3b6078;
+  --color-info-strong: #3b6078;
+  --color-info-soft: #eaf1f6;
+  --color-success: #286147;
+  --color-success-strong: #286147;
+  --color-success-soft: #e9f3e9;
+  --color-warning: #a56c25;
+  --color-warning-strong: #915412;
+  --color-warning-soft: #fbf1df;
+  --color-danger: #b7514c;
+  --color-danger-strong: #a34a47;
+  --color-danger-soft: #faeae7;
+  --color-disabled-surface: #e6e9df;
+  --color-disabled-ink: #626d65;
+  --color-focus: #285741;
+  --color-scrim: rgb(23 56 43 / 64%);
+  --color-sidebar: #ffffff;
+  --color-sidebar-deep: #1b382e;
+  --color-sidebar-text: #52665a;
+  --color-sidebar-muted: #617064;
+  --color-sidebar-rule: #dfe5de;
+  --color-on-dark: #ffffff;
+  --color-dark-surface: #1b382e;
+  --color-dark-rule: #6d8b73;
+  --color-warning-on-dark: #ffd69a;
+  --color-brand-strong: #285741;
 
   --font-display: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-body: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --font-numeric: var(--font-mono);
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -69,12 +80,12 @@
 
   --radius-none: 0;
   --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-panel: var(--radius-none);
-  --radius-card: var(--radius-md);
-  --radius-control: var(--radius-md);
-  --radius-input: var(--radius-md);
+  --radius-md: 0.625rem;
+  --radius-lg: .75rem;
+  --radius-panel: var(--radius-lg);
+  --radius-card: .75rem;
+  --radius-control: 0.625rem;
+  --radius-input: var(--radius-control);
   --radius-pill: 999px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -89,8 +100,8 @@
   --rule-standard: 1px;
   --rule-emphasis: 2px;
   --shadow-none: none;
-  --shadow-raised: 0 1px 2px oklch(20% 0.018 255 / 8%);
-  --shadow-overlay: 0 12px 32px oklch(20% 0.018 255 / 16%);
+  --shadow-raised: none;
+  --shadow-overlay: 0 20px 64px rgb(24 32 31 / 18%);
 
   --z-base: 1;
   --z-raised: 10;
@@ -105,8 +116,8 @@
   --control-height: 2.75rem;
   --control-height-compact: 2.25rem;
   --icon-button-size: 2.75rem;
-  --sidebar-width: 15.5rem;
-  --topbar-height: 3.5rem;
+  --sidebar-width: 14rem;
+  --topbar-height: 4.5rem;
   --content-max: 90rem;
   --content-min: 0;
   --drawer-width: 30rem;
@@ -131,7 +142,7 @@
   --opacity-loading: 0.72;
 
   --color-accent: var(--color-primary);
-  --color-accent-strong: var(--color-primary-active);
+  --color-accent-strong: var(--color-brand-strong);
   --color-accent-ink: var(--color-primary-ink);
   --color-signal: var(--color-info);
 }

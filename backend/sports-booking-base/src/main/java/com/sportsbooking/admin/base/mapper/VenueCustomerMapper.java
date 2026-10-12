@@ -14,6 +14,7 @@ import org.apache.ibatis.annotations.Param;
  * @author gjm
  */
 public interface VenueCustomerMapper extends BaseMapper<VenueCustomer> {
+    Long selectActiveUserForUpdate(@Param("customerId") long customerId);
 
     /**
      * 功能描述: 按场馆和用户查询顾客档案。

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.ContentGovernanceMapper">
+    <sql id="targetTable">
+        <choose>
+            <when test="targetType == 'POST'">s_post</when>
+            <when test="targetType == 'REVIEW'">s_venue_review</when>
+            <when test="targetType == 'REVIEW_REPLY'">s_venue_review_reply</when>
+            <when test="targetType == 'COMMENT'">s_post_comment</when>
+            <otherwise>s_user_account</otherwise>
+        </choose>
+    </sql>
+    <select id="selectTargetForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentTargetBO">
+        SELECT id,
+        <choose>
+            <when test="targetType == 'POST'">CASE WHEN author_type = 'USER' THEN author_id END</when>
+            <when test="targetType == 'REVIEW'">user_id</when>
+            <when test="targetType == 'COMMENT'">author_user_id</when>
+            <when test="targetType == 'USER'">id</when>
+            <otherwise>NULL</otherwise>
+        </choose> AS ownerUserId,
+        <choose>
+            <when test="targetType == 'USER'">status AS contentStatus, NULL AS currentRevisionId, NULL AS publicRevisionId</when>
+            <otherwise>content_status AS contentStatus, current_revision_id AS currentRevisionId, public_revision_id AS publicRevisionId</otherwise>
+        </choose>
+        FROM <include refid="targetTable"/> WHERE id = #{targetId} FOR UPDATE
+    </select>
+    <update id="setLegalHold">
+        UPDATE <include refid="targetTable"/> SET legal_hold = #{hold} WHERE id = #{targetId}
+    </update>
+    <insert id="insertReport">
+        INSERT INTO s_content_report (reporter_user_id,target_type,target_id,reason_code,description)
+        VALUES (#{userId},#{targetType},#{targetId},#{reasonCode},#{description})
+    </insert>
+    <sql id="reportFields">
+        id, reporter_user_id AS userId, target_type AS targetType, target_id AS targetId,
+        reason_code AS reason, description, status, resolution AS decisionReason,
+        created_at AS createdAt, resolved_at AS decidedAt
+    </sql>
+    <select id="selectReports" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="reportFields"/> FROM s_content_report
+        <where>
+            <if test="status != null">status = #{status}</if>
+            <if test="userId != null">AND reporter_user_id = #{userId}</if>
+        </where>
+        ORDER BY created_at DESC, id DESC LIMIT 200
+    </select>
+    <select id="selectReportForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="reportFields"/> FROM s_content_report WHERE id = #{id} FOR UPDATE
+    </select>
+    <update id="resolveReport">
+        UPDATE s_content_report SET status=#{status}, resolution=#{resolution}, operator_admin_id=#{adminId},
+            resolved_at=UTC_TIMESTAMP(3) WHERE id=#{id} AND status='PENDING'
+    </update>
+    <insert id="insertAppeal">
+        INSERT INTO s_content_appeal (moderation_log_id,appellant_user_id,body) VALUES (#{logId},#{userId},#{body})
+    </insert>
+    <sql id="appealFields">
+        a.id, a.appellant_user_id AS userId, l.content_type AS targetType, l.content_id AS targetId,
+        a.moderation_log_id AS moderationLogId, l.action, a.body AS description, a.status,
+        a.decision_reason AS decisionReason, a.created_at AS createdAt, a.decided_at AS decidedAt
+    </sql>
+    <select id="selectAppeals" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="appealFields"/>
+        FROM s_content_appeal a JOIN s_content_moderation_log l ON l.id = a.moderation_log_id
+        <where>
+            <if test="status != null">a.status = #{status}</if>
+            <if test="userId != null">AND a.appellant_user_id = #{userId}</if>
+        </where>
+        ORDER BY a.created_at DESC, a.id DESC LIMIT 200
+    </select>
+    <select id="selectAppealForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="appealFields"/>
+        FROM s_content_appeal a JOIN s_content_moderation_log l ON l.id = a.moderation_log_id
+        WHERE a.id = #{id} FOR UPDATE
+    </select>
+    <select id="selectLog" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT id, content_type AS targetType, content_id AS targetId, revision_id AS revisionId,
+               action, reason, created_at AS createdAt
+        FROM s_content_moderation_log WHERE id = #{logId}
+    </select>
+    <select id="selectLatestLogId" resultType="java.lang.Long">
+        SELECT MAX(id) FROM s_content_moderation_log WHERE content_type = #{targetType} AND content_id = #{targetId}
+    </select>
+    <select id="selectUserDecisions" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT l.id, l.id AS moderationLogId, l.content_type AS targetType, l.content_id AS targetId,
+               l.action, l.reason, l.created_at AS createdAt, a.status
+        FROM s_content_moderation_log l
+        LEFT JOIN s_content_appeal a ON a.moderation_log_id = l.id
+        WHERE l.action IN ('REJECT','HIDE','DELETE','RESTRICT') AND (
+            (l.content_type = 'USER' AND l.content_id = #{userId}) OR
+            (l.content_type = 'POST' AND EXISTS (SELECT 1 FROM s_post p
+                WHERE p.id=l.content_id AND p.author_type='USER' AND p.author_id=#{userId}))
+            OR (l.content_type = 'REVIEW' AND EXISTS (SELECT 1 FROM s_venue_review r
+                WHERE r.id=l.content_id AND r.user_id=#{userId}))
+            OR (l.content_type = 'COMMENT' AND EXISTS (SELECT 1 FROM s_post_comment c
+                WHERE c.id=l.content_id AND c.author_user_id=#{userId})))
+        ORDER BY l.id DESC LIMIT 100
+    </select>
+    <update id="decideAppeal">
+        UPDATE s_content_appeal SET status=#{status}, decision_reason=#{reason}, operator_admin_id=#{adminId},
+            decided_at=UTC_TIMESTAMP(3) WHERE id=#{id} AND status='PENDING'
+    </update>
+    <insert id="insertRestriction" useGeneratedKeys="true" keyProperty="restriction.id">
+        INSERT INTO s_user_content_restriction (user_id,capability,reason,operator_admin_id,expires_at)
+        VALUES (#{restriction.userId},#{restriction.capability},#{restriction.reason},#{restriction.operatorAdminId},#{restriction.expiresAt})
+    </insert>
+    <insert id="insertRestrictionLog">
+        INSERT INTO s_content_moderation_log (content_type,content_id,revision_id,action,reason,operator_admin_id)
+        VALUES ('USER',#{restriction.userId},#{restriction.id},'RESTRICT',#{restriction.reason},#{restriction.operatorAdminId})
+    </insert>
+    <update id="revokeRestriction">
+        UPDATE s_user_content_restriction SET revoked_at = UTC_TIMESTAMP(3)
+        WHERE id = #{restrictionId} AND user_id = #{userId} AND revoked_at IS NULL
+    </update>
+    <select id="restricted" resultType="java.lang.Integer">
+        SELECT EXISTS (SELECT 1 FROM s_user_content_restriction WHERE user_id=#{userId}
+            AND capability=#{capability} AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at &gt; UTC_TIMESTAMP(3)))
+    </select>
+    <select id="hasPendingEvidence" resultType="java.lang.Integer">
+        SELECT (EXISTS (SELECT 1 FROM s_content_report
+                WHERE target_type = #{targetType} AND target_id = #{targetId} AND status = 'PENDING')
+            OR EXISTS (SELECT 1 FROM s_content_appeal a JOIN s_content_moderation_log l ON l.id = a.moderation_log_id
+                WHERE l.content_type = #{targetType} AND l.content_id = #{targetId} AND a.status = 'PENDING'))
+    </select>
+    <update id="restoreTarget">
+        UPDATE <include refid="targetTable"/>
+        SET deleted_at = NULL, purge_after = NULL,
+            content_status = CASE WHEN public_revision_id IS NULL THEN 'PENDING' ELSE 'PUBLISHED' END,
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{targetId}
+    </update>
+    <insert id="insertReversalLog">
+        INSERT INTO s_content_moderation_log (content_type,content_id,revision_id,action,reason,operator_admin_id)
+        VALUES (#{targetType},#{targetId},#{revisionId},'RESTORE',#{reason},#{adminId})
+    </insert>
+    <update id="restoreRevision">
+        UPDATE
+        <choose>
+            <when test="targetType == 'POST'">s_post_revision</when>
+            <when test="targetType == 'REVIEW'">s_venue_review_revision</when>
+            <when test="targetType == 'COMMENT'">s_post_comment_revision</when>
+            <otherwise>s_venue_review_reply_revision</otherwise>
+        </choose>
+        SET moderation_status = 'APPROVED' WHERE id = #{revisionId} AND moderation_status = 'REJECTED'
+    </update>
+</mapper>

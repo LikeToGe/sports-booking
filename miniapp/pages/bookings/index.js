@@ -14,7 +14,7 @@ Page({
       this.setData({ bookings: bookings.map(item => ({
         ...item,
         date: date(item.startAt),
-        time: `${time(item.startAt)}–${time(item.endAt)}`,
+        time: `${time(item.startAt)} - ${time(item.endAt)}`,
         price: money(item.amountFen),
         statusLabel: labels[item.status] || item.status,
         statusTone: ["CONFIRMED", "PENDING_PAYMENT"].includes(item.status) ? "warning" : item.status === "COMPLETED" ? "active" : "danger",

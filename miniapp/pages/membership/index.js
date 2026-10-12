@@ -19,7 +19,7 @@ Page({
   data: {
     memberships: [], selectedIndex: 0, current: null, plans: [], flows: [], selectedPlanId: null, rechargeIdempotencyKey: "",
     recharge: null, loading: true, switching: false, creatingRecharge: false, payingRecharge: false,
-    error: "", actionError: "", actionMessage: "", actionMessageTone: "info",
+    error: "", actionError: "", actionMessage: "", actionMessageTone: "info", showMemberCode: false,
   },
 
   async onShow() {
@@ -46,9 +46,11 @@ Page({
     }
   },
 
+  toggleMemberCode() { this.setData({ showMemberCode: !this.data.showMemberCode }); },
+
   async selectMembership(event) {
     const selectedIndex = Number(event.detail.value);
-    this.setData({ selectedIndex, switching: true, error: "", actionError: "", actionMessage: "", recharge: null });
+    this.setData({ selectedIndex, switching: true, showMemberCode: false, error: "", actionError: "", actionMessage: "", recharge: null });
     try {
       await this.loadVenue(this.data.memberships[selectedIndex].venueId);
     } catch (error) {

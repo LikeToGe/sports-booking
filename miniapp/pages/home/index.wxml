@@ -1,34 +1,49 @@
+<operation-toast />
 <view class="page home-page">
-  <view class="screen-head">
-    <text class="screen-title">今天想打什么？</text>
-    <text class="muted">郑州市 · 选择运动和日期</text>
+  <view class="home-heading">
+    <text class="home-title" role="heading" aria-level="1">今天，去打球</text>
+    <view class="home-location"><image class="icon-small" src="/assets/icons/location.svg" aria-hidden="true" /><text>郑州</text></view>
   </view>
 
-  <view class="search-panel surface">
-    <view class="search-row">
-      <view class="search-field"><input class="search-input" value="{{keyword}}" placeholder="搜索场馆名称" confirm-type="search" bindinput="onKeyword" bindconfirm="search" /></view>
-    </view>
-    <view class="filter-row">
-      <view class="date-picker"><picker mode="date" value="{{date}}" bindchange="selectDate"><view class="date-button">{{dateLabel}}</view></picker></view>
-      <scroll-view class="sport-strip" scroll-x enhanced show-scrollbar="{{false}}">
-        <button class="sport-chip {{!selectedSportId ? 'is-active' : ''}}" data-id="" bindtap="selectSport">全部</button>
-        <button wx:for="{{sports}}" wx:key="id" class="sport-chip {{selectedSportId === item.id ? 'is-active' : ''}}" data-id="{{item.id}}" bindtap="selectSport">{{item.name}}</button>
-      </scroll-view>
-    </view>
+  <view class="search-bar">
+    <image class="search-icon" src="/assets/icons/search.svg" aria-hidden="true" />
+    <input class="search-input" value="{{keyword}}" placeholder="搜索场馆名称" placeholder-class="search-placeholder" confirm-type="search" bindinput="onKeyword" bindconfirm="search" aria-label="搜索场馆名称" />
+    <button class="search-button" bindtap="search" disabled="{{loading}}" hover-class="control-pressed">搜索</button>
   </view>
 
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <view class="section-head"><text class="section-title">可预约场馆</text><text class="muted">{{venues.length}} 家</text></view>
+  <scroll-view class="sport-strip" scroll-x enhanced show-scrollbar="{{false}}" aria-label="运动类型">
+    <view class="sport-options">
+      <button class="sport-chip {{!selectedSportId ? 'is-active' : ''}}" data-id="" bindtap="selectSport" hover-class="control-pressed" aria-pressed="{{!selectedSportId}}">全部运动</button>
+      <button wx:for="{{sports}}" wx:key="id" class="sport-chip {{selectedSportId === item.id ? 'is-active' : ''}}" data-id="{{item.id}}" bindtap="selectSport" hover-class="control-pressed" aria-pressed="{{selectedSportId === item.id}}">{{item.name}}</button>
+    </view>
+  </scroll-view>
+
+  <scroll-view class="home-date-strip" scroll-x enhanced show-scrollbar="{{false}}" aria-label="未来七天预约日期"><view class="home-dates">
+    <button wx:for="{{dateOptions}}" wx:key="date" class="quick-date {{date === item.date ? 'is-selected' : ''}}" data-date="{{item.date}}" bindtap="selectDate" aria-label="{{item.date}}" aria-pressed="{{date === item.date}}"><text>{{item.label}}</text><text class="date-number">{{item.day}}</text></button>
+  </view></scroll-view>
+
+  <view class="results-heading">
+    <view class="results-title"><text class="section-title" role="heading" aria-level="2">可预约场馆</text><text wx:if="{{!loading && !error}}" class="result-count">{{venues.length}} 家</text></view>
+    <picker mode="date" value="{{date}}" bindchange="selectDate" aria-label="预约日期 {{date}}">
+      <view class="date-button"><image class="icon-small" src="/assets/icons/calendar.svg" aria-hidden="true" /><text>{{dateLabel}}</text><image class="date-chevron" src="/assets/icons/chevron-down.svg" aria-hidden="true" /></view>
+    </picker>
+  </view>
+
+  <view wx:if="{{error}}" class="home-error" role="alert"><text>{{error}}</text><button class="retry-button" bindtap="load" hover-class="control-pressed">重新加载</button></view>
+  <view wx:if="{{loading && !venues.length}}" class="venue-list" aria-label="正在加载场馆">
+    <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="venue-skeleton"><view class="skeleton-cover"></view><view class="skeleton-copy"><view class="skeleton-line skeleton-line-wide"></view><view class="skeleton-line"></view><view class="skeleton-line skeleton-line-short"></view></view></view>
+  </view>
   <view class="venue-list" aria-live="polite">
-    <button wx:for="{{venues}}" wx:key="id" class="venue-card surface" data-id="{{item.id}}" bindtap="openVenue">
+    <button wx:for="{{venues}}" wx:key="id" class="venue-card" data-id="{{item.id}}" bindtap="openVenue" hover-class="venue-card-pressed">
       <image class="venue-cover" src="{{item.cover}}" mode="aspectFill" lazy-load="{{index > 1}}" aria-label="{{item.name}}场馆封面" />
       <view class="venue-copy">
-        <view class="venue-title-line"><text class="venue-name">{{item.name}}</text><text class="price">{{item.price}}</text></view>
+        <text class="venue-name">{{item.name}}</text>
         <text class="venue-sports">{{item.sportNames}}</text>
         <text class="venue-address">{{item.address}}</text>
-        <text class="next-time">{{item.nextTime}}</text>
+        <view class="venue-price-row"><text class="venue-price {{item.startingPriceFen == null ? 'price-unavailable' : ''}}">{{item.price}}</text><image class="venue-arrow" src="/assets/icons/arrow-up-right.svg" aria-hidden="true" /></view>
+        <text class="next-time {{item.nextAvailableAt ? 'is-available' : ''}}">{{item.nextTime}}</text>
       </view>
     </button>
   </view>
-  <view wx:if="{{!loading && !venues.length}}" class="empty surface"><text class="empty-title">没有符合条件的场馆</text><text>更换运动类型或日期后再查看。</text></view>
+  <view wx:if="{{!loading && !error && !venues.length}}" class="home-empty"><image class="empty-icon" src="/assets/icons/courts.svg" aria-hidden="true" /><text class="empty-title">这次没有找到场馆</text><text>试试其他运动、日期或场馆名称。</text></view>
 </view>

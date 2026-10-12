@@ -25,6 +25,7 @@ const venueRoutes: Array<[string, string]> = [
   ["/employees", "EMPLOYEE_VIEW"],
   ["/roles", "ROLE_MANAGE"],
   ["/profile", "VENUE_PROFILE_VIEW"],
+  ["/venue-reviews", "REVIEW_MANAGE"],
 ];
 
 export function hasPermission(permission?: string) {

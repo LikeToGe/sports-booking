@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PostMapper">
+    <sql id="authorFacts">
+        p.author_id AS authorId, p.author_type AS authorType,
+        CASE WHEN p.author_type = 'PLATFORM' THEN '约场平台'
+             WHEN p.author_type = 'VENUE' THEN (SELECT v.name FROM s_venue v WHERE v.id = p.author_id)
+             ELSE (SELECT u.nickname FROM s_user_account u WHERE u.id = p.author_id) END AS authorName,
+        (SELECT COUNT(*) FROM s_post_like l WHERE l.post_id = p.id) AS likeCount,
+        EXISTS (SELECT 1 FROM s_post_like l WHERE l.post_id = p.id AND l.user_id = #{userId}) AS liked,
+        CASE WHEN p.author_type = 'USER' AND p.author_id = #{userId} THEN rev.booking_id END AS bookingId,
+    </sql>
+    <sql id="visibleAuthor">
+        AND (p.author_type != 'USER' OR EXISTS (
+            SELECT 1 FROM s_user_account u WHERE u.id = p.author_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL))
+        AND (p.author_type != 'USER' OR NOT EXISTS (
+            SELECT 1 FROM s_user_block b
+            WHERE (b.blocker_user_id = #{userId} AND b.blocked_user_id = p.author_id)
+               OR (b.blocker_user_id = p.author_id AND b.blocked_user_id = #{userId})))
+    </sql>
+    <select id="selectPublic" resultType="com.sportsbooking.admin.base.bo.PostBO">
+        SELECT p.id, rev.id AS revisionId, rev.body, rev.sport_type_id AS sportTypeId, st.name AS sportName,
+               <include refid="authorFacts" />
+               rev.venue_id AS venueId, v.name AS venueName, p.is_official AS isOfficial,
+               p.is_pinned AS isPinned, p.comments_enabled AS commentsEnabled,
+               (p.author_type = 'USER' AND p.author_id = #{userId}) AS isMine,
+               p.content_status AS contentStatus, rev.moderation_status AS moderationStatus, p.created_at AS createdAt
+        FROM s_post p
+        JOIN s_post_revision rev ON rev.id = p.public_revision_id
+        JOIN s_sport_type st ON st.id = rev.sport_type_id
+        LEFT JOIN s_venue v ON v.id = rev.venue_id
+        WHERE p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+        <include refid="visibleAuthor" />
+        <if test="sportTypeId != null">AND rev.sport_type_id = #{sportTypeId}</if>
+        <if test="venueId != null">AND rev.venue_id = #{venueId}</if>
+        ORDER BY p.is_pinned DESC, p.created_at DESC, p.id DESC
+        LIMIT 100
+    </select>
+
+    <select id="selectPublicById" resultType="com.sportsbooking.admin.base.bo.PostBO">
+        SELECT p.id, rev.id AS revisionId, rev.body, rev.sport_type_id AS sportTypeId, st.name AS sportName,
+               <include refid="authorFacts" />
+               rev.venue_id AS venueId, v.name AS venueName, p.is_official AS isOfficial,
+               p.is_pinned AS isPinned, p.comments_enabled AS commentsEnabled,
+               (p.author_type = 'USER' AND p.author_id = #{userId}) AS isMine,
+               p.content_status AS contentStatus, rev.moderation_status AS moderationStatus, p.created_at AS createdAt
+        FROM s_post p
+        JOIN s_post_revision rev ON rev.id = p.public_revision_id
+        JOIN s_sport_type st ON st.id = rev.sport_type_id
+        LEFT JOIN s_venue v ON v.id = rev.venue_id
+        WHERE p.id = #{postId} AND p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+        <include refid="visibleAuthor" />
+    </select>
+
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.Post">
+        SELECT * FROM s_post WHERE id = #{postId} LIMIT 1 FOR UPDATE
+    </select>
+    <select id="selectMine" resultType="com.sportsbooking.admin.base.bo.PostBO">
+        SELECT p.id, rev.id AS revisionId, rev.body, rev.sport_type_id AS sportTypeId, st.name AS sportName,
+               <include refid="authorFacts" />
+               rev.venue_id AS venueId, v.name AS venueName, p.is_official AS isOfficial,
+               p.is_pinned AS isPinned, p.comments_enabled AS commentsEnabled, TRUE AS isMine,
+               p.content_status AS contentStatus, rev.moderation_status AS moderationStatus, p.created_at AS createdAt
+        FROM s_post p JOIN s_post_revision rev ON rev.id = p.current_revision_id
+        JOIN s_sport_type st ON st.id = rev.sport_type_id LEFT JOIN s_venue v ON v.id = rev.venue_id
+        WHERE p.author_type = 'USER' AND p.author_id = #{userId} AND p.deleted_at IS NULL
+        ORDER BY p.created_at DESC, p.id DESC LIMIT 100
+    </select>
+    <select id="selectUserPosts" resultType="com.sportsbooking.admin.base.bo.PostBO">
+        SELECT p.id, rev.id AS revisionId, rev.body, rev.sport_type_id AS sportTypeId, st.name AS sportName,
+               <include refid="authorFacts" />
+               rev.venue_id AS venueId, v.name AS venueName, p.is_official AS isOfficial,
+               p.is_pinned AS isPinned, p.comments_enabled AS commentsEnabled,
+               (p.author_id = #{userId}) AS isMine, p.content_status AS contentStatus,
+               rev.moderation_status AS moderationStatus, p.created_at AS createdAt
+        FROM s_post p JOIN s_post_revision rev ON rev.id = p.public_revision_id
+        JOIN s_sport_type st ON st.id = rev.sport_type_id LEFT JOIN s_venue v ON v.id = rev.venue_id
+        WHERE p.author_type = 'USER' AND p.author_id = #{authorId} AND p.deleted_at IS NULL
+          AND p.content_status = 'PUBLISHED' AND rev.moderation_status = 'APPROVED'
+        <include refid="visibleAuthor" />
+        ORDER BY p.created_at DESC, p.id DESC LIMIT 100
+    </select>
+    <update id="clearPinned">
+        UPDATE s_post SET is_pinned = FALSE, pinned_slot = NULL WHERE pinned_slot = 1
+    </update>
+    <update id="setPinned">
+        UPDATE s_post SET is_pinned = #{pinned}, pinned_slot = CASE WHEN #{pinned} THEN 1 ELSE NULL END
+        WHERE id = #{postId} AND author_type = 'PLATFORM' AND content_status = 'PUBLISHED' AND deleted_at IS NULL
+    </update>
+
+    <select id="selectOwned" resultType="com.sportsbooking.admin.base.po.Post">
+        SELECT * FROM s_post
+        WHERE id = #{postId} AND author_type = 'USER' AND author_id = #{userId} AND deleted_at IS NULL
+        LIMIT 1
+    </select>
+
+    <update id="setCurrentRevision">
+        UPDATE s_post SET current_revision_id = #{revisionId}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND deleted_at IS NULL
+    </update>
+
+    <update id="publishRevision">
+        UPDATE s_post SET public_revision_id = #{revisionId},
+                          content_status = CASE WHEN content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+                          updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND current_revision_id = #{revisionId} AND deleted_at IS NULL
+    </update>
+
+    <update id="publishRevisionByRevision">
+        UPDATE s_post p JOIN s_post_revision r ON r.post_id = p.id
+        SET p.public_revision_id = r.id,
+            p.content_status = CASE WHEN p.content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+            p.updated_at = UTC_TIMESTAMP(3)
+        WHERE r.id = #{revisionId} AND p.current_revision_id = r.id AND p.deleted_at IS NULL
+    </update>
+
+    <update id="deleteOwned">
+        UPDATE s_post SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3), updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND author_type = 'USER' AND author_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <select id="selectModerationQueue" resultType="com.sportsbooking.admin.base.bo.VenueReviewModerationBO">
+        SELECT 'POST' AS contentType, NULL AS replyId, p.id AS reviewId, rev.id AS revisionId,
+               rev.venue_id AS venueId, v.name AS venueName, rev.body, pub.body AS publicBody,
+               p.content_status AS contentStatus, rev.moderation_status AS moderationStatus, NULL AS overallScore,
+               rev.created_at AS submittedAt
+        FROM s_post p
+        JOIN s_post_revision rev ON rev.id = p.current_revision_id
+        LEFT JOIN s_post_revision pub ON pub.id = p.public_revision_id
+        LEFT JOIN s_venue v ON v.id = rev.venue_id
+        WHERE (rev.moderation_status = 'PENDING' OR p.content_status IN ('PUBLISHED', 'HIDDEN'))
+          AND p.deleted_at IS NULL
+        ORDER BY rev.moderation_status DESC, rev.created_at ASC, rev.id ASC
+        LIMIT 100
+    </select>
+
+    <update id="decideRevision">
+        UPDATE s_post_revision SET moderation_status = #{status}
+        WHERE id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+
+    <update id="setContentStatus">
+        UPDATE s_post SET content_status = #{status}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND deleted_at IS NULL
+    </update>
+
+    <update id="deleteModerated">
+        UPDATE s_post SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3),
+                          updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{postId} AND deleted_at IS NULL
+    </update>
+
+    <insert id="insertModerationLog">
+        INSERT INTO s_content_moderation_log
+            (content_type, content_id, revision_id, action, reason, operator_admin_id)
+        VALUES ('POST', #{postId}, #{revisionId}, #{action}, #{reason}, #{operatorAdminId})
+    </insert>
+</mapper>

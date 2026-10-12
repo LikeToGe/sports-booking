@@ -47,7 +47,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             AuthContext.setAdminPrincipal(
                     sessionService.requireAdmin(request.getHeader(AuthConstants.ADMIN_TOKEN_HEADER)));
         } else if (path.startsWith("/mini/") || path.startsWith("/staff/")
-                || path.startsWith("/auth/mini/profile/") || path.equals("/auth/mini/logout")) {
+                || path.startsWith("/auth/mini/profile/") || path.equals("/auth/mini/logout")
+                || path.equals("/auth/mini/close-account")) {
             AuthContext.setMiniPrincipal(
                     sessionService.requireMini(request.getHeader(AuthConstants.MINI_TOKEN_HEADER)));
         }

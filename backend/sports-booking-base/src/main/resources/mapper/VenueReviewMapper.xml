@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.VenueReviewMapper">
+    <select id="selectByBookingId" resultType="com.sportsbooking.admin.base.po.VenueReview">
+        SELECT * FROM s_venue_review WHERE booking_id = #{bookingId} LIMIT 1
+    </select>
+
+    <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.VenueReview">
+        SELECT * FROM s_venue_review WHERE id = #{reviewId} LIMIT 1 FOR UPDATE
+    </select>
+
+    <update id="setCurrentRevision">
+        UPDATE s_venue_review SET current_revision_id = #{revisionId}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{reviewId} AND deleted_at IS NULL
+    </update>
+
+    <update id="publishRevision">
+        UPDATE s_venue_review
+        SET public_revision_id = #{revisionId},
+            content_status = CASE WHEN content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{reviewId} AND current_revision_id = #{revisionId} AND deleted_at IS NULL
+    </update>
+
+    <update id="publishRevisionByRevision">
+        UPDATE s_venue_review r JOIN s_venue_review_revision rev ON rev.review_id = r.id
+        SET r.public_revision_id = rev.id,
+            r.content_status = CASE WHEN r.content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+            r.updated_at = UTC_TIMESTAMP(3)
+        WHERE rev.id = #{revisionId} AND r.current_revision_id = rev.id AND r.deleted_at IS NULL
+    </update>
+
+    <update id="deleteOwned">
+        UPDATE s_venue_review
+        SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3), updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{reviewId} AND user_id = #{userId} AND deleted_at IS NULL
+    </update>
+
+    <select id="selectPublic" resultType="com.sportsbooking.admin.base.bo.VenueReviewBO">
+        SELECT r.id, rev.id AS revisionId, r.venue_id AS venueId, r.sport_type_id AS sportTypeId,
+               s.name AS sportName, DATE_FORMAT(DATE_ADD(b.start_at, INTERVAL 8 HOUR), '%Y-%m') AS visitMonth,
+               rev.body, rev.overall_score AS overallScore, rev.court_score AS courtScore,
+               rev.environment_score AS environmentScore, rev.service_score AS serviceScore,
+               rev.anonymous, r.created_at AS createdAt,
+               rr.id AS replyId, rrr.body AS replyBody, rr.content_status AS replyContentStatus,
+               rrr.moderation_status AS replyModerationStatus, rrr.created_at AS replyCreatedAt
+        FROM s_venue_review r
+        JOIN s_venue_review_revision rev ON rev.id = r.public_revision_id
+        JOIN s_booking b ON b.id = r.booking_id
+        JOIN s_sport_type s ON s.id = r.sport_type_id
+        LEFT JOIN s_venue_review_reply rr ON rr.review_id = r.id AND rr.content_status = 'PUBLISHED'
+        LEFT JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.public_revision_id
+            AND rrr.moderation_status = 'APPROVED'
+        WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+        <if test="score != null">AND rev.overall_score = #{score}</if>
+        <if test="tagId != null">
+            AND EXISTS (SELECT 1 FROM s_venue_review_tag_rel rel
+                        WHERE rel.revision_id = rev.id AND rel.tag_id = #{tagId})
+        </if>
+        <if test="withImages != null and withImages">
+            AND EXISTS (SELECT 1 FROM s_venue_review_media m
+                        WHERE m.revision_id = rev.id AND m.moderation_status = 'APPROVED')
+        </if>
+        ORDER BY r.created_at DESC, r.id DESC
+        LIMIT 100
+    </select>
+
+    <select id="selectSummary" resultType="com.sportsbooking.admin.base.bo.VenueReviewSummaryBO">
+        SELECT COUNT(*) AS reviewCount, AVG(rev.overall_score) AS overallScore,
+               AVG(rev.court_score) AS courtScore, AVG(rev.environment_score) AS environmentScore,
+               AVG(rev.service_score) AS serviceScore
+        FROM s_venue_review r
+        JOIN s_venue_review_revision rev ON rev.id = r.public_revision_id
+        WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+    </select>
+
+    <select id="selectTagCounts" resultType="com.sportsbooking.admin.base.bo.ReviewTagCountBO">
+        SELECT t.id AS tagId, t.name AS tagName, COUNT(*) AS reviewCount
+        FROM s_venue_review r
+        JOIN s_venue_review_revision rev ON rev.id = r.public_revision_id
+        JOIN s_venue_review_tag_rel rel ON rel.revision_id = rev.id
+        JOIN s_review_tag t ON t.id = rel.tag_id
+        WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+        GROUP BY t.id, t.name
+        ORDER BY reviewCount DESC, t.id
+    </select>
+
+    <select id="selectVenueReviews" resultType="com.sportsbooking.admin.base.bo.VenueReviewBO">
+        SELECT r.id, rev.id AS revisionId, r.venue_id AS venueId, r.sport_type_id AS sportTypeId,
+               s.name AS sportName, DATE_FORMAT(DATE_ADD(b.start_at, INTERVAL 8 HOUR), '%Y-%m') AS visitMonth,
+               rev.body, rev.overall_score AS overallScore, rev.court_score AS courtScore,
+               rev.environment_score AS environmentScore, rev.service_score AS serviceScore,
+               rev.anonymous, r.created_at AS createdAt,
+               rr.id AS replyId, rrr.body AS replyBody, rr.content_status AS replyContentStatus,
+               rrr.moderation_status AS replyModerationStatus, rrr.created_at AS replyCreatedAt
+        FROM s_venue_review r
+        JOIN s_venue_review_revision rev ON rev.id = r.public_revision_id
+        JOIN s_booking b ON b.id = r.booking_id
+        JOIN s_sport_type s ON s.id = r.sport_type_id
+        LEFT JOIN s_venue_review_reply rr ON rr.review_id = r.id
+        LEFT JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.current_revision_id
+        WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+        ORDER BY r.created_at DESC, r.id DESC
+        LIMIT 100
+    </select>
+
+    <select id="selectPublicReply" resultType="com.sportsbooking.admin.base.bo.VenueReviewReplyBO">
+        SELECT rr.id AS replyId, rrr.body, rr.content_status AS contentStatus,
+               rrr.moderation_status AS moderationStatus, rrr.created_at AS createdAt
+        FROM s_venue_review_reply rr
+        JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.public_revision_id
+        WHERE rr.review_id = #{reviewId} AND rr.content_status = 'PUBLISHED'
+          AND rrr.moderation_status = 'APPROVED'
+        LIMIT 1
+    </select>
+
+    <select id="selectVenueReview" resultType="com.sportsbooking.admin.base.po.VenueReview">
+        SELECT * FROM s_venue_review
+        WHERE id = #{reviewId} AND venue_id = #{venueId} AND deleted_at IS NULL LIMIT 1
+    </select>
+
+    <select id="selectVenueReviewForUpdate" resultType="com.sportsbooking.admin.base.po.VenueReview">
+        SELECT * FROM s_venue_review
+        WHERE id = #{reviewId} AND venue_id = #{venueId} AND deleted_at IS NULL LIMIT 1 FOR UPDATE
+    </select>
+
+    <select id="selectReplyForUpdate" resultType="com.sportsbooking.admin.base.po.VenueReviewReply">
+        SELECT * FROM s_venue_review_reply WHERE review_id = #{reviewId} LIMIT 1 FOR UPDATE
+    </select>
+
+    <select id="selectReplyByIdForUpdate" resultType="com.sportsbooking.admin.base.po.VenueReviewReply">
+        SELECT * FROM s_venue_review_reply WHERE id = #{replyId} LIMIT 1 FOR UPDATE
+    </select>
+
+    <insert id="insertReply" useGeneratedKeys="true" keyProperty="reply.id">
+        INSERT INTO s_venue_review_reply (review_id, venue_id, content_status, created_at, updated_at)
+        VALUES (#{reply.reviewId}, #{reply.venueId}, 'PENDING', UTC_TIMESTAMP(3), UTC_TIMESTAMP(3))
+    </insert>
+
+    <update id="setReplyCurrentRevision">
+        UPDATE s_venue_review_reply
+        SET current_revision_id = #{revisionId},
+            content_status = CASE WHEN public_revision_id IS NULL THEN 'PENDING' ELSE content_status END,
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{replyId} AND content_status != 'DELETED'
+    </update>
+
+    <update id="publishReplyRevision">
+        UPDATE s_venue_review_reply
+        SET public_revision_id = #{revisionId},
+            content_status = CASE WHEN content_status = 'HIDDEN' THEN 'HIDDEN' ELSE 'PUBLISHED' END,
+            updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{replyId} AND current_revision_id = #{revisionId} AND content_status != 'DELETED'
+    </update>
+
+    <update id="setReplyContentStatus">
+        UPDATE s_venue_review_reply SET content_status = #{status}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{replyId} AND content_status != 'DELETED'
+    </update>
+
+    <update id="decideReplyPending">
+        UPDATE s_venue_review_reply_revision SET moderation_status = #{status}
+        WHERE id = #{revisionId} AND moderation_status = 'PENDING'
+    </update>
+
+    <insert id="insertReplyModerationLog">
+        INSERT INTO s_content_moderation_log
+            (content_type, content_id, revision_id, action, reason, operator_admin_id)
+        VALUES ('REVIEW_REPLY', #{replyId}, #{revisionId}, #{action}, #{reason}, #{operatorAdminId})
+    </insert>
+
+    <select id="selectModerationQueue" resultType="com.sportsbooking.admin.base.bo.VenueReviewModerationBO">
+        SELECT 'REVIEW' AS contentType, NULL AS replyId, r.id AS reviewId, rev.id AS revisionId,
+               r.venue_id AS venueId, v.name AS venueName,
+               rev.body, pub.body AS publicBody, r.content_status AS contentStatus,
+               rev.moderation_status AS moderationStatus,
+               rev.overall_score AS overallScore, rev.created_at AS submittedAt
+        FROM s_venue_review r
+        JOIN s_venue_review_revision rev ON rev.id = r.current_revision_id
+        LEFT JOIN s_venue_review_revision pub ON pub.id = r.public_revision_id
+        JOIN s_venue v ON v.id = r.venue_id
+        WHERE (rev.moderation_status = 'PENDING' OR r.content_status IN ('PUBLISHED', 'HIDDEN'))
+          AND r.deleted_at IS NULL
+        UNION ALL
+        SELECT 'REVIEW_REPLY' AS contentType, rr.id AS replyId, rr.review_id AS reviewId,
+               rrr.id AS revisionId, rr.venue_id AS venueId, v.name AS venueName,
+               rrr.body, pub.body AS publicBody, rr.content_status AS contentStatus,
+               rrr.moderation_status AS moderationStatus,
+               NULL AS overallScore, rrr.created_at AS submittedAt
+        FROM s_venue_review_reply rr
+        JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.current_revision_id
+        LEFT JOIN s_venue_review_reply_revision pub ON pub.id = rr.public_revision_id
+        JOIN s_venue_review r ON r.id = rr.review_id AND r.deleted_at IS NULL
+        JOIN s_venue v ON v.id = rr.venue_id
+        WHERE (rrr.moderation_status = 'PENDING' OR rr.content_status IN ('PUBLISHED', 'HIDDEN'))
+          AND rr.content_status != 'DELETED'
+        ORDER BY moderationStatus DESC, submittedAt ASC, revisionId ASC
+        LIMIT 100
+    </select>
+
+    <update id="setContentStatus">
+        UPDATE s_venue_review SET content_status = #{status}, updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{reviewId} AND deleted_at IS NULL
+    </update>
+
+    <update id="deleteModerated">
+        UPDATE s_venue_review
+        SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3), updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{reviewId} AND deleted_at IS NULL
+    </update>
+
+    <insert id="insertModerationLog">
+        INSERT INTO s_content_moderation_log
+            (content_type, content_id, revision_id, action, reason, operator_admin_id)
+        VALUES ('REVIEW', #{reviewId}, #{revisionId}, #{action}, #{reason}, #{operatorAdminId})
+    </insert>
+
+    <select id="selectActiveTagIds" resultType="java.lang.Long">
+        SELECT t.id FROM s_review_tag t
+        JOIN s_review_tag_sport rel ON rel.tag_id = t.id
+        WHERE t.status = 'ACTIVE' AND rel.sport_type_id = #{sportTypeId}
+          AND t.id IN
+          <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">#{tagId}</foreach>
+    </select>
+
+    <insert id="insertRevisionTags">
+        INSERT INTO s_venue_review_tag_rel (revision_id, tag_id, position) VALUES
+        <foreach collection="tagIds" item="tagId" index="index" separator=",">
+            (#{revisionId}, #{tagId}, #{index} + 1)
+        </foreach>
+    </insert>
+
+    <select id="selectRevisionTagIds" resultType="java.lang.Long">
+        SELECT tag_id FROM s_venue_review_tag_rel WHERE revision_id = #{revisionId} ORDER BY position
+    </select>
+</mapper>

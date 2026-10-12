@@ -29,4 +29,10 @@ public class UserAccount {
     public LocalDateTime createdAt;
     /** 最后更新时间。 */
     public LocalDateTime updatedAt;
+    /** 注销时间，作为不可逆状态事实。 */
+    public LocalDateTime deletedAt;
+    /** 社区昵称，不复用预约联系人。 */
+    public String nickname;
+    /** 社区头像地址。 */
+    public String avatarUrl;
 }

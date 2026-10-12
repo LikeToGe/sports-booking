@@ -12,7 +12,8 @@ public enum RedisLockType {
     SESSION_SLOT("session-slot:", Duration.ofSeconds(30), "具体场次"),
     BOOKING("booking:", Duration.ofSeconds(30), "预约"),
     MEMBER_BALANCE("member-balance:", Duration.ofSeconds(30), "会员余额"),
-    RECHARGE("recharge:", Duration.ofSeconds(30), "充值");
+    RECHARGE("recharge:", Duration.ofSeconds(30), "充值"),
+    RECRUITMENT("recruitment:", Duration.ofSeconds(30), "动态招募");
 
     public static final String ROOT_PREFIX = "sports-booking:lock:";
 

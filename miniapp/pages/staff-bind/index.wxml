@@ -1,3 +1,4 @@
+<operation-toast />
 <view class="page bind-page">
   <view class="screen-head"><text class="screen-title">绑定员工身份</text><text class="muted">输入场馆管理员提供的 6 位绑定码。</text></view>
   <view class="bind-panel surface"><label class="field"><text class="field-label">6 位绑定码</text><input class="field-control code-input" type="number" maxlength="6" value="{{code}}" bindinput="onCode" /></label><text class="muted helper">绑定成功后，可在“我的”进入核销工作台。</text></view>

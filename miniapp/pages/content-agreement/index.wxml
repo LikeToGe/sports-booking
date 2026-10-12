@@ -1,0 +1,12 @@
+<operation-toast />
+<view class="page agreement-page">
+  <view class="screen-head"><text class="screen-title">社区协议</text></view>
+  <view wx:if="{{loading}}" class="empty">正在加载</view>
+  <block wx:elif="{{agreement}}">
+    <view class="agreement-section"><text class="section-title">社区规则 · {{agreement.rulesVersion}}</text><text class="agreement-text">{{agreement.rulesText}}</text></view>
+    <view class="agreement-section"><text class="section-title">隐私说明 · {{agreement.privacyVersion}}</text><text class="agreement-text">{{agreement.privacyText}}</text></view>
+    <checkbox-group bindchange="toggle"><label class="agreement-check"><checkbox value="accept" checked="{{checked}}" /><text>我已阅读并同意当前版本</text></label></checkbox-group>
+    <button class="button-primary" disabled="{{!checked || saving || agreement.accepted}}" bindtap="accept">{{agreement.accepted ? '已接受' : saving ? '提交中' : '同意并继续'}}</button>
+  </block>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+</view>

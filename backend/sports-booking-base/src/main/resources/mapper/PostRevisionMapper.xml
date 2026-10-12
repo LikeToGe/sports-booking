@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PostRevisionMapper">
+    <select id="selectForPost" resultType="com.sportsbooking.admin.base.po.PostRevision">
+        SELECT * FROM s_post_revision WHERE id = #{revisionId} AND post_id = #{postId} LIMIT 1
+    </select>
+</mapper>

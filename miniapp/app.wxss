@@ -1,77 +1,157 @@
-/* Hallmark · genre: modern-minimal · macrostructure: Ecosystem Index · theme: Nike-design-analysis · design-system: design.md · designed-as-app
- * pre-emit critique: P5 H5 E5 S5 R5 V5
- * contrast: pass · touch: 44pt floor · chrome: native · icons: no mixed set
- */
+/* Hallmark · A · 清爽运动：绿白底、森林绿主操作、浅绿选中态；时间优先、触控清晰。 */
 page {
-  --paper: oklch(100% 0 0);
-  --paper-2: oklch(97.02% 0 0);
-  --surface: oklch(100% 0 0);
-  --surface-card: oklch(97.02% 0 0);
-  --ink: oklch(17.76% 0 0);
-  --ink-2: oklch(34.53% 0.0034 286.2);
-  --muted: oklch(54.58% 0.0031 286.3);
-  --rule: oklch(83.93% 0.0014 286.4);
-  --rule-2: oklch(92.19% 0 0);
-  --accent: oklch(17.76% 0 0);
-  --accent-strong: oklch(26.03% 0 0);
-  --accent-soft: oklch(97.02% 0 0);
-  --accent-ink: oklch(100% 0 0);
-  --signal: oklch(52.84% 0.2624 263.8);
-  --signal-strong: oklch(45.37% 0.2602 264);
-  --signal-soft: oklch(97.05% 0.0142 254.6);
-  --success: oklch(51.84% 0.1261 155.8);
-  --success-strong: oklch(51.84% 0.1261 155.8);
-  --success-soft: oklch(96% 0.025 155.8);
-  --warning: oklch(76.86% 0.1647 70.1);
-  --warning-strong: oklch(47.32% 0.1247 46.2);
-  --warning-soft: oklch(96% 0.028 70.1);
-  --danger: oklch(54.45% 0.2231 28.8);
-  --danger-strong: oklch(36.33% 0.1441 30.4);
-  --danger-soft: oklch(96% 0.025 25.3);
-  --shadow: oklch(17.76% 0 0 / 6%);
-  --font-display: "Nike Futura ND", "Arial Black", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-body: "Helvetica Now Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --color-paper: #f5f7f4;
+  --color-rule-2: #e8ece6;
+  --color-highlight: #d4ec8b;
+  --color-highlight-ink: #253a24;
+  --color-info: #3b6078;
+  --color-info-strong: #3b6078;
+  --color-info-soft: #eaf1f6;
+  --color-success: #286147;
+  --color-success-soft: #e9f3e9;
+  --color-warning: #a56c25;
+  --color-warning-strong: #915412;
+  --color-warning-soft: #fbf1df;
+  --color-danger: #b7514c;
+  --color-on-dark: #ffffff;
+  --shadow-raised: none;
+  /* 首页与底栏按根 tokens.css 映射；尺寸用 px 保证窄屏触控区域。 */
+  --color-paper-2: #edf2eb;
+  --color-surface: #ffffff;
+  --color-ink: #233c31;
+  --color-ink-2: #52665a;
+  --color-muted: #5e6c63;
+  --color-rule-strong: #7b8b7e;
+  --color-rule: #dfe5de;
+  --color-primary: #285741;
+  --color-primary-soft: #e6efe4;
+  --color-primary-ink: #ffffff;
+  --color-success-strong: #286147;
+  --color-danger-strong: #a34a47;
+  --color-danger-soft: #faeae7;
+  --color-focus: #285741;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-md: 18px;
+  --text-xl: 24px;
+  --line-tight: 1.2;
+  --line-base: 1.5;
+  --space-3xs: 4px;
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-sm: 16px;
+  --space-md: 20px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-3xl: 48px;
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --radius-card: 12px;
+  --radius-control: 10px;
+  --radius-input: var(--radius-control);
+  --radius-pill: 999px;
+  --rule-hairline: 1px;
+  --z-sticky-nav: 300;
+  --touch-target: 44px;
+  --bottom-nav-height: 64px;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --opacity-disabled: 0.55;
+
+  --paper: var(--color-paper);
+  --paper-2: var(--color-paper-2);
+  --surface: var(--color-surface);
+  --surface-card: var(--color-surface);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-ink-2);
+  --muted: var(--color-muted);
+  --rule: var(--color-rule);
+  --rule-2: var(--color-rule-2);
+  --accent: var(--color-highlight);
+  --accent-strong: var(--color-primary);
+  --accent-soft: var(--color-primary-soft);
+  --accent-ink: var(--color-highlight-ink);
+  --signal: var(--color-info);
+  --signal-strong: var(--color-info-strong);
+  --signal-soft: var(--color-info-soft);
+  --success: var(--color-success);
+  --success-strong: var(--color-success-strong);
+  --success-soft: var(--color-success-soft);
+  --warning: var(--color-warning);
+  --warning-strong: var(--color-warning-strong);
+  --warning-soft: var(--color-warning-soft);
+  --danger: var(--color-danger);
+  --danger-strong: var(--color-danger-strong);
+  --danger-soft: var(--color-danger-soft);
+  --on-dark: var(--color-on-dark);
+  --on-dark-muted: #b6c8b5;
+  --on-dark-soft: #d8e3d5;
+  --dark-rule: rgba(255,255,255,.16);
+  --dark-rule-strong: rgba(255,255,255,.22);
+  --dark-surface-tint: rgba(255,255,255,.08);
+  --accent-divider: rgba(23,56,43,.2);
+  --accent-muted: rgba(23,56,43,.68);
+  --tab-shadow: rgba(23,56,43,.16);
+  --warning-on-dark: #f2c477;
+  --shadow: var(--shadow-raised);
+  --font-display: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 100%;
   overflow-x: clip;
-  background: var(--paper-2);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 28rpx;
+  font-size: 14px;
   letter-spacing: 0;
 }
 
 view, text, button, input, textarea, picker, image { box-sizing: border-box; letter-spacing: 0; }
-button { margin: 0; border-radius: 999rpx; font-size: 28rpx; font-weight: 600; white-space: nowrap; }
+button { margin: 0; border-radius: 16rpx; font-size: 14px; font-weight: 600; white-space: nowrap; }
 button::after { border: 0; }
-button:active { opacity: 0.78; }
+button:active { opacity: 0.78; transform: translateY(1rpx); }
 
-.page { min-height: 100vh; padding: 32rpx 28rpx calc(40rpx + env(safe-area-inset-bottom)); }
-.screen-head { display: grid; gap: 8rpx; padding-bottom: 24rpx; border-bottom: 4rpx solid var(--ink); }
-.screen-title { display: block; font-family: var(--font-display); font-size: 42rpx; font-weight: 700; line-height: 1.1; }
+.page { min-height: 100vh; padding: 20px 20px calc(96px + env(safe-area-inset-bottom)); }
+.screen-head { display: grid; gap: 10rpx; padding: 14rpx 4rpx 24rpx; }
+.screen-title { display: block; color: var(--ink); font-family: var(--font-display); font-size: 24px; font-weight: 600; line-height: 1.35; letter-spacing: 0; }
 .section-head { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
-.section-title { display: block; font-family: var(--font-display); font-size: 32rpx; font-weight: 700; line-height: 1.2; }
+.section-title { display: block; font-family: var(--font-display); font-size: 17px; font-weight: 600; line-height: 1.4; }
 .block { display: block; }
 .muted { color: var(--muted); }
+.eyebrow { color: var(--muted); font-size: 20rpx; font-weight: 700; letter-spacing: 0; }
 
-.surface { border: 2rpx solid var(--rule); border-radius: 0; background: var(--surface); box-shadow: none; }
-.price { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+.surface { border: 1rpx solid var(--rule); border-radius: var(--radius-card); background: var(--surface); box-shadow: none; }
+.price { color: var(--ink); font-variant-numeric: tabular-nums; font-weight: 700; }
 
-.button-primary, .button-secondary, .button-danger { display: flex; align-items: center; justify-content: center; min-height: 88rpx; padding: 0 28rpx; line-height: 1; }
-.button-primary { background: var(--accent); color: var(--accent-ink); }
-.button-secondary { border: 2rpx solid var(--paper-2); background: var(--paper-2); color: var(--ink); }
-.button-danger { border: 2rpx solid var(--danger); background: var(--surface); color: var(--danger-strong); }
+.button-primary, .button-secondary, .button-danger { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; line-height: 1; }
+.button-primary { background: var(--color-primary); color: var(--color-primary-ink); box-shadow: none; }
+.button-secondary { border: 1px solid var(--color-rule-strong); background: var(--surface); color: var(--ink); }
+.button-danger { border: 1rpx solid var(--danger); background: transparent; color: var(--danger-strong); }
 .button-primary[disabled], .button-secondary[disabled], .button-danger[disabled] { opacity: 0.45; }
 
 .field { display: grid; gap: 10rpx; }
-.field-label { color: var(--ink-2); font-size: 24rpx; font-weight: 600; }
-.field-control { min-height: 88rpx; padding: 0 24rpx; border: 2rpx solid var(--rule); border-radius: 999rpx; background: var(--surface); }
-.field-control:focus { border-color: var(--signal); }
+.field-label { color: var(--ink-2); font-size: 23rpx; font-weight: 700; }
+.field-control { min-height: 44px; padding: 0 12px; border: 1rpx solid var(--rule); border-radius: 16rpx; background: var(--surface); }
+.field-control:focus { border-color: var(--ink); }
 .field-control[disabled] { background: var(--paper-2); opacity: 0.55; }
-.error { padding: 20rpx 24rpx; border: 2rpx solid var(--danger); border-radius: 16rpx; background: var(--danger-soft); color: var(--danger-strong); }
+.error { padding: 20rpx 24rpx; border: 1rpx solid var(--danger); border-radius: 16rpx; background: var(--danger-soft); color: var(--danger-strong); }
+.success, .saved-message { padding: 20rpx 24rpx; border: 1rpx solid var(--success); border-radius: 16rpx; background: var(--success-soft); color: var(--success-strong); }
+.info-message { padding: 20rpx 24rpx; border: 1rpx solid var(--accent-strong); border-radius: 16rpx; background: var(--accent-soft); color: var(--signal-strong); }
 .empty { display: grid; align-content: center; justify-items: center; min-height: 260rpx; gap: 12rpx; padding: 40rpx 28rpx; color: var(--muted); text-align: center; }
 .empty-title { color: var(--ink-2); font-size: 30rpx; font-weight: 600; }
 
-.status { display: inline-flex; align-items: center; min-height: 48rpx; padding: 0 14rpx; border: 2rpx solid var(--rule); border-radius: 8rpx; background: var(--surface); font-size: 22rpx; }
-.status-active { border-color: var(--success); background: var(--success-soft); color: var(--success-strong); }
-.status-warning { border-color: var(--warning); background: var(--warning-soft); color: var(--warning-strong); }
-.status-danger { border-color: var(--danger); background: var(--danger-soft); color: var(--danger-strong); }
+.status { display: inline-flex; align-items: center; min-height: 42rpx; padding: 0 12rpx; border: 0; border-radius: 6rpx; background: var(--paper-2); font-size: 21rpx; font-weight: 700; }
+.status-active { background: var(--success-soft); color: var(--success-strong); }
+.status-warning { background: var(--warning-soft); color: var(--warning-strong); }
+.status-danger { background: var(--danger-soft); color: var(--danger-strong); }
+
+button, .surface, .field-control, .sport-chip, .date-button, .tab { transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out), color 180ms var(--ease-out), opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  page, view, text, button, input, textarea { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}

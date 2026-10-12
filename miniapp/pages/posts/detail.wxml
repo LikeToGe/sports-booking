@@ -1,0 +1,73 @@
+<operation-toast />
+<view class="page post-detail">
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+  <view wx:if="{{post}}" class="post-card surface">
+    <view class="post-meta"><text class="section-title">{{post.sportName}}</text><text class="muted">{{post.venueName || '运动动态'}}</text></view>
+    <text class="post-text">{{post.body}}</text>
+    <view wx:if="{{post.media.length}}" class="detail-media">
+      <block wx:for="{{post.media}}" wx:key="id">
+        <image wx:if="{{item.mediaType === 'IMAGE'}}" src="{{item.localPath}}" mode="aspectFill" data-path="{{item.localPath}}" bindtap="previewImage" />
+        <video wx:else src="{{item.localPath}}" controls />
+      </block>
+    </view>
+    <view class="detail-actions">
+      <text wx:if="{{post.authorType === 'USER'}}" data-id="{{post.authorId}}" bindtap="openUser">{{post.authorName || '球友'}}</text>
+      <text wx:else>{{post.authorName || '官方动态'}}</text>
+      <button class="button-secondary" disabled="{{saving}}" bindtap="toggleLike">{{post.liked ? '已赞' : '点赞'}} {{post.likeCount || 0}}</button>
+      <button class="button-secondary" open-type="share">分享</button>
+      <button class="button-secondary" bindtap="report">举报</button>
+      <button wx:if="{{post.authorType === 'USER' && !post.isMine}}" class="button-secondary" bindtap="blockAuthor">拉黑</button>
+    </view>
+    <button wx:if="{{post.venueId}}" class="button-secondary" bindtap="openVenue">{{post.venueName || '查看场馆'}}</button>
+    <view wx:if="{{post.isMine}}" class="comments-toggle"><text>允许评论</text><switch checked="{{post.commentsEnabled}}" bindchange="toggleComments" /></view>
+  </view>
+  <view wx:if="{{recruitment}}" class="recruitment-section">
+    <text class="section-title">找搭子 · {{recruitment.statusLabel}}</text>
+    <text>{{recruitment.venueName}} · {{recruitment.sportName}}</text>
+    <text>{{recruitment.timeLabel}} · {{recruitment.level}} · {{recruitment.feeLabel}}</text>
+    <text>{{recruitment.approvedCount}} / {{recruitment.maxMembers}} 人</text>
+    <text wx:if="{{recruitment.courtName}}">{{recruitment.courtName}}</text>
+    <text>{{recruitment.description}}</text>
+    <text wx:if="{{recruitment.myStatusLabel}}">{{recruitment.myStatusLabel}}</text>
+    <button wx:if="{{!recruitment.isOwner && recruitment.active && recruitment.myStatus !== 'APPROVED' && recruitment.myStatus !== 'APPLIED'}}" class="button-primary" disabled="{{saving}}" data-action="apply" bindtap="recruitmentAction">申请加入</button>
+    <button wx:if="{{!recruitment.isOwner && (recruitment.myStatus === 'APPLIED' || recruitment.myStatus === 'APPROVED')}}" class="button-secondary" disabled="{{saving}}" data-action="leave" bindtap="recruitmentAction">退出</button>
+    <view wx:for="{{recruitment.members}}" wx:key="userId" class="member-row">
+      <text data-id="{{item.userId}}" bindtap="openUser">球友 #{{item.userId}} · {{item.statusLabel}}</text>
+      <view wx:if="{{recruitment.isOwner}}" class="detail-actions">
+        <button wx:if="{{item.status === 'APPLIED'}}" class="button-secondary" disabled="{{saving}}" data-action="approve" data-user-id="{{item.userId}}" bindtap="recruitmentAction">同意</button>
+        <button wx:if="{{item.status === 'APPLIED'}}" class="button-secondary" disabled="{{saving}}" data-action="reject" data-user-id="{{item.userId}}" bindtap="recruitmentAction">拒绝</button>
+        <button wx:if="{{item.status === 'APPROVED'}}" class="button-secondary" disabled="{{saving}}" data-action="remove" data-user-id="{{item.userId}}" bindtap="recruitmentAction">移除</button>
+      </view>
+    </view>
+    <button wx:if="{{recruitment.isOwner && recruitment.active}}" class="button-secondary" disabled="{{saving}}" data-action="close" bindtap="recruitmentAction">关闭招募</button>
+  </view>
+  <view wx:elif="{{post.isMine && post.bookingId}}" class="recruitment-section">
+    <text class="section-title">发起找搭子</text>
+    <label class="field"><text>水平</text><input class="field-control" value="{{level}}" maxlength="40" data-field="level" bindinput="onRecruitmentField" /></label>
+    <label class="field"><text>需要人数</text><input class="field-control" type="number" value="{{maxMembers}}" data-field="maxMembers" bindinput="onRecruitmentField" /></label>
+    <radio-group bindchange="selectFee"><label><radio value="FREE" checked="{{feeMode === 'FREE'}}" />免费</label><label><radio value="AA" checked="{{feeMode === 'AA'}}" />预计 AA</label></radio-group>
+    <label wx:if="{{feeMode === 'AA'}}" class="field"><text>预计金额（元）</text><input class="field-control" type="digit" value="{{aaAmount}}" data-field="aaAmount" bindinput="onRecruitmentField" /></label>
+    <label class="field"><text>说明</text><textarea value="{{recruitmentDescription}}" maxlength="500" data-field="recruitmentDescription" bindinput="onRecruitmentField" /></label>
+    <button class="button-primary" disabled="{{saving || !level}}" bindtap="openRecruitment">开启招募</button>
+  </view>
+  <view wx:if="{{post}}" class="comments-section">
+    <text class="section-title">评论</text>
+    <view wx:for="{{comments}}" wx:key="id" class="comment-row {{item.parentCommentId ? 'is-reply' : ''}}">
+      <text class="muted" data-id="{{item.authorUserId}}" bindtap="openUser">{{item.authorName || '球友'}}</text>
+      <text>{{item.body}}</text>
+      <view wx:if="{{item.contentStatus !== 'DELETED'}}" class="detail-actions">
+        <button wx:if="{{!item.parentCommentId && post.commentsEnabled}}" class="inline-action" data-id="{{item.id}}" bindtap="reply">回复</button>
+        <button wx:if="{{item.isMine}}" class="inline-action" data-id="{{item.id}}" bindtap="editComment">编辑</button>
+        <button wx:if="{{item.isMine}}" class="inline-action" data-id="{{item.id}}" bindtap="removeComment">删除</button>
+        <button class="inline-action" data-type="COMMENT" data-id="{{item.id}}" bindtap="report">举报</button>
+      </view>
+    </view>
+    <block wx:if="{{post.commentsEnabled || editingCommentId}}">
+      <view wx:if="{{draftLabel}}" class="detail-actions"><text>{{draftLabel}}</text><button class="inline-action" bindtap="cancelDraft">取消</button></view>
+      <textarea class="comment-input" value="{{body}}" maxlength="1000" placeholder="说点什么" bindinput="editBody" />
+      <button class="button-primary" disabled="{{saving || !body}}" bindtap="submitComment">{{saving ? '提交中' : editingCommentId ? '提交修改' : '发表评论'}}</button>
+    </block>
+    <text wx:else class="muted">评论已关闭</text>
+  </view>
+  <view wx:if="{{message}}" role="status">{{message}}</view>
+</view>

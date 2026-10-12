@@ -43,4 +43,6 @@ public interface AuthService {
      * @author gjm
      */
     UserProfileVO updateMiniProfile(long userId, String contactName, String phone);
+
+    void closeMiniAccount(long userId);
 }

@@ -2,9 +2,17 @@ function messageOf(data, fallback) {
   return data?.msg || fallback;
 }
 
+function operationFeedback(success, message) {
+  const app = getApp();
+  if (typeof app.showOperationFeedback === "function") app.showOperationFeedback(success, message);
+}
+
 async function request(path, options = {}, retried = false) {
   const app = getApp();
-  const token = await app.ensureLogin();
+  const publicRead = path.startsWith("/public/");
+  const method = String(options.method || "GET").toUpperCase();
+  const isOperation = !["GET", "HEAD", "OPTIONS"].includes(method);
+  const token = publicRead ? "" : await app.ensureLogin();
   return new Promise((resolve, reject) => {
     wx.request({
       url: `${app.globalData.apiBase}${path}`,
@@ -13,10 +21,11 @@ async function request(path, options = {}, retried = false) {
       header: { "X-Mini-Token": token },
       success: ({ statusCode, data }) => {
         if (statusCode >= 200 && statusCode < 300 && data.code === 0) {
+          if (isOperation) operationFeedback(true);
           resolve(data.data);
           return;
         }
-        if (statusCode === 401 && !retried) {
+        if (statusCode === 401 && !retried && !publicRead) {
           // Redis 重启或会话过期后重新登录一次，避免用户卡在失效的本地 Token。
           app.globalData.token = "";
           app.globalData.profile = null;
@@ -24,11 +33,69 @@ async function request(path, options = {}, retried = false) {
           request(path, options, true).then(resolve, reject);
           return;
         }
-        reject(new Error(messageOf(data, `请求失败（${statusCode}）`)));
+        const message = messageOf(data, `请求失败（${statusCode}）`);
+        if (isOperation) operationFeedback(false, message);
+        reject(new Error(message));
       },
-      fail: () => reject(new Error("无法连接本地服务")),
+      fail: () => {
+        const message = "无法连接本地服务";
+        if (isOperation) operationFeedback(false, message);
+        reject(new Error(message));
+      },
     });
   });
+}
+
+async function uploadFile(filePath, durationSeconds, retried = false) {
+  const app = getApp();
+  const token = await app.ensureLogin();
+  return new Promise((resolve, reject) => wx.uploadFile({
+    url: `${app.globalData.apiBase}/mini/content/uploads`,
+    filePath,
+    name: "file",
+    formData: durationSeconds == null ? {} : { durationSeconds: String(durationSeconds) },
+    header: { "X-Mini-Token": token },
+    success: ({ statusCode, data }) => {
+      let body;
+      try { body = JSON.parse(data); } catch (_) { body = {}; }
+      if (statusCode >= 200 && statusCode < 300 && body.code === 0) {
+        operationFeedback(true);
+        return resolve(body.data);
+      }
+      if (statusCode === 401 && !retried) {
+        app.globalData.token = "";
+        wx.removeStorageSync("yuechangMiniToken");
+        return uploadFile(filePath, durationSeconds, true).then(resolve, reject);
+      }
+      const message = messageOf(body, `上传失败（${statusCode}）`);
+      operationFeedback(false, message);
+      reject(new Error(message));
+    },
+    fail: () => {
+      const message = "无法上传媒体";
+      operationFeedback(false, message);
+      reject(new Error(message));
+    },
+  }));
+}
+
+async function downloadMedia(path, retried = false) {
+  const app = getApp();
+  const token = await app.ensureLogin();
+  return new Promise((resolve, reject) => wx.downloadFile({
+    url: `${app.globalData.apiBase}${path}`,
+    header: { "X-Mini-Token": token },
+    success: ({ statusCode, tempFilePath }) => {
+      if (statusCode >= 200 && statusCode < 300) return resolve(tempFilePath);
+      if (statusCode === 401 && !retried) {
+        app.globalData.token = "";
+        wx.removeStorageSync("yuechangMiniToken");
+        return downloadMedia(path, true).then(resolve, reject);
+      }
+      reject(new Error(`媒体加载失败（${statusCode}）`));
+    },
+    fail: () => reject(new Error("无法加载媒体")),
+  }));
 }
 
 function dateInZhengzhou(offsetDays = 0) {
@@ -69,4 +136,4 @@ function assetUrl(path) {
   return path ? `${getApp().globalData.apiBase}${path}` : "";
 }
 
-module.exports = { request, dateInZhengzhou, money, date, time, dateTime, assetUrl };
+module.exports = { request, uploadFile, downloadMedia, dateInZhengzhou, money, date, time, dateTime, assetUrl };

@@ -1,0 +1,12 @@
+.reviews-page { display: grid; align-content: start; gap: 24rpx; }
+.summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10rpx 20rpx; }
+.summary strong { color: var(--signal-strong); font-size: 56rpx; }
+.summary text:last-child { width: 100%; color: var(--ink-2); font-size: 24rpx; }
+.filter-strip { white-space: nowrap; }
+.filter { display: inline-flex; min-height: 72rpx; margin-right: 12rpx; padding: 0 24rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); font-size: 24rpx; }
+.filter.is-active { border-color: var(--accent); color: var(--signal-strong); }
+.review-row { display: grid; gap: 14rpx; padding: 22rpx 0; border-top: 2rpx solid var(--rule-2); }
+.review-meta { display: flex; justify-content: space-between; gap: 20rpx; }
+.review-reply { display: grid; gap: 6rpx; padding: 16rpx; background: var(--surface-card); }
+.review-media { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
+.review-media image { width: 100%; aspect-ratio: 1; }

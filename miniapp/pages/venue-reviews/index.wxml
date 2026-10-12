@@ -1,0 +1,13 @@
+<operation-toast />
+<view class="page reviews-page">
+  <view class="screen-head"><text class="screen-title">场地评价</text><text class="muted">{{summary.reviewCount || 0}} 条已公开</text></view>
+  <view wx:if="{{summary.reviewCount}}" class="summary"><strong>{{summary.overallScore}}</strong><text>总体评分</text><text>场地 {{summary.courtScore}} · 环境 {{summary.environmentScore}} · 服务 {{summary.serviceScore}}</text></view>
+  <scroll-view class="filter-strip" scroll-x><button class="filter {{score === 0 ? 'is-active' : ''}}" data-score="0" bindtap="selectScore">全部</button><button wx:for="{{scores}}" wx:key="*this" class="filter {{score === item ? 'is-active' : ''}}" data-score="{{item}}" bindtap="selectScore">{{item}} 星</button></scroll-view>
+  <scroll-view wx:if="{{summary.tagCounts.length}}" class="filter-strip" scroll-x><button class="filter {{tagId === 0 ? 'is-active' : ''}}" data-tag-id="0" bindtap="selectTag">全部标签</button><button wx:for="{{summary.tagCounts}}" wx:key="tagId" class="filter {{tagId === item.tagId ? 'is-active' : ''}}" data-tag-id="{{item.tagId}}" bindtap="selectTag">{{item.tagName}} {{item.reviewCount}}</button></scroll-view>
+  <button class="filter {{withImages ? 'is-active' : ''}}" bindtap="toggleImages">有图</button>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+  <view wx:if="{{message}}" role="status">{{message}}</view>
+  <button class="filter" open-type="share">分享评价</button>
+  <view wx:for="{{reviews}}" wx:key="id" class="review-row"><view class="review-meta"><strong>{{item.overallScore}} 星</strong><text class="muted">{{item.sportName}} · {{item.visitMonth}}</text></view><text>{{item.body}}</text><button class="filter" data-id="{{item.id}}" bindtap="report">举报</button><view wx:if="{{item.media.length}}" class="review-media"><image wx:for="{{item.media}}" wx:for-item="photo" wx:key="id" src="{{photo.fullUrl}}" mode="aspectFill" data-review-id="{{item.id}}" data-url="{{photo.fullUrl}}" bindtap="previewImage" /></view><view wx:if="{{item.reply}}" class="review-reply"><text class="muted">场馆回复</text><text>{{item.reply.body}}</text></view></view>
+  <view wx:if="{{!loading && !reviews.length && !error}}" class="empty"><text>暂无符合条件的公开评价</text></view>
+</view>

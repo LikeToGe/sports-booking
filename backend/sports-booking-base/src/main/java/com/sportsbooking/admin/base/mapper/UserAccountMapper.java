@@ -10,4 +10,15 @@ import com.sportsbooking.admin.base.po.UserAccount;
  * @author gjm
  */
 public interface UserAccountMapper extends BaseMapper<UserAccount> {
+    UserAccount selectForUpdate(@org.apache.ibatis.annotations.Param("userId") long userId);
+    Integer hasUnsettledFunds(@org.apache.ibatis.annotations.Param("userId") long userId);
+    Integer hasUnfinishedBookings(@org.apache.ibatis.annotations.Param("userId") long userId);
+    Integer hasIdentityTombstone(@org.apache.ibatis.annotations.Param("identityHash") String identityHash);
+    int insertIdentityTombstone(@org.apache.ibatis.annotations.Param("userId") long userId,
+            @org.apache.ibatis.annotations.Param("identityHash") String identityHash);
+    int closeAccount(@org.apache.ibatis.annotations.Param("userId") long userId);
+    int detachEmployees(@org.apache.ibatis.annotations.Param("userId") long userId);
+    int hidePosts(@org.apache.ibatis.annotations.Param("userId") long userId);
+    int hideComments(@org.apache.ibatis.annotations.Param("userId") long userId);
+    int hideReviews(@org.apache.ibatis.annotations.Param("userId") long userId);
 }

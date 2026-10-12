@@ -64,6 +64,7 @@ class MemberFundsServiceImplTest {
 
     @BeforeEach
     void runLockedActionsInline() {
+        when(customerMapper.selectActiveUserForUpdate(org.mockito.ArgumentMatchers.anyLong())).thenReturn(1L);
         doAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get())
                 .when(lockService).execute(any(), any());
     }

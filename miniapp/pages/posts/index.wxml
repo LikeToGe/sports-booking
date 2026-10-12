@@ -1,0 +1,35 @@
+<operation-toast />
+<view class="page posts-page">
+  <view class="section-head"><view class="screen-head"><text class="screen-title">运动动态</text><text class="muted">分享运动现场和约球想法</text></view><button wx:if="{{enabled}}" class="button-secondary editor-toggle" bindtap="toggleEditor" aria-expanded="{{showEditor}}">{{showEditor ? '收起' : '发布'}}</button></view>
+  <view wx:if="{{enabled && showEditor}}" class="post-editor surface">
+    <textarea class="post-body" maxlength="2000" value="{{body}}" placeholder="说说今天的运动体验" bindinput="editBody" />
+    <picker wx:if="{{sports.length}}" disabled="{{bookingId}}" range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="sport-picker">运动类型：{{sports[sportIndex].name}}</view></picker>
+    <picker wx:if="{{venues.length}}" disabled="{{bookingId}}" range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="sport-picker">场馆：{{venues[venueIndex].name}}</view></picker>
+    <picker wx:if="{{bookings.length}}" range="{{bookings}}" range-key="label" value="{{bookingIndex}}" bindchange="selectBooking"><view class="sport-picker">{{bookings[bookingIndex].label}}</view></picker>
+    <view wx:if="{{selectedMedia.length}}" class="media-preview">
+      <block wx:for="{{selectedMedia}}" wx:key="path">
+        <image wx:if="{{item.type === 'image'}}" src="{{item.path}}" mode="aspectFill" />
+        <video wx:else src="{{item.path}}" controls />
+      </block>
+    </view>
+    <view wx:if="{{existingMediaCount && !selectedMedia.length}}" class="muted">已保留 {{existingMediaCount}} 项媒体</view>
+    <view class="media-actions"><button class="button-secondary" disabled="{{saving}}" bindtap="chooseMedia">选择图片或视频</button><button wx:if="{{selectedMedia.length || existingMediaCount}}" class="button-secondary" disabled="{{saving}}" bindtap="clearMedia">移除媒体</button></view>
+    <view class="editor-actions"><text class="muted">{{editingId ? "修改动态" : "发布动态"}}</text><button class="button-primary" disabled="{{saving}}" bindtap="publish">{{saving ? "提交中" : editingId ? "提交修改" : "发布"}}</button></view>
+  </view>
+  <view wx:if="{{enabled}}" class="filters surface">
+    <picker range="{{filterSports}}" range-key="name" value="{{filterSportIndex}}" bindchange="selectFilterSport"><view>{{filterSports[filterSportIndex].name}}</view></picker>
+    <picker range="{{filterVenues}}" range-key="name" value="{{filterVenueIndex}}" bindchange="selectFilterVenue"><view>{{filterVenues[filterVenueIndex].name}}</view></picker>
+  </view>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+  <view wx:if="{{message}}" class="saved-message" role="status">{{message}}</view>
+  <view class="post-list">
+    <view wx:for="{{posts}}" wx:key="id" class="post-card surface" data-id="{{item.id}}" bindtap="openDetail">
+      <view class="post-meta"><text class="section-title">{{item.sportName}}</text><text class="muted">{{item.venueName || '运动动态'}}</text></view>
+      <text class="post-text">{{item.body}}</text>
+      <text wx:if="{{item.media.length}}" class="muted">{{item.media[0].mediaType === 'VIDEO' ? '视频' : '图片'}} · {{item.media.length}}</text>
+      <view class="post-foot"><text class="muted">{{item.isOfficial ? '官方动态' : '用户动态'}}</text><view wx:if="{{item.isMine}}" class="post-actions"><button class="inline-action" data-id="{{item.id}}" catchtap="edit">编辑</button><button class="inline-action" data-id="{{item.id}}" catchtap="remove">删除</button></view></view>
+    </view>
+  </view>
+  <view wx:if="{{!enabled && !loading}}" class="empty"><text>动态功能暂未开放</text></view>
+  <view wx:if="{{enabled && !loading && !posts.length && !error}}" class="empty"><text>还没有动态</text></view>
+</view>

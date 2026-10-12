@@ -123,11 +123,19 @@ public class MemberFundsServiceImpl implements MemberFundsService {
         }
         RechargePlan plan = requiredActivePlan(venueId, planId);
         MemberRecharge recharge = newRecharge(customer.id, plan, RechargeChannel.MOCK, null, null, key);
-        try {
-            rechargeMapper.insert(recharge);
-        } catch (DuplicateKeyException exception) {
-            return toRecharge(rechargeMapper.selectByClientKey(customer.id, key), venueId);
-        }
+        MemberRecharge inserted = lockService.execute(List.of(RedisLockType.MEMBER_BALANCE.key(customer.id)), () -> {
+            if (customerMapper.selectActiveUserForUpdate(customer.id) == null) {
+                throw new ApiException(HttpStatus.UNAUTHORIZED,ErrorCode.USER_DISABLED);
+            }
+            MemberRecharge duplicate = rechargeMapper.selectByClientKey(customer.id,key);
+            if (duplicate != null) return duplicate;
+            try { rechargeMapper.insert(recharge); }
+            catch (DuplicateKeyException exception) {
+                return rechargeMapper.selectByClientKey(customer.id,key);
+            }
+            return recharge;
+        });
+        if (inserted != recharge) return toRecharge(inserted,venueId);
         PaymentResult result = channelAdapter.startRecharge(recharge);
         if (result != PaymentResult.UNKNOWN) {
             return convergeRecharge(userId, recharge.id, result);
@@ -460,6 +468,9 @@ public class MemberFundsServiceImpl implements MemberFundsService {
     private void completeRecharge(MemberRecharge recharge, VenueCustomer customer, Instant now) {
         if (recharge.status == RechargeStatus.SUCCESS) {
             return;
+        }
+        if (customerMapper.selectActiveUserForUpdate(customer.id) == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED,ErrorCode.USER_DISABLED);
         }
         recharge.status = RechargeStatus.SUCCESS;
         recharge.succeededAt = now;

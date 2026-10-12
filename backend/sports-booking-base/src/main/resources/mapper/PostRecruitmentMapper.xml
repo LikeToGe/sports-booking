@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PostRecruitmentMapper">
+    <select id="selectById" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
+        SELECT * FROM s_post_recruitment WHERE id = #{id}
+    </select>
+    <select id="selectByPost" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
+        SELECT * FROM s_post_recruitment WHERE post_id = #{postId}
+    </select>
+    <select id="selectMember" resultType="com.sportsbooking.admin.base.po.PostRecruitmentMember">
+        SELECT * FROM s_post_recruitment_member WHERE recruitment_id = #{recruitmentId} AND user_id = #{userId}
+    </select>
+    <select id="selectActive" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
+        SELECT * FROM s_post_recruitment WHERE status IN ('RECRUITING','FULL') ORDER BY id LIMIT 200
+    </select>
+    <select id="selectAffectedByUser" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
+        SELECT r.* FROM s_post_recruitment r JOIN s_post p ON p.id = r.post_id
+        WHERE r.status IN ('RECRUITING','FULL') AND ((p.author_type = 'USER' AND p.author_id = #{userId})
+            OR EXISTS (SELECT 1 FROM s_post_recruitment_member m WHERE m.recruitment_id = r.id
+                AND m.user_id = #{userId} AND m.status IN ('APPLIED','APPROVED')))
+        ORDER BY r.post_id
+    </select>
+    <insert id="upsertApplication">
+        INSERT INTO s_post_recruitment_member (recruitment_id,user_id,status)
+        VALUES (#{recruitmentId},#{userId},'APPLIED')
+        ON DUPLICATE KEY UPDATE
+            applied_at = CASE WHEN status IN ('LEFT','REJECTED','REMOVED') THEN UTC_TIMESTAMP(3) ELSE applied_at END,
+            status = CASE WHEN status IN ('LEFT','REJECTED','REMOVED') THEN 'APPLIED' ELSE status END
+    </insert>
+    <update id="transitionMember">
+        UPDATE s_post_recruitment_member SET status = #{status}, decided_at = UTC_TIMESTAMP(3), reason = #{reason}
+        WHERE recruitment_id = #{recruitmentId} AND user_id = #{userId} AND status = #{expectedStatus}
+    </update>
+    <select id="selectByPostForUpdate" resultType="com.sportsbooking.admin.base.po.PostRecruitment">SELECT * FROM s_post_recruitment WHERE post_id = #{postId} FOR UPDATE</select>
+    <select id="selectByIdForUpdate" resultType="com.sportsbooking.admin.base.po.PostRecruitment">SELECT * FROM s_post_recruitment WHERE id = #{id} FOR UPDATE</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="recruitment.id">
+        INSERT INTO s_post_recruitment (post_id, booking_id, level, max_members, fee_mode, aa_amount_fen, description)
+        VALUES (#{recruitment.postId}, #{recruitment.bookingId}, #{recruitment.level}, #{recruitment.maxMembers}, #{recruitment.feeMode}, #{recruitment.aaAmountFen}, #{recruitment.description})
+    </insert>
+    <update id="updateStatus">UPDATE s_post_recruitment SET status = #{status}, updated_at = UTC_TIMESTAMP(3) WHERE id = #{id}</update>
+    <insert id="insertMember">INSERT INTO s_post_recruitment_member (recruitment_id, user_id) VALUES (#{member.recruitmentId}, #{member.userId})</insert>
+    <update id="updateMember">UPDATE s_post_recruitment_member SET status = #{status}, decided_at = UTC_TIMESTAMP(3) WHERE recruitment_id = #{recruitmentId} AND user_id = #{userId}</update>
+    <select id="countApproved" resultType="int">SELECT COUNT(*) FROM s_post_recruitment_member WHERE recruitment_id = #{recruitmentId} AND status = 'APPROVED'</select>
+    <select id="selectMembers" resultType="com.sportsbooking.admin.base.po.PostRecruitmentMember">SELECT * FROM s_post_recruitment_member WHERE recruitment_id = #{recruitmentId} ORDER BY applied_at</select>
+</mapper>

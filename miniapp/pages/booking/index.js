@@ -13,7 +13,7 @@ Page({
   data: {
     id: 0, detail: null, booking: null, credential: null, composition: null, payment: null, refund: null,
     statusLabel: "", paymentLabel: "", paymentTone: "warning", date: "", time: "", amount: "",
-    canPay: false, error: "", loading: true, cancelling: false,
+    canPay: false, canReview: false, error: "", loading: true, cancelling: false,
   },
   async onLoad(options) { this.setData({ id: Number(options.id) }); await this.load(); },
   async onShow() {
@@ -29,7 +29,10 @@ Page({
   async load() {
     this.setData({ loading: true, error: "" });
     try {
-      const detail = await request(`/mini/bookings/${this.data.id}`);
+      const [detail, ugcEnabled] = await Promise.all([
+        request(`/mini/bookings/${this.data.id}`),
+        request("/public/ugc-config").catch(() => false),
+      ]);
       const booking = detail.booking;
       const composition = detail.composition;
       const hasComposition = composition
@@ -71,15 +74,17 @@ Page({
         paymentLabel: paymentLabels[paymentStatus] || paymentStatus || "收款状态不可用",
         paymentTone: ["PAID", "REFUNDED"].includes(paymentStatus) ? "active" : ["PAYMENT_FAILED", "REFUND_FAILED"].includes(paymentStatus) ? "danger" : "warning",
         date: date(booking.startAt),
-        time: `${time(booking.startAt)}–${time(booking.endAt)}`,
+        time: `${time(booking.startAt)} - ${time(booking.endAt)}`,
         amount: amount(booking.amountFen),
         canPay: booking.status === "PENDING_PAYMENT" && hasComposition && composition.externalAmountFen > 0 && detail.payment?.status === "PENDING",
+        canReview: ugcEnabled && booking.status === "COMPLETED",
         error: "",
       });
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ loading: false }); }
   },
   pay() { wx.redirectTo({ url: `/pages/payment/index?id=${this.data.id}` }); },
+  review() { wx.navigateTo({ url: `/pages/review/index?bookingId=${this.data.id}` }); },
   stopCredentialRefresh() {
     if (this.credentialTimer) clearInterval(this.credentialTimer);
     this.credentialTimer = null;

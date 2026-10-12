@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.UserActionEventMapper">
+    <insert id="insert">
+        INSERT INTO s_user_action_event (user_id,event_type,target_type,target_id)
+        VALUES (#{userId},#{eventType},#{targetType},#{targetId})
+    </insert>
+    <select id="selectRecent" resultType="com.sportsbooking.admin.base.bo.UserActionEventBO">
+        SELECT * FROM s_user_action_event ORDER BY id DESC LIMIT 200
+    </select>
+</mapper>

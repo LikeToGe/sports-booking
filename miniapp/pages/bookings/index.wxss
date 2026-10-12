@@ -1,12 +1,15 @@
 .bookings-page { display: grid; align-content: start; gap: 24rpx; }
-.booking-list { display: grid; gap: 20rpx; }
-.booking-card { display: grid; gap: 12rpx; width: 100%; padding: 24rpx; color: var(--ink); text-align: left; line-height: 1.4; }
+.bookings-page .screen-head { border-bottom: 1rpx solid var(--rule); }
+.booking-list { display: grid; gap: 16rpx; }
+.booking-card { display: grid; gap: 12rpx; width: 100%; padding: 24rpx 22rpx 22rpx 26rpx; border: 1px solid var(--rule); border-radius: 18rpx; color: var(--ink); text-align: left; line-height: 1.4; box-shadow: none; }
+.booking-card:active { border-left-color: var(--accent-strong); background: var(--accent-soft); }
 .booking-top, .booking-foot { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
-.status-line { display: flex; justify-content: flex-end; gap: 12rpx; flex-wrap: wrap; }
-.date { color: var(--muted); font-size: 24rpx; font-variant-numeric: tabular-nums; }
-.booking-court { color: var(--ink-2); }
-.booking-foot { padding-top: 16rpx; border-top: 2rpx solid var(--rule-2); }
-.inline-action { min-height: 88rpx; margin-top: 16rpx; border: 2rpx solid var(--danger); background: transparent; color: var(--danger-strong); }
+.status-line { display: flex; justify-content: flex-end; gap: 8rpx; flex-wrap: wrap; }
+.date { color: var(--ink); font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.booking-court { color: var(--ink-2); font-size: 24rpx; }
+.booking-foot { padding-top: 16rpx; border-top: 1rpx solid var(--rule-2); }
+.booking-foot .price { font-size: 30rpx; }
+.inline-action { min-height: 72rpx; margin-top: 16rpx; border: 1rpx solid var(--danger); border-radius: 14rpx; background: transparent; color: var(--danger-strong); }
 @media (max-width: 360px) {
   .booking-top { align-items: start; }
   .status-line { display: grid; justify-items: end; }

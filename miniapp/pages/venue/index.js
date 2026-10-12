@@ -1,7 +1,7 @@
 const { assetUrl, request, dateInZhengzhou, money, time } = require("../../utils/api");
 
 Page({
-  data: { id: 0, date: "", sportTypeId: null, venue: null, sports: [], courts: [], groups: [], error: "", loading: true },
+  data: { id: 0, date: "", sportTypeId: null, venue: null, sports: [], courts: [], groups: [], reviewSummary: { reviewCount: 0 }, reviews: [], ugcEnabled: false, error: "", loading: true },
 
   async onLoad(options) {
     this.setData({ id: Number(options.id), date: options.date || dateInZhengzhou() });
@@ -13,13 +13,23 @@ Page({
     try {
       const params = [`date=${this.data.date}`];
       if (this.data.sportTypeId) params.push(`sportTypeId=${this.data.sportTypeId}`);
-      const detail = await request(`/mini/venues/${this.data.id}?${params.join("&")}`);
+      const [detail, ugcEnabled] = await Promise.all([
+        request(`/mini/venues/${this.data.id}?${params.join("&")}`),
+        request("/public/ugc-config").catch(() => false),
+      ]);
       const groups = detail.courts.map(court => ({
         ...court,
         imagePath: assetUrl(court.imagePath),
-        slots: detail.slots.filter(slot => slot.courtId === court.id).map(slot => ({ ...slot, time: `${time(slot.startAt)}–${time(slot.endAt)}`, price: money(slot.priceFen) })),
+        slots: detail.slots.filter(slot => slot.courtId === court.id).map(slot => ({ ...slot, time: `${time(slot.startAt)} - ${time(slot.endAt)}`, price: money(slot.priceFen) })),
       })).filter(court => court.slots.length);
-      this.setData({ venue: { ...detail.venue, coverPath: assetUrl(detail.venue.coverPath) }, sports: detail.sports, courts: detail.courts, groups });
+      this.setData({ venue: { ...detail.venue, coverPath: assetUrl(detail.venue.coverPath) }, sports: detail.sports, courts: detail.courts, groups, ugcEnabled });
+      if (ugcEnabled) {
+        const [reviewSummary, reviews] = await Promise.all([
+          request(`/public/venues/${this.data.id}/review-summary`),
+          request(`/public/venues/${this.data.id}/reviews`),
+        ]);
+        this.setData({ reviewSummary, reviews: reviews.slice(0, 3) });
+      }
       wx.setNavigationBarTitle({ title: detail.venue.name });
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ loading: false }); }
@@ -37,4 +47,5 @@ Page({
     wx.setStorageSync("yuechangPendingSlot", { ...slot, venueName: this.data.venue.name });
     wx.navigateTo({ url: "/pages/confirm/index" });
   },
+  openReviews() { wx.navigateTo({ url: `/pages/venue-reviews/index?venueId=${this.data.id}` }); },
 });
