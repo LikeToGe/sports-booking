@@ -8,6 +8,8 @@ import com.sportsbooking.admin.biz.pojo.vo.PublicVenueDetailVO;
 import com.sportsbooking.admin.biz.pojo.vo.PublicVenueVO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import com.sportsbooking.admin.biz.pojo.vo.SlotSearchVO;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,5 +161,10 @@ public interface VenueService {
      * @return 场馆公开详情
      * @author gjm
      */
-    PublicVenueDetailVO getPublicVenue(long venueId, Long sportTypeId, LocalDate date);
+    PublicVenueDetailVO getPublicVenue(long venueId, Long sportTypeId, LocalDate date,
+            LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen);
+
+    /** 检索完整落在用户可用范围内的具体场次，价格为单场次总价整数分。 */
+    List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date,
+            LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen, int page);
 }

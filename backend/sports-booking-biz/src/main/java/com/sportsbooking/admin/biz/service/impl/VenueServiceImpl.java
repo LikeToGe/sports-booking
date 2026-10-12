@@ -28,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import com.sportsbooking.admin.biz.pojo.vo.SlotSearchVO;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.LinkedHashMap;
@@ -310,20 +312,60 @@ public class VenueServiceImpl implements VenueService {
      * @author gjm
      */
     @Override
-    public PublicVenueDetailVO getPublicVenue(long venueId, Long sportTypeId, LocalDate date) {
+    public PublicVenueDetailVO getPublicVenue(long venueId, Long sportTypeId, LocalDate date,
+            LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen) {
+        validateSlotFilters(startTime, endTime, minPriceFen, maxPriceFen);
         Venue venue = getVenue(venueId);
         if (venue.status != VenueStatus.ACTIVE) {
             throw notFound();
         }
         LocalDate selectedDate = date == null ? LocalDate.now(BusinessConstants.BUSINESS_ZONE) : date;
-        Instant earliest = Instant.now().plusSeconds(venue.minBookingMinutes * 60L);
+        Instant now = Instant.now();
+        LocalDate today = now.atZone(BusinessConstants.BUSINESS_ZONE).toLocalDate();
+        Instant earliest = now.plusSeconds(venue.minBookingMinutes * 60L);
         return new PublicVenueDetailVO(
                 VenueVO.from(venue),
                 venueMapper.selectUsedSports(venueId).stream().map(SportTypeVO::from).toList(),
                 venueMapper.selectCourtViews(venueId).stream().map(CourtVO::from).toList(),
-                venueMapper.selectAvailableSlots(venueId, sportTypeId, selectedDate, earliest).stream()
+                venueMapper.selectAvailableSlots(venueId, sportTypeId, selectedDate, earliest, today,
+                        startTime == null ? null : selectedDate.atTime(startTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant(),
+                        endTime == null ? null : selectedDate.atTime(endTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant(),
+                        minPriceFen, maxPriceFen).stream()
                         .map(AvailableSlotVO::from).toList()
         );
+    }
+
+    /** 按业务时区转换时间条件，查询每页 20 个真实可订场次。 */
+    @Override
+    public List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date,
+            LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen, int page) {
+        validateSlotFilters(startTime, endTime, minPriceFen, maxPriceFen);
+        if (date == null || page < 1 || page > 10000) {
+            throw badRequest();
+        }
+        Instant now = Instant.now();
+        LocalDate today = now.atZone(BusinessConstants.BUSINESS_ZONE).toLocalDate();
+        // 完整落入同一自然日的范围；不把筛选范围当作可自由拼接的预约时长。
+        Instant rangeStart = date.atTime(startTime == null ? LocalTime.MIN : startTime)
+                .atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
+        Instant rangeEnd = endTime == null ? date.plusDays(1).atStartOfDay(BusinessConstants.BUSINESS_ZONE).toInstant()
+                : date.atTime(endTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
+        String normalizedKeyword = keyword == null ? null : keyword.trim();
+        return venueMapper.selectMatchingSlots(normalizedKeyword, sportTypeId, date, rangeStart, rangeEnd,
+                minPriceFen, maxPriceFen, now, today, (page - 1) * 20).stream().map(SlotSearchVO::from).toList();
+    }
+
+    /** 时间必须成对且同日递增；金额为非负整数分，禁止逆序价格范围。 */
+    private void validateSlotFilters(LocalTime startTime, LocalTime endTime,
+                                     Integer minPriceFen, Integer maxPriceFen) {
+        if ((startTime == null) != (endTime == null)
+                || (startTime != null && (!startTime.isBefore(endTime)
+                    || startTime.getSecond() != 0 || endTime.getSecond() != 0
+                    || startTime.getNano() != 0 || endTime.getNano() != 0))
+                || (minPriceFen != null && minPriceFen < 0) || (maxPriceFen != null && maxPriceFen < 0)
+                || (minPriceFen != null && maxPriceFen != null && minPriceFen > maxPriceFen)) {
+            throw badRequest();
+        }
     }
 
     /**

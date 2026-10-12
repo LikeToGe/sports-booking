@@ -97,6 +97,7 @@ class BookingServiceImplTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment(any())).thenReturn(1L);
         when(bookingMapper.selectCount(any())).thenReturn(0L);
+        when(courtMapper.selectSportIds(anyLong())).thenReturn(List.of(41L));
         VenueCustomer venueCustomer = new VenueCustomer();
         venueCustomer.id = 501L;
         when(venueCustomerService.ensureCustomer(anyLong(), anyLong())).thenReturn(venueCustomer);
@@ -107,6 +108,38 @@ class BookingServiceImplTest {
                 courtMapper, sportTypeMapper, venueService, venueCustomerService, memberFundsService,
                 notificationService, credentialService, paymentService,
                 scheduleService, redisLockService, redisTemplate, 10, 2, 5);
+    }
+
+    @Test
+    void rejectsDisabledVenueBeforeWritingOrFreezingFunds() {
+        SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
+        Venue venue = venue(30);
+        venue.status = com.sportsbooking.admin.base.enums.VenueStatus.SUSPENDED;
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(venueService.getVenue(21L)).thenReturn(venue);
+        when(courtMapper.selectById(31L)).thenReturn(court(31L));
+        when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
+
+        assertThatThrownBy(() -> service.createOnline(1L, 11L, "测试联系人", "13800000000"))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.SLOT_UNAVAILABLE.getDescription());
+        verify(bookingMapper, never()).insert(any(Booking.class));
+        verify(memberFundsService, never()).freeze(any(), anyLong(), any());
+    }
+
+    @Test
+    void rejectsChangedPriceWithoutCreatingBooking() {
+        SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(venueService.getVenue(21L)).thenReturn(venue(30));
+        when(courtMapper.selectById(31L)).thenReturn(court(31L));
+        when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
+        assertThatThrownBy(() -> service.createOnline(1L, 11L, "测试联系人", "13800000000",
+                "p5-price-test", 5000, "TIME_SEARCH"))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.SLOT_PRICE_CHANGED.getDescription());
+        assertThat(slot.status).isEqualTo(SessionSlotStatus.OPEN);
+        verify(bookingMapper, never()).insert(any(Booking.class));
     }
 
     @Test
@@ -151,6 +184,7 @@ class BookingServiceImplTest {
         court.name = "篮球 1 号场";
         court.status = EnableStatus.ACTIVE;
         SportType sport = new SportType();
+        sport.status = EnableStatus.ACTIVE;
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
@@ -175,9 +209,11 @@ class BookingServiceImplTest {
         SessionSlot slot = openSlot(Instant.now().plusSeconds(2 * 60 * 60L));
         Venue venue = venue(30);
         Court court = new Court();
+        court.status = EnableStatus.ACTIVE;
         court.id = slot.courtId;
         court.name = "篮球 1 号场";
         SportType sport = new SportType();
+        sport.status = EnableStatus.ACTIVE;
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
@@ -228,9 +264,11 @@ class BookingServiceImplTest {
         Venue venue = venue(30);
         venue.serviceFeeRateBasisPoints = 525;
         Court court = new Court();
+        court.status = EnableStatus.ACTIVE;
         court.id = slot.courtId;
         court.name = "篮球 1 号场";
         SportType sport = new SportType();
+        sport.status = EnableStatus.ACTIVE;
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
@@ -570,6 +608,7 @@ class BookingServiceImplTest {
 
     private Court court(long id) {
         Court court = new Court();
+        court.status = EnableStatus.ACTIVE;
         court.id = id;
         court.name = "篮球 1 号场";
         return court;
@@ -577,6 +616,7 @@ class BookingServiceImplTest {
 
     private SportType sport(long id) {
         SportType sport = new SportType();
+        sport.status = EnableStatus.ACTIVE;
         sport.id = id;
         sport.name = "篮球";
         return sport;
@@ -589,6 +629,7 @@ class BookingServiceImplTest {
         slot.courtId = 31L;
         slot.sportTypeId = 41L;
         slot.startAt = startAt;
+        slot.slotDate = startAt.atZone(BusinessConstants.BUSINESS_ZONE).toLocalDate();
         slot.endAt = startAt.plusSeconds(3600);
         slot.priceFen = 6000;
         slot.status = SessionSlotStatus.OPEN;
@@ -598,6 +639,8 @@ class BookingServiceImplTest {
     private Venue venue(int minBookingMinutes) {
         Venue venue = new Venue();
         venue.id = 21L;
+        venue.status = com.sportsbooking.admin.base.enums.VenueStatus.ACTIVE;
+        venue.bookingDaysAhead = 7;
         venue.name = "测试场馆";
         venue.minBookingMinutes = minBookingMinutes;
         venue.serviceFeeRateBasisPoints = 0;

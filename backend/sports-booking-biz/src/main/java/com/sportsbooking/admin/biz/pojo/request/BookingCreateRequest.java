@@ -43,4 +43,13 @@ public class BookingCreateRequest {
     @Schema(description = "客户端创建幂等键")
     @ApiModelProperty(value = "客户端创建幂等键")
     private String idempotencyKey;
+    /** 用户确认的单场次价格，单位为分；旧调用可省略。 */
+    @Schema(description = "用户确认的单场次价格，单位为分；旧调用可省略")
+    @ApiModelProperty(value = "用户确认的单场次价格，单位为分；旧调用可省略")
+    private Integer expectedPriceFen;
+
+    /** 可选预约入口 TIME_SEARCH，仅用于业务结果关联。 */
+    @Schema(description = "可选预约入口 TIME_SEARCH，仅用于业务结果关联")
+    @ApiModelProperty(value = "可选预约入口 TIME_SEARCH，仅用于业务结果关联")
+    private String entryType;
 }

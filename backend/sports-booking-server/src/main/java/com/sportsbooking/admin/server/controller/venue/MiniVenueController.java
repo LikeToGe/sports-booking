@@ -11,6 +11,8 @@ import com.sportsbooking.admin.biz.pojo.vo.PublicVenueVO;
 import com.sportsbooking.admin.biz.pojo.vo.SportTypeVO;
 import com.sportsbooking.admin.server.context.AuthContext;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import com.sportsbooking.admin.biz.pojo.vo.SlotSearchVO;
 import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -82,8 +84,28 @@ public class MiniVenueController {
     public ApiResponse<PublicVenueDetailVO> getVenue(
             @PathVariable long venueId,
             @RequestParam(required = false) Long sportTypeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.success(venueService.getPublicVenue(venueId, sportTypeId, date));
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "HH:mm") LocalTime endTime,
+            @RequestParam(required = false) Integer minPriceFen,
+            @RequestParam(required = false) Integer maxPriceFen) {
+        return ApiResponse.success(venueService.getPublicVenue(venueId, sportTypeId, date,
+                startTime, endTime, minPriceFen, maxPriceFen));
+    }
+
+    /** 检索可预约具体场次；可用时间范围不代表连续场次预约。 */
+    @GetMapping("/slots/search")
+    public ApiResponse<List<SlotSearchVO>> searchSlots(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long sportTypeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "HH:mm") LocalTime startTime,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "HH:mm") LocalTime endTime,
+            @RequestParam(required = false) Integer minPriceFen,
+            @RequestParam(required = false) Integer maxPriceFen,
+            @RequestParam(defaultValue = "1") int page) {
+        return ApiResponse.success(venueService.searchSlots(keyword, sportTypeId, date,
+                startTime, endTime, minPriceFen, maxPriceFen, page));
     }
 
     /**

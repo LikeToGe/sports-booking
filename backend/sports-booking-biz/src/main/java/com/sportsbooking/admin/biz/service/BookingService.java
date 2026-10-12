@@ -33,7 +33,7 @@ public interface BookingService {
 
     /** 使用客户端幂等键创建线上预约。 */
     Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone,
-                         String idempotencyKey);
+                         String idempotencyKey, Integer expectedPriceFen, String entryType);
     /**
      * 功能描述: 场馆按明确登记收款状态创建线下预约。
      *

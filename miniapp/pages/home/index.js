@@ -14,6 +14,9 @@ Page({
     sports: [],
     dateOptions: upcomingDates(dateInZhengzhou()),
     venues: [],
+    slots: [],
+    startTime: "", endTime: "", minPrice: "", maxPrice: "",
+    searchMode: false, filtersDirty: false, page: 1, hasMore: false,
     selectedSportId: null,
     date: dateInZhengzhou(),
     keyword: "",
@@ -32,36 +35,77 @@ Page({
   },
 
   async load() {
-    this.setData({ loading: true, error: "", dateOptions: upcomingDates(dateInZhengzhou()) });
-    try {
-      const [sports, venues] = await Promise.all([request("/mini/sports"), this.fetchVenues()]);
-      this.setData({ sports, venues });
-    } catch (error) {
-      this.setData({ error: error.message });
-    } finally {
-      this.setData({ loading: false });
-    }
+    this.setData({ dateOptions: upcomingDates(dateInZhengzhou()) });
+    try { this.setData({ sports: await request("/mini/sports") }); }
+    catch (error) { this.setData({ error: error.message, loading: false }); return; }
+    await this.search();
   },
 
-  async fetchVenues() {
+  filterParams() {
     const params = [`date=${this.data.date}`];
     if (this.data.selectedSportId) params.push(`sportTypeId=${this.data.selectedSportId}`);
     if (this.data.keyword) params.push(`keyword=${encodeURIComponent(this.data.keyword)}`);
-    const venues = await request(`/mini/venues?${params.join("&")}`);
-    return venues.map((venue, index) => ({
-      ...venue,
-      cover: assetUrl(venue.coverPath) || `/assets/venues/venue-${(index % 3) + 1}.jpg`,
-      price: venue.startingPriceFen == null ? "暂无场次" : `${money(venue.startingPriceFen)} 起`,
-      nextTime: venue.nextAvailableAt ? `${time(venue.nextAvailableAt)} 可约` : "当天暂无空位",
-    }));
+    if (this.data.startTime || this.data.endTime) {
+      if (!this.data.startTime || !this.data.endTime || this.data.startTime >= this.data.endTime) throw new Error("请选择同一天递增的起止时间");
+      params.push(`startTime=${encodeURIComponent(this.data.startTime)}`, `endTime=${encodeURIComponent(this.data.endTime)}`);
+    }
+    const prices = [this.data.minPrice, this.data.maxPrice].map(value => {
+      if (value === "") return null;
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) throw new Error("价格须为非负金额，最多两位小数");
+      const [yuan, fraction = ""] = value.split(".");
+      const fen = Number(yuan) * 100 + Number(fraction.padEnd(2, "0"));
+      if (!Number.isSafeInteger(fen) || fen > 2147483647) throw new Error("价格超出允许范围");
+      return fen;
+    });
+    if (prices[0] != null && prices[1] != null && prices[0] > prices[1]) throw new Error("最低价格不能高于最高价格");
+    if (prices[0] != null) params.push(`minPriceFen=${prices[0]}`);
+    if (prices[1] != null) params.push(`maxPriceFen=${prices[1]}`);
+    return params;
   },
 
-  onKeyword(event) { this.setData({ keyword: event.detail.value }); },
-
-  async search() {
-    try { this.setData({ venues: await this.fetchVenues(), error: "" }); }
-    catch (error) { this.setData({ error: error.message }); }
+  onFilter(event) {
+    this.setData({ [event.currentTarget.dataset.field]: event.detail.value, venues: [], slots: [], hasMore: false, loading: false, filtersDirty: true });
+    // 条件编辑使旧请求失效，结果只能来自一次明确提交的检索。
+    this.searchVersion = (this.searchVersion || 0) + 1;
   },
+
+  async clearFilters() {
+    this.setData({ startTime: "", endTime: "", minPrice: "", maxPrice: "" });
+    await this.search();
+  },
+
+  onKeyword(event) { this.onFilter({ ...event, currentTarget: { dataset: { field: "keyword" } } }); },
+
+  async search(event, append = false) {
+    const version = this.searchVersion = (this.searchVersion || 0) + 1;
+    this.setData({ loading: true, error: "" });
+    try {
+      const params = this.filterParams();
+      const searchMode = !!(this.data.startTime || this.data.endTime || this.data.minPrice || this.data.maxPrice);
+      const page = append ? this.data.page + 1 : 1;
+      if (searchMode) {
+        const result = await request(`/mini/slots/search?${params.join("&")}&page=${page}`);
+        if (version !== this.searchVersion) return;
+        const slots = result.map(slot => ({ ...slot, price: `¥${(slot.priceFen / 100).toFixed(2)}`, time: `${time(slot.startAt)} - ${time(slot.endAt)}` }));
+        this.setData({ searchMode, filtersDirty: false, venues: [], slots: append ? this.data.slots.concat(slots) : slots, page, hasMore: result.length === 20 });
+      } else {
+        const result = await request(`/mini/venues?${params.join("&")}`);
+        if (version !== this.searchVersion) return;
+        const venues = result.map((venue, index) => ({ ...venue,
+          cover: assetUrl(venue.coverPath) || `/assets/venues/venue-${(index % 3) + 1}.jpg`,
+          price: venue.startingPriceFen == null ? "暂无场次" : `${money(venue.startingPriceFen)} 起`,
+          nextTime: venue.nextAvailableAt ? `${time(venue.nextAvailableAt)} 可约` : "当天暂无空位",
+        }));
+        this.setData({ searchMode, filtersDirty: false, venues, slots: [], page: 1, hasMore: false });
+      }
+    } catch (error) {
+      if (version === this.searchVersion) this.setData({ error: error.message, venues: append ? this.data.venues : [], slots: append ? this.data.slots : [], hasMore: false });
+    } finally {
+      if (version === this.searchVersion) this.setData({ loading: false });
+    }
+  },
+
+  async loadMore() { if (!this.data.loading && this.data.hasMore) await this.search(null, true); },
 
   async selectSport(event) {
     const id = Number(event.currentTarget.dataset.id) || null;
@@ -76,6 +120,8 @@ Page({
   },
 
   openVenue(event) {
-    wx.navigateTo({ url: `/pages/venue/index?id=${event.currentTarget.dataset.id}&date=${this.data.date}` });
+    if (this.data.loading) return;
+    const params = this.filterParams();
+    wx.navigateTo({ url: `/pages/venue/index?id=${event.currentTarget.dataset.id}&${params.join("&")}${this.data.searchMode ? "&entryType=TIME_SEARCH" : ""}` });
   },
 });

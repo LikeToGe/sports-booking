@@ -37,6 +37,7 @@ public enum ErrorCode {
     SESSION_UNAVAILABLE("SESSION_UNAVAILABLE", "登录服务暂时不可用"),
     SLOT_BUSY("SLOT_BUSY", "场次正在使用中"),
     SLOT_CONFLICT("SLOT_CONFLICT", "场次时间冲突"),
+    SLOT_PRICE_CHANGED("SLOT_PRICE_CHANGED", "场次价格已变化，请返回刷新后重新确认"),
     SLOT_UNAVAILABLE("SLOT_UNAVAILABLE", "场次不可预约"),
     SPORT_EXISTS("SPORT_EXISTS", "运动类型已存在"),
     STAFF_REQUIRED("STAFF_REQUIRED", "当前用户不是有效场馆员工"),

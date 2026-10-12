@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sportsbooking.admin.base.po.Venue;
 import com.sportsbooking.admin.base.po.SportType;
 import java.time.LocalDate;
+import com.sportsbooking.admin.base.bo.SlotSearchBO;
 import java.time.Instant;
 import java.util.List;
 import com.sportsbooking.admin.base.bo.AvailableSlotBO;
@@ -55,7 +56,7 @@ public interface VenueMapper extends BaseMapper<Venue> {
     List<SportType> selectUsedSports(@Param("venueId") long venueId);
 
     /**
-     * 功能描述: 查询不早于最晚预约时间的开放场次。
+     * 功能描述: 查询严格满足最晚预约、开放窗口和可选筛选的开放场次。
      * 创建时间: 2026/08/28 16:29
      *
      * @param venueId 场馆 ID
@@ -68,5 +69,17 @@ public interface VenueMapper extends BaseMapper<Venue> {
     List<AvailableSlotBO> selectAvailableSlots(@Param("venueId") long venueId,
                                                @Param("sportTypeId") Long sportTypeId,
                                                @Param("date") LocalDate date,
-                                               @Param("earliest") Instant earliest);
+                                               @Param("earliest") Instant earliest,
+                                               @Param("today") LocalDate today,
+                                               @Param("rangeStart") Instant rangeStart,
+                                               @Param("rangeEnd") Instant rangeEnd,
+                                               @Param("minPriceFen") Integer minPriceFen,
+                                               @Param("maxPriceFen") Integer maxPriceFen);
+
+    /** 按完整时间范围检索可订具体场次，每页最多 20 条。 */
+    List<SlotSearchBO> selectMatchingSlots(@Param("keyword") String keyword,
+            @Param("sportTypeId") Long sportTypeId, @Param("date") LocalDate date,
+            @Param("rangeStart") Instant rangeStart, @Param("rangeEnd") Instant rangeEnd,
+            @Param("minPriceFen") Integer minPriceFen, @Param("maxPriceFen") Integer maxPriceFen,
+            @Param("now") Instant now, @Param("today") LocalDate today, @Param("offset") int offset);
 }

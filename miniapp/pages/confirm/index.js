@@ -20,7 +20,7 @@ Page({
   async submit() {
     this.setData({ loading: true, error: "" });
     try {
-      const booking = await request("/mini/bookings/create", { method: "POST", data: { sessionSlotId: this.data.slot.id, contactName: this.data.contactName, contactPhone: this.data.contactPhone, idempotencyKey: this.data.idempotencyKey } });
+      const booking = await request("/mini/bookings/create", { method: "POST", data: { sessionSlotId: this.data.slot.id, contactName: this.data.contactName, contactPhone: this.data.contactPhone, idempotencyKey: this.data.idempotencyKey, expectedPriceFen: this.data.slot.priceFen, entryType: this.data.slot.entryType || null } });
       wx.removeStorageSync("yuechangPendingSlot");
       let status = booking.status;
       try {

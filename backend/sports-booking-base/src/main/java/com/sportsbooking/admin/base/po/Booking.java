@@ -71,6 +71,8 @@ public class Booking {
     public Instant paymentExpiresAt;
     /** 客户端创建幂等键。 */
     public String clientIdempotencyKey;
+    /** 可选预约入口，仅用于关联预约状态观察转化，不参与计价。 */
+    public String entryType;
     /** 取消操作方。 */
     public CancelledBy cancelledBy;
     /** 取消原因。 */

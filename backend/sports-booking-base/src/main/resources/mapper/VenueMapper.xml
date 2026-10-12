@@ -65,12 +65,44 @@
                ss.price_fen AS priceFen
         FROM s_session_slot ss
         JOIN s_court c ON c.id = ss.court_id AND c.status = 'ACTIVE'
+        JOIN s_venue v ON v.id = ss.venue_id AND v.status = 'ACTIVE'
+        JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = ss.sport_type_id
         JOIN s_sport_type st ON st.id = ss.sport_type_id AND st.status = 'ACTIVE'
         WHERE ss.venue_id = #{venueId}
           AND ss.slot_date = #{date}
           AND ss.status = 'OPEN'
-          AND ss.start_at &gt;= #{earliest}
+          AND ss.start_at &gt; #{earliest}
+          AND ss.slot_date &gt;= #{today}
+          AND ss.slot_date &lt; DATE_ADD(#{today}, INTERVAL v.booking_days_ahead DAY)
+        <if test="rangeStart != null">AND ss.start_at &gt;= #{rangeStart}</if>
+        <if test="rangeEnd != null">AND ss.end_at &lt;= #{rangeEnd}</if>
+        <if test="minPriceFen != null">AND ss.price_fen &gt;= #{minPriceFen}</if>
+        <if test="maxPriceFen != null">AND ss.price_fen &lt;= #{maxPriceFen}</if>
         <if test="sportTypeId != null">AND ss.sport_type_id = #{sportTypeId}</if>
-        ORDER BY c.name, ss.start_at
+        ORDER BY c.name, ss.start_at, ss.id
+    </select>
+    <select id="selectMatchingSlots" resultType="com.sportsbooking.admin.base.bo.SlotSearchBO">
+        SELECT ss.id, v.id AS venueId, v.name AS venueName,
+               c.id AS courtId, c.name AS courtName,
+               st.id AS sportTypeId, st.name AS sportName,
+               DATE_FORMAT(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(ss.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               ss.price_fen AS priceFen
+        FROM s_session_slot ss
+        JOIN s_venue v ON v.id = ss.venue_id AND v.status = 'ACTIVE'
+        JOIN s_court c ON c.id = ss.court_id AND c.venue_id = v.id AND c.status = 'ACTIVE'
+        JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = ss.sport_type_id
+        JOIN s_sport_type st ON st.id = ss.sport_type_id AND st.status = 'ACTIVE'
+        WHERE ss.slot_date = #{date} AND ss.status = 'OPEN'
+          AND ss.slot_date &gt;= #{today}
+          AND ss.slot_date &lt; DATE_ADD(#{today}, INTERVAL v.booking_days_ahead DAY)
+          AND ss.start_at &gt; TIMESTAMPADD(MINUTE, v.min_booking_minutes, #{now})
+          AND ss.start_at &gt;= #{rangeStart} AND ss.end_at &lt;= #{rangeEnd}
+        <if test="keyword != null and keyword != ''">AND v.name LIKE CONCAT('%', #{keyword}, '%')</if>
+        <if test="sportTypeId != null">AND st.owner_venue_id IS NULL AND st.id = #{sportTypeId}</if>
+        <if test="minPriceFen != null">AND ss.price_fen &gt;= #{minPriceFen}</if>
+        <if test="maxPriceFen != null">AND ss.price_fen &lt;= #{maxPriceFen}</if>
+        ORDER BY ss.start_at, v.id, c.id, ss.id
+        LIMIT 20 OFFSET #{offset}
     </select>
 </mapper>

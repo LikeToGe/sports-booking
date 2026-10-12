@@ -142,12 +142,17 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone) {
-        return createOnline(userId, sessionSlotId, contactName, contactPhone, null);
+        return createOnline(userId, sessionSlotId, contactName, contactPhone, null, null, null);
     }
 
+    /** 幂等创建线上预约，在具体场次锁内校验现价；入口字段只用于关联结果。 */
     @Override
     public Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone,
-                                String idempotencyKey) {
+                                String idempotencyKey, Integer expectedPriceFen, String entryType) {
+        if ((expectedPriceFen != null && expectedPriceFen < 0)
+                || (entryType != null && !"TIME_SEARCH".equals(entryType))) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
+        }
         String clientKey = idempotencyKey == null || idempotencyKey.trim().isEmpty() ? null : idempotencyKey.trim();
         if (clientKey != null) {
             Booking existing = bookingMapper.selectOne(new QueryWrapper<Booking>()
@@ -186,11 +191,24 @@ public class BookingServiceImpl implements BookingService {
             }
             Venue venue = venueService.getVenue(slot.venueId);
             // 场馆规则必须在服务端再次校验，不能依赖详情页隐藏临近开场的场次。
-            if (!slot.startAt.isAfter(now.plus(Duration.ofMinutes(venue.minBookingMinutes)))) {
+            LocalDate today = now.atZone(BusinessConstants.BUSINESS_ZONE).toLocalDate();
+            if (venue.status != com.sportsbooking.admin.base.enums.VenueStatus.ACTIVE
+                    || slot.slotDate.isBefore(today)
+                    || !slot.slotDate.isBefore(today.plusDays(venue.bookingDaysAhead))
+                    || !slot.startAt.isAfter(now.plus(Duration.ofMinutes(venue.minBookingMinutes)))) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
             }
             Court court = courtMapper.selectById(slot.courtId);
             SportType sport = sportTypeMapper.selectById(slot.sportTypeId);
+            if (court == null || court.status != com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE
+                    || sport == null || sport.status != com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE
+                    || !courtMapper.selectSportIds(court.id).contains(slot.sportTypeId)) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
+            }
+            // 锁内核对用户看到的价格；变价先刷新确认，不生成占位或冻结余额。
+            if (expectedPriceFen != null && !expectedPriceFen.equals(slot.priceFen)) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_PRICE_CHANGED);
+            }
             String name = requireText(contactName);
             String phone = requireText(contactPhone);
 
@@ -209,6 +227,7 @@ public class BookingServiceImpl implements BookingService {
             booking.paidBalanceAmountFen = 0;
             booking.externalAmountFen = booking.amountFen;
             booking.clientIdempotencyKey = clientKey;
+            booking.entryType = entryType;
             bookingMapper.insert(booking);
 
             // 预约和具体场次在同一事务内写入；行锁保证并发请求只有一个能从 OPEN 转为 HELD。

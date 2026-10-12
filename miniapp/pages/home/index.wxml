@@ -22,19 +22,41 @@
     <button wx:for="{{dateOptions}}" wx:key="date" class="quick-date {{date === item.date ? 'is-selected' : ''}}" data-date="{{item.date}}" bindtap="selectDate" aria-label="{{item.date}}" aria-pressed="{{date === item.date}}"><text>{{item.label}}</text><text class="date-number">{{item.day}}</text></button>
   </view></scroll-view>
 
+  <view class="time-filters">
+    <text class="section-title">我有空的时间</text>
+    <view class="filter-row">
+      <picker mode="time" value="{{startTime}}" data-field="startTime" bindchange="onFilter" aria-label="可用开始时间"><view class="filter-control"><text>开始</text><text>{{startTime || '不限'}}</text></view></picker>
+      <picker mode="time" value="{{endTime}}" data-field="endTime" bindchange="onFilter" aria-label="可用结束时间"><view class="filter-control"><text>结束</text><text>{{endTime || '不限'}}</text></view></picker>
+    </view>
+    <view class="filter-row">
+      <view class="price-filter"><text>最低单场价（元）</text><input type="digit" value="{{minPrice}}" placeholder="不限" data-field="minPrice" bindinput="onFilter" aria-label="最低单场次总价，元" /></view>
+      <view class="price-filter"><text>最高单场价（元）</text><input type="digit" value="{{maxPrice}}" placeholder="不限" data-field="maxPrice" bindinput="onFilter" aria-label="最高单场次总价，元" /></view>
+    </view>
+    <text class="filter-hint">只匹配完整落入范围的单个场次，不保证连续预约。</text>
+    <view class="filter-actions"><button class="button-secondary" bindtap="clearFilters" disabled="{{loading}}">清除时段和价格</button><button class="button-primary" bindtap="search" disabled="{{loading}}">查找空场</button></view>
+  </view>
+
   <view class="results-heading">
-    <view class="results-title"><text class="section-title" role="heading" aria-level="2">可预约场馆</text><text wx:if="{{!loading && !error}}" class="result-count">{{venues.length}} 家</text></view>
+    <view class="results-title"><text class="section-title" role="heading" aria-level="2">{{searchMode ? '匹配具体场次' : '可预约场馆'}}</text><text wx:if="{{!loading && !error && !filtersDirty}}" class="result-count">{{searchMode ? slots.length : venues.length}} {{searchMode ? '场' : '家'}}</text></view>
     <picker mode="date" value="{{date}}" bindchange="selectDate" aria-label="预约日期 {{date}}">
       <view class="date-button"><image class="icon-small" src="/assets/icons/calendar.svg" aria-hidden="true" /><text>{{dateLabel}}</text><image class="date-chevron" src="/assets/icons/chevron-down.svg" aria-hidden="true" /></view>
     </picker>
   </view>
 
+  <text wx:if="{{filtersDirty && !error}}" class="filter-hint">条件已修改，请点击查找空场。</text>
   <view wx:if="{{error}}" class="home-error" role="alert"><text>{{error}}</text><button class="retry-button" bindtap="load" hover-class="control-pressed">重新加载</button></view>
-  <view wx:if="{{loading && !venues.length}}" class="venue-list" aria-label="正在加载场馆">
+  <view wx:if="{{loading && !venues.length && !slots.length}}" class="venue-list" aria-label="正在加载场馆">
     <view wx:for="{{[1, 2, 3]}}" wx:key="*this" class="venue-skeleton"><view class="skeleton-cover"></view><view class="skeleton-copy"><view class="skeleton-line skeleton-line-wide"></view><view class="skeleton-line"></view><view class="skeleton-line skeleton-line-short"></view></view></view>
   </view>
+  <view wx:if="{{searchMode}}" class="matched-slots" aria-live="polite">
+    <button wx:for="{{slots}}" wx:key="id" class="matched-slot" data-id="{{item.venueId}}" bindtap="openVenue" disabled="{{loading}}">
+      <view><text class="venue-name">{{item.venueName}}</text><text>{{item.courtName}} · {{item.sportName}}</text><text>{{item.time}}</text></view>
+      <view class="matched-price"><text class="venue-price">{{item.price}}</text><text>单场总价</text><text>查看场次</text></view>
+    </button>
+    <button wx:if="{{hasMore}}" class="button-secondary" bindtap="loadMore" disabled="{{loading}}">{{loading ? '正在加载' : '加载更多'}}</button>
+  </view>
   <view class="venue-list" aria-live="polite">
-    <button wx:for="{{venues}}" wx:key="id" class="venue-card" data-id="{{item.id}}" bindtap="openVenue" hover-class="venue-card-pressed">
+    <button wx:for="{{venues}}" wx:key="id" class="venue-card" disabled="{{loading}}" data-id="{{item.id}}" bindtap="openVenue" hover-class="venue-card-pressed">
       <image class="venue-cover" src="{{item.cover}}" mode="aspectFill" lazy-load="{{index > 1}}" aria-label="{{item.name}}场馆封面" />
       <view class="venue-copy">
         <text class="venue-name">{{item.name}}</text>
@@ -45,5 +67,5 @@
       </view>
     </button>
   </view>
-  <view wx:if="{{!loading && !error && !venues.length}}" class="home-empty"><image class="empty-icon" src="/assets/icons/courts.svg" aria-hidden="true" /><text class="empty-title">这次没有找到场馆</text><text>试试其他运动、日期或场馆名称。</text></view>
+  <view wx:if="{{!loading && !error && !filtersDirty && !venues.length && !slots.length}}" class="home-empty"><image class="empty-icon" src="/assets/icons/courts.svg" aria-hidden="true" /><text class="empty-title">这次没有找到场馆</text><text>可主动清除时段和价格，或更换运动、日期。</text></view>
 </view>

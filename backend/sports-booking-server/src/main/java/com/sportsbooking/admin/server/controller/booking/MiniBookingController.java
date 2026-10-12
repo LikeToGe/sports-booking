@@ -55,7 +55,7 @@ public class MiniBookingController {
     public ApiResponse<BookingVO> createBooking(@RequestBody BookingCreateRequest body) {
         return ApiResponse.success(BookingVO.from(bookingService.createOnline(
                 AuthContext.getMiniUserId(), body.getSessionSlotId(), body.getContactName(), body.getContactPhone(),
-                body.getIdempotencyKey()
+                body.getIdempotencyKey(), body.getExpectedPriceFen(), body.getEntryType()
         )));
     }
 
