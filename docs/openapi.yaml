@@ -1,4 +1,3 @@
----
 openapi: 3.1.0
 info:
   title: OpenAPI definition
@@ -7,7 +6,7 @@ servers:
 - url: http://127.0.0.1:8089/api
   description: Generated server url
 paths:
-  "/venue-admin/weekly-slots/{weeklySlotId}/update":
+  /venue-admin/weekly-slots/{weeklySlotId}/update:
     put:
       tags:
       - schedule-controller
@@ -23,16 +22,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/WeeklySlotSaveRequest"
+              $ref: "#/components/schemas/WeeklySlotSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseWeeklySlotVO"
-  "/venue-admin/sports/{sportTypeId}":
+                $ref: "#/components/schemas/ApiResponseWeeklySlotVO"
+  /venue-admin/sports/{sportTypeId}:
     put:
       tags:
       - venue-admin-controller
@@ -48,16 +47,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
-  "/venue-admin/sessions/{sessionSlotId}":
+                $ref: "#/components/schemas/ApiResponseSportTypeVO"
+  /venue-admin/sessions/{sessionSlotId}:
     put:
       tags:
       - schedule-controller
@@ -73,16 +72,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/ExtraSlotCreateRequest"
+              $ref: "#/components/schemas/ExtraSlotCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSessionSlotResultVO"
-  "/venue-admin/roles/{roleId}":
+                $ref: "#/components/schemas/ApiResponseSessionSlotResultVO"
+  /venue-admin/roles/{roleId}:
     put:
       tags:
       - permission-controller
@@ -98,15 +97,15 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/RoleSaveRequest"
+              $ref: "#/components/schemas/RoleSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueRoleVO"
+                $ref: "#/components/schemas/ApiResponseVenueRoleVO"
     delete:
       tags:
       - permission-controller
@@ -119,13 +118,38 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/recharge-plans/{planId}":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/reviews/{reviewId}/reply:
+    put:
+      tags:
+      - venue-review-controller
+      operationId: upsertReply
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenueReviewReplyRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueReviewReplyVO"
+  /venue-admin/recharge-plans/{planId}:
     put:
       tags:
       - funds-controller
@@ -141,16 +165,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/RechargePlanRequest"
+              $ref: "#/components/schemas/RechargePlanRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseRechargePlanVO"
-  "/venue-admin/profile/update":
+                $ref: "#/components/schemas/ApiResponseRechargePlanVO"
+  /venue-admin/profile/update:
     put:
       tags:
       - venue-admin-controller
@@ -159,16 +183,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VenueSaveRequest"
+              $ref: "#/components/schemas/VenueSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueVO"
-  "/venue-admin/employees/{employeeId}":
+                $ref: "#/components/schemas/ApiResponseVenueVO"
+  /venue-admin/employees/{employeeId}:
     put:
       tags:
       - venue-admin-controller
@@ -184,16 +208,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
-  "/venue-admin/employees/{employeeId}/roles":
+                $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /venue-admin/employees/{employeeId}/roles:
     get:
       tags:
       - permission-controller
@@ -206,12 +230,12 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListLong"
+                $ref: "#/components/schemas/ApiResponseListLong"
     put:
       tags:
       - permission-controller
@@ -227,16 +251,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/EmployeeRolesRequest"
+              $ref: "#/components/schemas/EmployeeRolesRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/courts/{courtId}":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/courts/{courtId}:
     put:
       tags:
       - venue-admin-controller
@@ -252,16 +276,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CourtSaveRequest"
+              $ref: "#/components/schemas/CourtSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseCourtVO"
-  "/venue-admin/bookings/{bookingId}/payment-status":
+                $ref: "#/components/schemas/ApiResponseCourtVO"
+  /venue-admin/bookings/{bookingId}/payment-status:
     put:
       tags:
       - venue-booking-controller
@@ -277,16 +301,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/OfflineBookingPaymentStatusUpdateRequest"
+              $ref: "#/components/schemas/OfflineBookingPaymentStatusUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/venue-admin/bookings/{bookingId}/contact":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /venue-admin/bookings/{bookingId}/contact:
     put:
       tags:
       - venue-booking-controller
@@ -302,16 +326,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/BookingContactUpdateRequest"
+              $ref: "#/components/schemas/BookingContactUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/platform/venues/{venueId}/update":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /platform/venues/{venueId}/update:
     put:
       tags:
       - platform-venue-controller
@@ -327,16 +351,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VenueSaveRequest"
+              $ref: "#/components/schemas/VenueSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueVO"
-  "/platform/venues/{venueId}/admin":
+                $ref: "#/components/schemas/ApiResponseVenueVO"
+  /platform/venues/{venueId}/admin:
     put:
       tags:
       - platform-venue-controller
@@ -352,16 +376,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VenueAdminUpdateRequest"
+              $ref: "#/components/schemas/VenueAdminUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/platform/sports/{sportTypeId}":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/sports/{sportTypeId}:
     put:
       tags:
       - platform-venue-controller
@@ -377,16 +401,259 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
-  "/auth/mini/profile/update":
+                $ref: "#/components/schemas/ApiResponseSportTypeVO"
+  /platform/review-tags/{tagId}:
+    put:
+      tags:
+      - venue-review-controller
+      operationId: updateTag
+      parameters:
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewTagRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReviewTagVO"
+  /platform/content-settings/update:
+    put:
+      tags:
+      - content-moderation-setting-controller
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentModerationSettingRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentModerationSettingVO"
+  /platform/content-agreement:
+    get:
+      tags:
+      - content-agreement-controller
+      operationId: getPlatform
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentAgreementVO"
+    put:
+      tags:
+      - content-agreement-controller
+      operationId: update_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentAgreementSettingRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentAgreementVO"
+  /mini/reviews/{reviewId}:
+    put:
+      tags:
+      - venue-review-controller
+      operationId: update_2
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenueReviewRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueReviewVO"
+    delete:
+      tags:
+      - venue-review-controller
+      operationId: delete
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/{postId}:
+    get:
+      tags:
+      - post-controller
+      operationId: get
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostVO"
+    put:
+      tags:
+      - post-controller
+      operationId: update_3
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostVO"
+    delete:
+      tags:
+      - post-controller
+      operationId: delete_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/{postId}/comments-enabled:
+    put:
+      tags:
+      - post-interaction-controller
+      operationId: commentsEnabled
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: enabled
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/comments/{commentId}:
+    put:
+      tags:
+      - post-interaction-controller
+      operationId: update_4
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCommentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostCommentVO"
+    delete:
+      tags:
+      - post-interaction-controller
+      operationId: delete_2
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /auth/mini/profile/update:
     put:
       tags:
       - auth-controller
@@ -395,16 +662,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/UserProfileUpdateRequest"
+              $ref: "#/components/schemas/UserProfileUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseUserProfileVO"
-  "/venue-admin/weekly-slots/create":
+                $ref: "#/components/schemas/ApiResponseUserProfileVO"
+  /venue-admin/weekly-slots/create:
     post:
       tags:
       - schedule-controller
@@ -413,16 +680,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/WeeklySlotSaveRequest"
+              $ref: "#/components/schemas/WeeklySlotSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseWeeklySlotVO"
-  "/venue-admin/weekly-slots/copy-day":
+                $ref: "#/components/schemas/ApiResponseWeeklySlotVO"
+  /venue-admin/weekly-slots/copy-day:
     post:
       tags:
       - schedule-controller
@@ -431,16 +698,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CopyDayRequest"
+              $ref: "#/components/schemas/CopyDayRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListWeeklySlotVO"
-  "/venue-admin/sports/create":
+                $ref: "#/components/schemas/ApiResponseListWeeklySlotVO"
+  /venue-admin/sports/create:
     post:
       tags:
       - venue-admin-controller
@@ -449,16 +716,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
-  "/venue-admin/sessions/{sessionSlotId}/open":
+                $ref: "#/components/schemas/ApiResponseSportTypeVO"
+  /venue-admin/sessions/{sessionSlotId}/open:
     post:
       tags:
       - schedule-controller
@@ -471,13 +738,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/sessions/{sessionSlotId}/close":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/sessions/{sessionSlotId}/close:
     post:
       tags:
       - schedule-controller
@@ -490,13 +757,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/sessions/create":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/sessions/create:
     post:
       tags:
       - schedule-controller
@@ -505,16 +772,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/ExtraSlotCreateRequest"
+              $ref: "#/components/schemas/ExtraSlotCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSessionSlotResultVO"
-  "/venue-admin/sessions/close-day":
+                $ref: "#/components/schemas/ApiResponseSessionSlotResultVO"
+  /venue-admin/sessions/close-day:
     post:
       tags:
       - schedule-controller
@@ -523,27 +790,27 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CloseDayRequest"
+              $ref: "#/components/schemas/CloseDayRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/roles":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/roles:
     get:
       tags:
       - permission-controller
       operationId: listRoles
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListVenueRoleVO"
+                $ref: "#/components/schemas/ApiResponseListVenueRoleVO"
     post:
       tags:
       - permission-controller
@@ -552,16 +819,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/RoleSaveRequest"
+              $ref: "#/components/schemas/RoleSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueRoleVO"
-  "/venue-admin/recharges/{rechargeId}/reverse":
+                $ref: "#/components/schemas/ApiResponseVenueRoleVO"
+  /venue-admin/recharges/{rechargeId}/reverse:
     post:
       tags:
       - funds-controller
@@ -577,27 +844,27 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/RechargeReverseRequest"
+              $ref: "#/components/schemas/RechargeReverseRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/venue-admin/recharge-plans":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /venue-admin/recharge-plans:
     get:
       tags:
       - funds-controller
       operationId: listVenuePlans
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListRechargePlanVO"
+                $ref: "#/components/schemas/ApiResponseListRechargePlanVO"
     post:
       tags:
       - funds-controller
@@ -606,16 +873,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/RechargePlanRequest"
+              $ref: "#/components/schemas/RechargePlanRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseRechargePlanVO"
-  "/venue-admin/profile/cover":
+                $ref: "#/components/schemas/ApiResponseRechargePlanVO"
+  /venue-admin/profile/cover:
     post:
       tags:
       - venue-admin-controller
@@ -632,13 +899,31 @@ paths:
               required:
               - file
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseCoverUploadVO"
-  "/venue-admin/members/{customerId}/recharges":
+                $ref: "#/components/schemas/ApiResponseCoverUploadVO"
+  /venue-admin/posts:
+    post:
+      tags:
+      - official-post-controller
+      operationId: venue
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostVO"
+  /venue-admin/members/{customerId}/recharges:
     get:
       tags:
       - funds-controller
@@ -651,12 +936,12 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListMemberRechargeVO"
+                $ref: "#/components/schemas/ApiResponseListMemberRechargeVO"
     post:
       tags:
       - funds-controller
@@ -672,16 +957,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/AdminRechargeRequest"
+              $ref: "#/components/schemas/AdminRechargeRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/venue-admin/employees/{employeeId}/binding-code":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /venue-admin/employees/{employeeId}/binding-code:
     post:
       tags:
       - venue-admin-controller
@@ -694,13 +979,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeBindingVO"
-  "/venue-admin/employees/create":
+                $ref: "#/components/schemas/ApiResponseEmployeeBindingVO"
+  /venue-admin/employees/create:
     post:
       tags:
       - venue-admin-controller
@@ -709,16 +994,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeBindingVO"
-  "/venue-admin/courts/{courtId}/image":
+                $ref: "#/components/schemas/ApiResponseEmployeeBindingVO"
+  /venue-admin/courts/{courtId}/image:
     post:
       tags:
       - venue-admin-controller
@@ -742,13 +1027,13 @@ paths:
               required:
               - file
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseCourtVO"
-  "/venue-admin/courts/create":
+                $ref: "#/components/schemas/ApiResponseCourtVO"
+  /venue-admin/courts/create:
     post:
       tags:
       - venue-admin-controller
@@ -757,16 +1042,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/CourtSaveRequest"
+              $ref: "#/components/schemas/CourtSaveRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseCourtVO"
-  "/venue-admin/bookings/{bookingId}/reschedule":
+                $ref: "#/components/schemas/ApiResponseCourtVO"
+  /venue-admin/bookings/{bookingId}/reschedule:
     post:
       tags:
       - venue-booking-controller
@@ -782,16 +1067,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/OfflineBookingRescheduleRequest"
+              $ref: "#/components/schemas/OfflineBookingRescheduleRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/venue-admin/bookings/{bookingId}/cancel":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /venue-admin/bookings/{bookingId}/cancel:
     post:
       tags:
       - venue-booking-controller
@@ -807,16 +1092,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/BookingCancelRequest"
+              $ref: "#/components/schemas/BookingCancelRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/venue-admin/bookings/offline":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /venue-admin/bookings/offline:
     post:
       tags:
       - venue-booking-controller
@@ -825,16 +1110,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/OfflineBookingCreateRequest"
+              $ref: "#/components/schemas/OfflineBookingCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/venue-admin/bookings/offline/batch":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /venue-admin/bookings/offline/batch:
     post:
       tags:
       - venue-booking-controller
@@ -843,16 +1128,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/OfflineBookingBatchCreateRequest"
+              $ref: "#/components/schemas/OfflineBookingBatchCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListBookingVO"
-  "/venue-admin/bookings/create":
+                $ref: "#/components/schemas/ApiResponseListBookingVO"
+  /venue-admin/bookings/create:
     post:
       tags:
       - venue-booking-controller
@@ -861,16 +1146,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/OfflineBookingCreateRequest"
+              $ref: "#/components/schemas/OfflineBookingCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/staff/web-login-tickets/{ticket}/confirm":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /staff/web-login-tickets/{ticket}/confirm:
     post:
       tags:
       - permission-controller
@@ -885,16 +1170,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/WebLoginConfirmRequest"
+              $ref: "#/components/schemas/WebLoginConfirmRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/staff/verifications/verify":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /staff/verifications/verify:
     post:
       tags:
       - staff-verification-controller
@@ -910,16 +1195,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VerificationRequest"
+              $ref: "#/components/schemas/VerificationRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVerificationResultVO"
-  "/staff/recharges":
+                $ref: "#/components/schemas/ApiResponseVerificationResultVO"
+  /staff/recharges:
     post:
       tags:
       - funds-controller
@@ -928,16 +1213,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/StaffRechargeRequest"
+              $ref: "#/components/schemas/StaffRechargeRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/platform/venues/create":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /platform/venues/create:
     post:
       tags:
       - platform-venue-controller
@@ -946,16 +1231,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VenueCreateRequest"
+              $ref: "#/components/schemas/VenueCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueVO"
-  "/platform/sports/create":
+                $ref: "#/components/schemas/ApiResponseVenueVO"
+  /platform/sports/create:
     post:
       tags:
       - platform-venue-controller
@@ -964,16 +1249,45 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/NameRequest"
+              $ref: "#/components/schemas/NameRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
-  "/platform/refunds/{refundId}/retry":
+                $ref: "#/components/schemas/ApiResponseSportTypeVO"
+  /platform/review-tags:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: platformTags
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListReviewTagVO"
+    post:
+      tags:
+      - venue-review-controller
+      operationId: createTag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewTagRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReviewTagVO"
+  /platform/refunds/{refundId}/retry:
     post:
       tags:
       - funds-controller
@@ -986,13 +1300,272 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseRefundVO"
-  "/mock/recharges/notify":
+                $ref: "#/components/schemas/ApiResponseRefundVO"
+  /platform/posts:
+    post:
+      tags:
+      - official-post-controller
+      operationId: platform
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostVO"
+  /platform/posts/{postId}/pin:
+    post:
+      tags:
+      - official-post-controller
+      operationId: pin
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: pinned
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-moderation/reviews/{reviewId}:
+    post:
+      tags:
+      - venue-review-controller
+      operationId: moderate
+      parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-moderation/replies/{replyId}:
+    post:
+      tags:
+      - venue-review-controller
+      operationId: moderateReply
+      parameters:
+      - name: replyId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-moderation/posts/{postId}:
+    post:
+      tags:
+      - content-moderation-controller
+      operationId: moderate_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-moderation/comments/{commentId}:
+    post:
+      tags:
+      - post-interaction-controller
+      operationId: moderate_2
+      parameters:
+      - name: commentId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentModerationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-governance/targets/{type}/{id}/release-hold:
+    post:
+      tags:
+      - content-governance-controller
+      operationId: releaseHold
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-governance/restrictions:
+    post:
+      tags:
+      - content-governance-controller
+      operationId: restrict
+      parameters:
+      - name: userId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: capability
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: days
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: reason
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-governance/reports/{id}/resolve:
+    post:
+      tags:
+      - content-governance-controller
+      operationId: resolve
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: resolution
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/content-governance/appeals/{id}/decide:
+    post:
+      tags:
+      - content-governance-controller
+      operationId: decide
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: reason
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mock/recharges/notify:
     post:
       tags:
       - mock-funds-controller
@@ -1001,16 +1574,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/MockFundsNotificationRequest"
+              $ref: "#/components/schemas/MockFundsNotificationRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/mock/payments/notify":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /mock/payments/notify:
     post:
       tags:
       - mock-funds-controller
@@ -1019,16 +1592,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/MockFundsNotificationRequest"
+              $ref: "#/components/schemas/MockFundsNotificationRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/mini/staff/bind":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /mini/staff/bind:
     post:
       tags:
       - mini-venue-controller
@@ -1037,16 +1610,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/EmployeeBindRequest"
+              $ref: "#/components/schemas/EmployeeBindRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
-  "/mini/recharges/{rechargeId}/mock-pay":
+                $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /mini/recharges/{rechargeId}/mock-pay:
     post:
       tags:
       - funds-controller
@@ -1059,13 +1632,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/mini/recharges/create":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /mini/recharges/create:
     post:
       tags:
       - funds-controller
@@ -1074,16 +1647,528 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/MiniRechargeCreateRequest"
+              $ref: "#/components/schemas/MiniRechargeCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/mini/bookings/{bookingId}/payment-query":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /mini/posts/{postId}/recruitment:
+    get:
+      tags:
+      - post-recruitment-controller
+      operationId: get_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostRecruitmentVO"
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: create
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRecruitmentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostRecruitmentVO"
+  /mini/posts/{postId}/likes:
+    post:
+      tags:
+      - post-interaction-controller
+      operationId: like
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: liked
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseInteger"
+  /mini/posts/{postId}/comments:
+    get:
+      tags:
+      - post-interaction-controller
+      operationId: list
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListPostCommentVO"
+    post:
+      tags:
+      - post-interaction-controller
+      operationId: create_1
+      parameters:
+      - name: postId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCommentRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostCommentVO"
+  /mini/posts/recruitments/{id}/members/{userId}/remove:
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: remove
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reason
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/recruitments/{id}/members/{userId}/decide:
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: decide_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: approve
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/recruitments/{id}/leave:
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: leave
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/recruitments/{id}/close:
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: close
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/recruitments/{id}/apply:
+    post:
+      tags:
+      - post-recruitment-controller
+      operationId: apply
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/posts/create:
+    post:
+      tags:
+      - post-controller
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponsePostVO"
+  /mini/posts/blocks/{userId}:
+    post:
+      tags:
+      - post-interaction-controller
+      operationId: block
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+    delete:
+      tags:
+      - post-interaction-controller
+      operationId: unblock
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/content/uploads:
+    post:
+      tags:
+      - ugc-media-controller
+      operationId: upload
+      parameters:
+      - name: durationSeconds
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseUgcUploadVO"
+  /mini/content/reports:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: myReports
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentGovernanceVO"
+    post:
+      tags:
+      - content-governance-controller
+      operationId: report
+      parameters:
+      - name: targetType
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: targetId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: reasonCode
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/content/notifications/{id}/read:
+    post:
+      tags:
+      - notification-controller
+      operationId: read
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/content/events:
+    post:
+      tags:
+      - user-action-event-controller
+      operationId: record
+      parameters:
+      - name: eventType
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: targetType
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: targetId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/content/appeals:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: myAppeals
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentGovernanceVO"
+    post:
+      tags:
+      - content-governance-controller
+      operationId: appeal
+      parameters:
+      - name: moderationLogId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: body
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/content/agreement:
+    get:
+      tags:
+      - content-agreement-controller
+      operationId: getMine
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentAgreementVO"
+    post:
+      tags:
+      - content-agreement-controller
+      operationId: accept
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentAgreementAcceptRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentAgreementVO"
+  /mini/bookings/{bookingId}/review:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: mine
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueReviewVO"
+    post:
+      tags:
+      - venue-review-controller
+      operationId: create_3
+      parameters:
+      - name: bookingId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VenueReviewRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueReviewVO"
+  /mini/bookings/{bookingId}/payment-query:
     post:
       tags:
       - mini-booking-controller
@@ -1096,13 +2181,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/mini/bookings/{bookingId}/mock-pay":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /mini/bookings/{bookingId}/mock-pay:
     post:
       tags:
       - mini-booking-controller
@@ -1115,13 +2200,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/mini/bookings/{bookingId}/cancel":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /mini/bookings/{bookingId}/cancel:
     post:
       tags:
       - mini-booking-controller
@@ -1134,13 +2219,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/mini/bookings/create":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /mini/bookings/create:
     post:
       tags:
       - mini-booking-controller
@@ -1149,16 +2234,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/BookingCreateRequest"
+              $ref: "#/components/schemas/BookingCreateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingVO"
-  "/auth/mini/mock-login":
+                $ref: "#/components/schemas/ApiResponseBookingVO"
+  /auth/mini/mock-login:
     post:
       tags:
       - auth-controller
@@ -1167,16 +2252,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/MiniLoginRequest"
+              $ref: "#/components/schemas/MiniLoginRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMiniLoginVO"
-  "/auth/mini/logout":
+                $ref: "#/components/schemas/ApiResponseMiniLoginVO"
+  /auth/mini/logout:
     post:
       tags:
       - auth-controller
@@ -1189,25 +2274,43 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/auth/admin/web-login-tickets":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /auth/mini/close-account:
+    post:
+      tags:
+      - auth-controller
+      operationId: closeMiniAccount
+      parameters:
+      - name: X-Mini-Token
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /auth/admin/web-login-tickets:
     post:
       tags:
       - auth-controller
       operationId: createWebLoginTicket
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseScanTicketVO"
-  "/auth/admin/web-login-tickets/{ticket}/consume":
+                $ref: "#/components/schemas/ApiResponseScanTicketVO"
+  /auth/admin/web-login-tickets/{ticket}/consume:
     post:
       tags:
       - auth-controller
@@ -1219,13 +2322,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseAdminLoginVO"
-  "/auth/admin/logout":
+                $ref: "#/components/schemas/ApiResponseAdminLoginVO"
+  /auth/admin/logout:
     post:
       tags:
       - auth-controller
@@ -1238,13 +2341,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/auth/admin/login":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /auth/admin/login:
     post:
       tags:
       - auth-controller
@@ -1253,16 +2356,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/AdminLoginRequest"
+              $ref: "#/components/schemas/AdminLoginRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseAdminLoginVO"
-  "/venue-admin/employees/{employeeId}/status":
+                $ref: "#/components/schemas/ApiResponseAdminLoginVO"
+  /venue-admin/employees/{employeeId}/status:
     patch:
       tags:
       - venue-admin-controller
@@ -1278,16 +2381,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/EnableStatusUpdateRequest"
+              $ref: "#/components/schemas/EnableStatusUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
-  "/platform/venues/{venueId}/status":
+                $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /platform/venues/{venueId}/status:
     patch:
       tags:
       - platform-venue-controller
@@ -1303,16 +2406,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/VenueStatusUpdateRequest"
+              $ref: "#/components/schemas/VenueStatusUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueVO"
-  "/platform/venues/{venueId}/service-fee-rate":
+                $ref: "#/components/schemas/ApiResponseVenueVO"
+  /platform/venues/{venueId}/service-fee-rate:
     patch:
       tags:
       - platform-venue-controller
@@ -1328,16 +2431,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/ServiceFeeRateUpdateRequest"
+              $ref: "#/components/schemas/ServiceFeeRateUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponsePlatformVenueVO"
-  "/platform/venues/{venueId}/admin-password":
+                $ref: "#/components/schemas/ApiResponsePlatformVenueVO"
+  /platform/venues/{venueId}/admin-password:
     patch:
       tags:
       - platform-venue-controller
@@ -1353,16 +2456,16 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/PasswordResetRequest"
+              $ref: "#/components/schemas/PasswordResetRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/platform/sports/{sportTypeId}/status":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /platform/sports/{sportTypeId}/status:
     patch:
       tags:
       - platform-venue-controller
@@ -1378,40 +2481,40 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/EnableStatusUpdateRequest"
+              $ref: "#/components/schemas/EnableStatusUpdateRequest"
         required: true
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseSportTypeVO"
-  "/venue-admin/weekly-slots/list":
+                $ref: "#/components/schemas/ApiResponseSportTypeVO"
+  /venue-admin/weekly-slots/list:
     get:
       tags:
       - schedule-controller
       operationId: listWeeklySlots
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListWeeklySlotVO"
-  "/venue-admin/sports/list":
+                $ref: "#/components/schemas/ApiResponseListWeeklySlotVO"
+  /venue-admin/sports/list:
     get:
       tags:
       - venue-admin-controller
       operationId: listSports
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
-  "/venue-admin/sessions/list":
+                $ref: "#/components/schemas/ApiResponseListSportTypeVO"
+  /venue-admin/sessions/list:
     get:
       tags:
       - schedule-controller
@@ -1430,13 +2533,25 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListSessionSlotVO"
-  "/venue-admin/reports/service-fees":
+                $ref: "#/components/schemas/ApiResponseListSessionSlotVO"
+  /venue-admin/reviews:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: venueReviews
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueReviewVO"
+  /venue-admin/reports/service-fees:
     get:
       tags:
       - operation-report-controller
@@ -1448,13 +2563,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseServiceFeeSettlementVO"
-  "/venue-admin/reports/receipts":
+                $ref: "#/components/schemas/ApiResponseServiceFeeSettlementVO"
+  /venue-admin/reports/receipts:
     get:
       tags:
       - operation-report-controller
@@ -1473,13 +2588,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListReportReceiptVO"
-  "/venue-admin/reports/operations":
+                $ref: "#/components/schemas/ApiResponseListReportReceiptVO"
+  /venue-admin/reports/operations:
     get:
       tags:
       - operation-report-controller
@@ -1498,13 +2613,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
-  "/venue-admin/reports/member-flows":
+                $ref: "#/components/schemas/ApiResponseReportOperationVO"
+  /venue-admin/reports/member-flows:
     get:
       tags:
       - operation-report-controller
@@ -1523,13 +2638,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListReportMemberFlowVO"
-  "/venue-admin/reports/dashboard":
+                $ref: "#/components/schemas/ApiResponseListReportMemberFlowVO"
+  /venue-admin/reports/dashboard:
     get:
       tags:
       - operation-report-controller
@@ -1543,13 +2658,13 @@ paths:
           format: int32
           default: 7
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
-  "/venue-admin/reports/bookings":
+                $ref: "#/components/schemas/ApiResponseReportOperationVO"
+  /venue-admin/reports/bookings:
     get:
       tags:
       - operation-report-controller
@@ -1568,37 +2683,49 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListReportBookingVO"
-  "/venue-admin/profile/detail":
+                $ref: "#/components/schemas/ApiResponseListReportBookingVO"
+  /venue-admin/profile/detail:
     get:
       tags:
       - venue-admin-controller
       operationId: getProfile
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueVO"
-  "/venue-admin/permissions":
+                $ref: "#/components/schemas/ApiResponseVenueVO"
+  /venue-admin/posts/sports:
+    get:
+      tags:
+      - official-post-controller
+      operationId: sports
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListSportTypeVO"
+  /venue-admin/permissions:
     get:
       tags:
       - permission-controller
       operationId: listPermissions
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListPermissionCatalogVO"
-  "/venue-admin/members/{customerId}/balance-flows":
+                $ref: "#/components/schemas/ApiResponseListPermissionCatalogVO"
+  /venue-admin/members/{customerId}/balance-flows:
     get:
       tags:
       - funds-controller
@@ -1611,13 +2738,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
-  "/venue-admin/exports/receipts":
+                $ref: "#/components/schemas/ApiResponseBalanceAccountVO"
+  /venue-admin/exports/receipts:
     get:
       tags:
       - operation-report-controller
@@ -1636,14 +2763,14 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
                 type: string
                 format: byte
-  "/venue-admin/exports/member-flows":
+  /venue-admin/exports/member-flows:
     get:
       tags:
       - operation-report-controller
@@ -1662,14 +2789,14 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
                 type: string
                 format: byte
-  "/venue-admin/exports/bookings":
+  /venue-admin/exports/bookings:
     get:
       tags:
       - operation-report-controller
@@ -1688,26 +2815,26 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
                 type: string
                 format: byte
-  "/venue-admin/employees/list":
+  /venue-admin/employees/list:
     get:
       tags:
       - venue-admin-controller
       operationId: listEmployees
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListEmployeeVO"
-  "/venue-admin/customers/{customerId}":
+                $ref: "#/components/schemas/ApiResponseListEmployeeVO"
+  /venue-admin/customers/{customerId}:
     get:
       tags:
       - customer-controller
@@ -1720,13 +2847,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
-  "/venue-admin/customers/list":
+                $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /venue-admin/customers/list:
     get:
       tags:
       - customer-controller
@@ -1738,13 +2865,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListVenueCustomerVO"
-  "/venue-admin/customers/identify":
+                $ref: "#/components/schemas/ApiResponseListVenueCustomerVO"
+  /venue-admin/customers/identify:
     get:
       tags:
       - customer-controller
@@ -1761,25 +2888,25 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
-  "/venue-admin/courts/list":
+                $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /venue-admin/courts/list:
     get:
       tags:
       - venue-admin-controller
       operationId: listCourts
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListCourtVO"
-  "/venue-admin/bookings/list":
+                $ref: "#/components/schemas/ApiResponseListCourtVO"
+  /venue-admin/bookings/list:
     get:
       tags:
       - venue-booking-controller
@@ -1792,13 +2919,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListVenueBookingVO"
-  "/staff/verifications/records":
+                $ref: "#/components/schemas/ApiResponseListVenueBookingVO"
+  /staff/verifications/records:
     get:
       tags:
       - staff-verification-controller
@@ -1811,25 +2938,25 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListStaffVerificationRecordVO"
-  "/staff/venues":
+                $ref: "#/components/schemas/ApiResponseListStaffVerificationRecordVO"
+  /staff/venues:
     get:
       tags:
       - permission-controller
       operationId: listStaffVenues
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListStaffVenueVO"
-  "/staff/members":
+                $ref: "#/components/schemas/ApiResponseListStaffVenueVO"
+  /staff/members:
     get:
       tags:
       - customer-controller
@@ -1852,13 +2979,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
-  "/staff/members/{customerId}":
+                $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /staff/members/{customerId}:
     get:
       tags:
       - customer-controller
@@ -1877,13 +3004,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
-  "/staff/members/{customerId}/balance-flows":
+                $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /staff/members/{customerId}/balance-flows:
     get:
       tags:
       - customer-controller
@@ -1902,13 +3029,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
-  "/staff/customers/identify":
+                $ref: "#/components/schemas/ApiResponseBalanceAccountVO"
+  /staff/customers/identify:
     get:
       tags:
       - customer-controller
@@ -1931,37 +3058,143 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseVenueCustomerVO"
-  "/platform/venues/list":
+                $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /public/venues/{venueId}/reviews:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: listPublic
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: score
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: tagId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: withImages
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueReviewVO"
+  /public/venues/{venueId}/review-summary:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: summary
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueReviewSummaryVO"
+  /public/ugc-config:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: config
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /public/review-tags:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: publicTags
+      parameters:
+      - name: sportTypeId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListReviewTagVO"
+  /public/content/media/reviews/{mediaId}:
+    get:
+      tags:
+      - ugc-media-controller
+      operationId: publicReview
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /platform/venues/list:
     get:
       tags:
       - platform-venue-controller
       operationId: listVenues
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListPlatformVenueVO"
-  "/platform/sports/list":
+                $ref: "#/components/schemas/ApiResponseListPlatformVenueVO"
+  /platform/sports/list:
     get:
       tags:
       - platform-venue-controller
       operationId: listSports_1
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
-  "/platform/reports/service-fees":
+                $ref: "#/components/schemas/ApiResponseListSportTypeVO"
+  /platform/reports/service-fees:
     get:
       tags:
       - operation-report-controller
@@ -1979,13 +3212,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseServiceFeeSettlementVO"
-  "/platform/reports/operations":
+                $ref: "#/components/schemas/ApiResponseServiceFeeSettlementVO"
+  /platform/reports/operations:
     get:
       tags:
       - operation-report-controller
@@ -2010,13 +3243,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseReportOperationVO"
-  "/platform/reports/member-operations":
+                $ref: "#/components/schemas/ApiResponseReportOperationVO"
+  /platform/reports/member-operations:
     get:
       tags:
       - operation-report-controller
@@ -2035,37 +3268,182 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListReportVenueMemberOperationVO"
-  "/platform/refunds/list":
+                $ref: "#/components/schemas/ApiResponseListReportVenueMemberOperationVO"
+  /platform/refunds/list:
     get:
       tags:
       - funds-controller
       operationId: listPlatformRefunds
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListPlatformRefundVO"
-  "/platform/customer-summaries":
+                $ref: "#/components/schemas/ApiResponseListPlatformRefundVO"
+  /platform/customer-summaries:
     get:
       tags:
       - customer-controller
       operationId: listPlatformSummaries
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListPlatformCustomerSummaryVO"
-  "/mini/venues":
+                $ref: "#/components/schemas/ApiResponseListPlatformCustomerSummaryVO"
+  /platform/content-settings/get:
+    get:
+      tags:
+      - content-moderation-setting-controller
+      operationId: get_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentModerationSettingVO"
+  /platform/content-moderation/reviews:
+    get:
+      tags:
+      - venue-review-controller
+      operationId: moderationQueue
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueReviewModerationVO"
+  /platform/content-moderation/posts/list:
+    get:
+      tags:
+      - content-moderation-controller
+      operationId: list_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueReviewModerationVO"
+  /platform/content-moderation/comments/list:
+    get:
+      tags:
+      - post-interaction-controller
+      operationId: queue
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueReviewModerationVO"
+  /platform/content-media/{type}/{revisionId}:
+    get:
+      tags:
+      - ugc-media-controller
+      operationId: preview
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: revisionId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListUgcMediaVO"
+  /platform/content-media/{type}/file/{mediaId}:
+    get:
+      tags:
+      - ugc-media-controller
+      operationId: file
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /platform/content-governance/reports:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: reports
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentGovernanceVO"
+  /platform/content-governance/appeals:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: appeals
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentGovernanceVO"
+  /platform/content-events:
+    get:
+      tags:
+      - user-action-event-controller
+      operationId: list_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListUserActionEventVO"
+  /mini/venues:
     get:
       tags:
       - mini-venue-controller
@@ -2089,13 +3467,13 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListPublicVenueVO"
-  "/mini/venues/{venueId}":
+                $ref: "#/components/schemas/ApiResponseListPublicVenueVO"
+  /mini/venues/{venueId}:
     get:
       tags:
       - mini-venue-controller
@@ -2120,25 +3498,25 @@ paths:
           type: string
           format: date
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponsePublicVenueDetailVO"
-  "/mini/sports":
+                $ref: "#/components/schemas/ApiResponsePublicVenueDetailVO"
+  /mini/sports:
     get:
       tags:
       - mini-venue-controller
       operationId: listSports_2
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListSportTypeVO"
-  "/mini/recharges/{rechargeId}":
+                $ref: "#/components/schemas/ApiResponseListSportTypeVO"
+  /mini/recharges/{rechargeId}:
     get:
       tags:
       - funds-controller
@@ -2151,13 +3529,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMemberRechargeVO"
-  "/mini/recharges/plans":
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /mini/recharges/plans:
     get:
       tags:
       - funds-controller
@@ -2170,13 +3548,100 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListRechargePlanVO"
-  "/mini/memberships/{venueId}":
+                $ref: "#/components/schemas/ApiResponseListRechargePlanVO"
+  /mini/posts/users/{authorId}:
+    get:
+      tags:
+      - post-controller
+      operationId: user
+      parameters:
+      - name: authorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCommunityUserVO"
+  /mini/posts/recruitments/{id}/members:
+    get:
+      tags:
+      - post-recruitment-controller
+      operationId: members
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListRecruitmentMemberVO"
+  /mini/posts/mine:
+    get:
+      tags:
+      - post-controller
+      operationId: mine_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListPostVO"
+  /mini/posts/list:
+    get:
+      tags:
+      - post-controller
+      operationId: list_3
+      parameters:
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: venueId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListPostVO"
+  /mini/posts/blocks:
+    get:
+      tags:
+      - post-interaction-controller
+      operationId: blockedUsers
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListCommunityUserVO"
+  /mini/memberships/{venueId}:
     get:
       tags:
       - customer-controller
@@ -2189,13 +3654,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseMembershipVO"
-  "/mini/memberships/{venueId}/balance-flows":
+                $ref: "#/components/schemas/ApiResponseMembershipVO"
+  /mini/memberships/{venueId}/balance-flows:
     get:
       tags:
       - funds-controller
@@ -2208,25 +3673,89 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBalanceAccountVO"
-  "/mini/memberships/list":
+                $ref: "#/components/schemas/ApiResponseBalanceAccountVO"
+  /mini/memberships/list:
     get:
       tags:
       - customer-controller
       operationId: listMemberships
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListMembershipVO"
-  "/mini/bookings/{bookingId}":
+                $ref: "#/components/schemas/ApiResponseListMembershipVO"
+  /mini/content/notifications:
+    get:
+      tags:
+      - notification-controller
+      operationId: list_4
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentNotificationVO"
+  /mini/content/media/reviews/{mediaId}:
+    get:
+      tags:
+      - ugc-media-controller
+      operationId: ownReview
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /mini/content/media/posts/{mediaId}:
+    get:
+      tags:
+      - ugc-media-controller
+      operationId: post
+      parameters:
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /mini/content/decisions:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: myDecisions
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentGovernanceVO"
+  /mini/bookings/{bookingId}:
     get:
       tags:
       - mini-booking-controller
@@ -2239,37 +3768,37 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBookingDetailVO"
-  "/mini/bookings/list":
+                $ref: "#/components/schemas/ApiResponseBookingDetailVO"
+  /mini/bookings/list:
     get:
       tags:
       - mini-booking-controller
       operationId: listBookings_2
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseListUserBookingVO"
-  "/auth/mini/profile/detail":
+                $ref: "#/components/schemas/ApiResponseListUserBookingVO"
+  /auth/mini/profile/detail:
     get:
       tags:
       - auth-controller
       operationId: getMiniProfile
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseUserProfileVO"
-  "/auth/admin/web-login-tickets/{ticket}":
+                $ref: "#/components/schemas/ApiResponseUserProfileVO"
+  /auth/admin/web-login-tickets/{ticket}:
     get:
       tags:
       - auth-controller
@@ -2281,13 +3810,13 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseScanTicketVO"
-  "/venue-admin/weekly-slots/{weeklySlotId}/disable":
+                $ref: "#/components/schemas/ApiResponseScanTicketVO"
+  /venue-admin/weekly-slots/{weeklySlotId}/disable:
     delete:
       tags:
       - schedule-controller
@@ -2300,13 +3829,13 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseBoolean"
-  "/venue-admin/employees/{employeeId}/binding":
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/employees/{employeeId}/binding:
     delete:
       tags:
       - venue-admin-controller
@@ -2319,12 +3848,12 @@ paths:
           type: integer
           format: int64
       responses:
-        '200':
+        "200":
           description: OK
           content:
-            "*/*":
+            '*/*':
               schema:
-                "$ref": "#/components/schemas/ApiResponseEmployeeVO"
+                $ref: "#/components/schemas/ApiResponseEmployeeVO"
 components:
   schemas:
     WeeklySlotSaveRequest:
@@ -2357,7 +3886,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/WeeklySlotVO"
+          $ref: "#/components/schemas/WeeklySlotVO"
         code:
           type: integer
           format: int32
@@ -2409,7 +3938,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/SportTypeVO"
+          $ref: "#/components/schemas/SportTypeVO"
         code:
           type: integer
           format: int32
@@ -2465,7 +3994,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/SessionSlotResultVO"
+          $ref: "#/components/schemas/SessionSlotResultVO"
         code:
           type: integer
           format: int32
@@ -2551,13 +4080,15 @@ components:
             - ROLE_MANAGE
             - VENUE_PROFILE_VIEW
             - VENUE_PROFILE_EDIT
+            - REVIEW_MANAGE
+            - POST_PUBLISH
             - REPORT_VIEW
             - REPORT_EXPORT
     ApiResponseVenueRoleVO:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/VenueRoleVO"
+          $ref: "#/components/schemas/VenueRoleVO"
         code:
           type: integer
           format: int32
@@ -2608,12 +4139,50 @@ components:
             - ROLE_MANAGE
             - VENUE_PROFILE_VIEW
             - VENUE_PROFILE_EDIT
+            - REVIEW_MANAGE
+            - POST_PUBLISH
             - REPORT_VIEW
             - REPORT_EXPORT
         employeeCount:
           type: integer
           format: int64
           description: 绑定员工数
+    VenueReviewReplyRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: 回复正文，最多 1000 字
+    ApiResponseVenueReviewReplyVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VenueReviewReplyVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueReviewReplyVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 回复 ID
+        body:
+          type: string
+          description: 回复正文
+        contentStatus:
+          type: string
+          description: 内容状态
+        moderationStatus:
+          type: string
+          description: 审核状态
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
     RechargePlanRequest:
       type: object
       properties:
@@ -2642,7 +4211,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/RechargePlanVO"
+          $ref: "#/components/schemas/RechargePlanVO"
         code:
           type: integer
           format: int32
@@ -2724,7 +4293,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/VenueVO"
+          $ref: "#/components/schemas/VenueVO"
         code:
           type: integer
           format: int32
@@ -2787,7 +4356,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/EmployeeVO"
+          $ref: "#/components/schemas/EmployeeVO"
         code:
           type: integer
           format: int32
@@ -2859,7 +4428,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/CourtVO"
+          $ref: "#/components/schemas/CourtVO"
         code:
           type: integer
           format: int32
@@ -2913,7 +4482,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/BookingVO"
+          $ref: "#/components/schemas/BookingVO"
         code:
           type: integer
           format: int32
@@ -3046,6 +4615,440 @@ components:
         password:
           type: string
           description: 新登录密码，留空时不修改
+    ReviewTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 标签名称
+        sportTypeIds:
+          type: array
+          description: 适用平台运动类型 ID
+          items:
+            type: integer
+            format: int64
+        status:
+          type: string
+          description: 标签状态
+    ApiResponseReviewTagVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ReviewTagVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReviewTagVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 标签 ID
+        name:
+          type: string
+          description: 标签名称
+        status:
+          type: string
+          description: 标签状态
+        sportTypeIds:
+          type: array
+          description: 适用平台运动类型 ID
+          items:
+            type: integer
+            format: int64
+    ContentModerationSettingRequest:
+      type: object
+      properties:
+        postEnabled:
+          type: boolean
+          description: 动态审核是否开启
+        commentEnabled:
+          type: boolean
+          description: 评论审核是否开启
+        reviewEnabled:
+          type: boolean
+          description: 评价审核是否开启
+    ApiResponseContentModerationSettingVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ContentModerationSettingVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ContentModerationSettingVO:
+      type: object
+      properties:
+        postEnabled:
+          type: boolean
+          description: 动态审核是否开启
+        commentEnabled:
+          type: boolean
+          description: 评论审核是否开启
+        reviewEnabled:
+          type: boolean
+          description: 评价审核是否开启
+    ContentAgreementSettingRequest:
+      type: object
+      properties:
+        rulesVersion:
+          type: string
+          description: 社区规则版本
+        privacyVersion:
+          type: string
+          description: 隐私说明版本
+        rulesText:
+          type: string
+          description: 社区规则正文
+        privacyText:
+          type: string
+          description: 隐私说明正文
+        forceReaccept:
+          type: boolean
+          description: 版本变化时是否必须重签
+    ApiResponseContentAgreementVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ContentAgreementVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ContentAgreementVO:
+      type: object
+      properties:
+        rulesVersion:
+          type: string
+          description: 社区规则版本
+        privacyVersion:
+          type: string
+          description: 隐私说明版本
+        rulesText:
+          type: string
+          description: 社区规则正文
+        privacyText:
+          type: string
+          description: 隐私说明正文
+        forceReaccept:
+          type: boolean
+          description: 是否强制接受当前版本
+        accepted:
+          type: boolean
+          description: 当前用户是否已接受
+        acceptedAt:
+          type: string
+          format: date-time
+          description: 接受时间
+    VenueReviewRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: 评价正文
+        overallScore:
+          type: integer
+          format: int32
+          description: 总体评分，1 至 5
+        courtScore:
+          type: integer
+          format: int32
+          description: 场地评分，1 至 5
+        environmentScore:
+          type: integer
+          format: int32
+          description: 环境评分，1 至 5
+        serviceScore:
+          type: integer
+          format: int32
+          description: 服务评分，1 至 5
+        anonymous:
+          type: boolean
+          description: 是否匿名公开
+        tagIds:
+          type: array
+          description: 固定评价标签 ID
+          items:
+            type: integer
+            format: int64
+        uploadIds:
+          type: array
+          description: 本次新上传的图片 ID；修改时不传则沿用旧版本
+          items:
+            type: integer
+            format: int64
+    ApiResponseVenueReviewVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VenueReviewVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    UgcMediaVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 媒体 ID
+        mediaType:
+          type: string
+          description: 媒体类型
+        url:
+          type: string
+          description: 媒体地址
+        durationSeconds:
+          type: integer
+          format: int32
+          description: 视频时长秒数
+        moderationStatus:
+          type: string
+          description: 媒体审核状态
+    VenueReviewVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 评价 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动名称
+        visitMonth:
+          type: string
+          description: 到场月份
+        body:
+          type: string
+          description: 评价正文
+        overallScore:
+          type: integer
+          format: int32
+          description: 总体评分
+        courtScore:
+          type: integer
+          format: int32
+          description: 场地评分
+        environmentScore:
+          type: integer
+          format: int32
+          description: 环境评分
+        serviceScore:
+          type: integer
+          format: int32
+          description: 服务评分
+        anonymous:
+          type: boolean
+          description: 是否匿名
+        contentStatus:
+          type: string
+          description: 当前内容状态
+        moderationStatus:
+          type: string
+          description: 当前版本审核状态
+        tagIds:
+          type: array
+          description: 当前版本标签 ID
+          items:
+            type: integer
+            format: int64
+        tagNames:
+          type: array
+          description: 公开标签名称
+          items:
+            type: string
+        reply:
+          $ref: "#/components/schemas/VenueReviewReplyVO"
+          description: 场馆官方回复
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+        media:
+          type: array
+          description: 当前可见版本图片
+          items:
+            $ref: "#/components/schemas/UgcMediaVO"
+    PostRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: 动态正文，最多 2000 字
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 平台运动类型 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 可选关联场馆 ID
+        bookingId:
+          type: integer
+          format: int64
+          description: 可选关联本人预约 ID
+        uploadIds:
+          type: array
+          description: 本次新上传的媒体 ID；修改时不传则沿用旧版本
+          items:
+            type: integer
+            format: int64
+    ApiResponsePostVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PostVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PostVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 动态 ID
+        revisionId:
+          type: integer
+          format: int64
+          description: 当前版本 ID
+        body:
+          type: string
+          description: 动态正文
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动类型名称
+        venueId:
+          type: integer
+          format: int64
+          description: 关联场馆 ID
+        venueName:
+          type: string
+          description: 关联场馆名称
+        isOfficial:
+          type: boolean
+          description: 是否官方内容
+        isPinned:
+          type: boolean
+          description: 是否置顶
+        commentsEnabled:
+          type: boolean
+          description: 是否允许评论
+        isMine:
+          type: boolean
+          description: 当前用户是否为作者
+        contentStatus:
+          type: string
+          description: 动态状态
+        moderationStatus:
+          type: string
+          description: 当前版本审核状态
+        createdAt:
+          type: string
+          format: date-time
+          description: 发布时间
+        media:
+          type: array
+          description: 当前可见版本媒体
+          items:
+            $ref: "#/components/schemas/UgcMediaVO"
+        authorId:
+          type: integer
+          format: int64
+          description: 作者 ID
+        authorType:
+          type: string
+          description: 作者身份
+        authorName:
+          type: string
+          description: 作者名称
+        likeCount:
+          type: integer
+          format: int64
+          description: 点赞数量
+        liked:
+          type: boolean
+          description: 是否点赞
+        bookingId:
+          type: integer
+          format: int64
+          description: 本人绑定预约 ID，其他用户为空
+    PostCommentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: 评论正文
+        parentCommentId:
+          type: integer
+          format: int64
+          description: 父评论 ID；只能指向一级评论
+    ApiResponsePostCommentVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PostCommentVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PostCommentVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 评论 ID
+        authorUserId:
+          type: integer
+          format: int64
+          description: 作者用户 ID
+        parentCommentId:
+          type: integer
+          format: int64
+          description: 父评论 ID
+        body:
+          type: string
+          description: 正文
+        contentStatus:
+          type: string
+          description: 内容状态
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
+        moderationStatus:
+          type: string
+          description: 审核状态
+        isMine:
+          type: boolean
+          description: 是否本人评论
+        authorName:
+          type: string
+          description: 作者昵称
     UserProfileUpdateRequest:
       type: object
       description: 用户预约联系人资料更新请求
@@ -3060,7 +5063,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/UserProfileVO"
+          $ref: "#/components/schemas/UserProfileVO"
         code:
           type: integer
           format: int32
@@ -3100,7 +5103,7 @@ components:
           type: string
           description: 联系电话
         staff:
-          "$ref": "#/components/schemas/EmployeeIdentityVO"
+          $ref: "#/components/schemas/EmployeeIdentityVO"
           description: 员工身份
     CopyDayRequest:
       type: object
@@ -3122,7 +5125,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/WeeklySlotVO"
+            $ref: "#/components/schemas/WeeklySlotVO"
         code:
           type: integer
           format: int32
@@ -3149,7 +5152,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/MemberRechargeVO"
+          $ref: "#/components/schemas/MemberRechargeVO"
         code:
           type: integer
           format: int32
@@ -3235,7 +5238,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/CoverUploadVO"
+          $ref: "#/components/schemas/CoverUploadVO"
         code:
           type: integer
           format: int32
@@ -3269,7 +5272,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/EmployeeBindingVO"
+          $ref: "#/components/schemas/EmployeeBindingVO"
         code:
           type: integer
           format: int32
@@ -3379,7 +5382,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/BookingVO"
+            $ref: "#/components/schemas/BookingVO"
         code:
           type: integer
           format: int32
@@ -3409,7 +5412,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/VerificationResultVO"
+          $ref: "#/components/schemas/VerificationResultVO"
         code:
           type: integer
           format: int32
@@ -3487,7 +5490,7 @@ components:
       description: 平台创建场馆请求
       properties:
         venue:
-          "$ref": "#/components/schemas/VenueSaveRequest"
+          $ref: "#/components/schemas/VenueSaveRequest"
           description: 场馆资料和预约规则
         adminUsername:
           type: string
@@ -3499,7 +5502,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/RefundVO"
+          $ref: "#/components/schemas/RefundVO"
         code:
           type: integer
           format: int32
@@ -3545,6 +5548,19 @@ components:
           type: string
           format: date-time
           description: 退款时间
+    ContentModerationRequest:
+      type: object
+      properties:
+        revisionId:
+          type: integer
+          format: int64
+          description: 页面看到的内容版本 ID
+        action:
+          type: string
+          description: APPROVE、REJECT、HIDE、RESTORE 或 DELETE
+        reason:
+          type: string
+          description: 处置原因
     MockFundsNotificationRequest:
       type: object
       properties:
@@ -3586,6 +5602,167 @@ components:
         idempotencyKey:
           type: string
           description: 客户端幂等键
+    PostRecruitmentRequest:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+          description: 预约 ID
+        level:
+          type: string
+          description: 运动水平
+        maxMembers:
+          type: integer
+          format: int32
+          description: 最多参与人数
+        feeMode:
+          type: string
+          description: 费用模式 FREE/AA
+        aaAmountFen:
+          type: integer
+          format: int32
+          description: 预计 AA 金额
+        description:
+          type: string
+          description: 说明
+    ApiResponsePostRecruitmentVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PostRecruitmentVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PostRecruitmentVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 招募 ID
+        postId:
+          type: integer
+          format: int64
+          description: 动态 ID
+        level:
+          type: string
+          description: 水平
+        maxMembers:
+          type: integer
+          format: int32
+          description: 需要人数
+        approvedCount:
+          type: integer
+          format: int32
+          description: 已加入人数
+        feeMode:
+          type: string
+          description: 费用方式
+        aaAmountFen:
+          type: integer
+          format: int32
+          description: 预计 AA 金额，分
+        description:
+          type: string
+          description: 说明
+        status:
+          type: string
+          description: 招募状态
+        venueName:
+          type: string
+          description: 场馆
+        sportName:
+          type: string
+          description: 运动
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间
+        courtName:
+          type: string
+          description: 受限场地信息
+        isOwner:
+          type: boolean
+          description: 是否发起人
+        myStatus:
+          type: string
+          description: 当前用户申请状态
+        members:
+          type: array
+          description: 成员列表，普通浏览者为空
+          items:
+            $ref: "#/components/schemas/RecruitmentMemberVO"
+    RecruitmentMemberVO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: 成员 ID
+        status:
+          type: string
+          description: 参与状态
+    ApiResponseInteger:
+      type: object
+      properties:
+        data:
+          type: integer
+          format: int32
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseUgcUploadVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/UgcUploadVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    UgcUploadVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 上传 ID
+        mediaType:
+          type: string
+          description: 媒体类型
+        mimeType:
+          type: string
+          description: MIME
+        sizeBytes:
+          type: integer
+          format: int64
+          description: 字节数
+        sha256:
+          type: string
+          description: SHA-256
+        durationSeconds:
+          type: integer
+          format: int32
+          description: 视频时长秒数
+    ContentAgreementAcceptRequest:
+      type: object
+      properties:
+        rulesVersion:
+          type: string
+          description: 社区规则版本
+        privacyVersion:
+          type: string
+          description: 隐私说明版本
     BookingCreateRequest:
       type: object
       description: 小程序预约创建请求
@@ -3614,7 +5791,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/MiniLoginVO"
+          $ref: "#/components/schemas/MiniLoginVO"
         code:
           type: integer
           format: int32
@@ -3627,13 +5804,13 @@ components:
           type: string
           description: 会话令牌
         profile:
-          "$ref": "#/components/schemas/UserProfileVO"
+          $ref: "#/components/schemas/UserProfileVO"
           description: 用户资料
     ApiResponseScanTicketVO:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/ScanTicketVO"
+          $ref: "#/components/schemas/ScanTicketVO"
         code:
           type: integer
           format: int32
@@ -3669,7 +5846,7 @@ components:
           type: string
           description: 会话令牌
         principal:
-          "$ref": "#/components/schemas/AdminPrincipal"
+          $ref: "#/components/schemas/AdminPrincipal"
           description: 登录身份
     AdminPrincipal:
       type: object
@@ -3719,6 +5896,8 @@ components:
             - ROLE_MANAGE
             - VENUE_PROFILE_VIEW
             - VENUE_PROFILE_EDIT
+            - REVIEW_MANAGE
+            - POST_PUBLISH
             - REPORT_VIEW
             - REPORT_EXPORT
           uniqueItems: true
@@ -3726,7 +5905,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/AdminLoginVO"
+          $ref: "#/components/schemas/AdminLoginVO"
         code:
           type: integer
           format: int32
@@ -3773,7 +5952,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/PlatformVenueVO"
+          $ref: "#/components/schemas/PlatformVenueVO"
         code:
           type: integer
           format: int32
@@ -3783,7 +5962,7 @@ components:
       type: object
       properties:
         venue:
-          "$ref": "#/components/schemas/VenueVO"
+          $ref: "#/components/schemas/VenueVO"
           description: 场馆资料
         serviceFeeRateBasisPoints:
           type: integer
@@ -3805,7 +5984,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/SportTypeVO"
+            $ref: "#/components/schemas/SportTypeVO"
         code:
           type: integer
           format: int32
@@ -3817,7 +5996,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/SessionSlotVO"
+            $ref: "#/components/schemas/SessionSlotVO"
         code:
           type: integer
           format: int32
@@ -3906,7 +6085,19 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/VenueRoleVO"
+            $ref: "#/components/schemas/VenueRoleVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListVenueReviewVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VenueReviewVO"
         code:
           type: integer
           format: int32
@@ -3916,7 +6107,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/ServiceFeeSettlementVO"
+          $ref: "#/components/schemas/ServiceFeeSettlementVO"
         code:
           type: integer
           format: int32
@@ -3990,12 +6181,12 @@ components:
           type: array
           description: 平台按场馆汇总
           items:
-            "$ref": "#/components/schemas/ServiceFeeVenueSummaryVO"
+            $ref: "#/components/schemas/ServiceFeeVenueSummaryVO"
         bookings:
           type: array
           description: 可计费预约逐笔明细
           items:
-            "$ref": "#/components/schemas/ServiceFeeBookingVO"
+            $ref: "#/components/schemas/ServiceFeeBookingVO"
     ServiceFeeVenueSummaryVO:
       type: object
       properties:
@@ -4027,7 +6218,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/ReportReceiptVO"
+            $ref: "#/components/schemas/ReportReceiptVO"
         code:
           type: integer
           format: int32
@@ -4060,7 +6251,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/ReportOperationVO"
+          $ref: "#/components/schemas/ReportOperationVO"
         code:
           type: integer
           format: int32
@@ -4207,14 +6398,14 @@ components:
           type: array
           description: 每日经营趋势，包含无数据日期
           items:
-            "$ref": "#/components/schemas/ReportOperationDailyVO"
+            $ref: "#/components/schemas/ReportOperationDailyVO"
     ApiResponseListReportMemberFlowVO:
       type: object
       properties:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/ReportMemberFlowVO"
+            $ref: "#/components/schemas/ReportMemberFlowVO"
         code:
           type: integer
           format: int32
@@ -4259,7 +6450,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/ReportBookingVO"
+            $ref: "#/components/schemas/ReportBookingVO"
         code:
           type: integer
           format: int32
@@ -4327,7 +6518,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/RechargePlanVO"
+            $ref: "#/components/schemas/RechargePlanVO"
         code:
           type: integer
           format: int32
@@ -4339,7 +6530,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/PermissionCatalogVO"
+            $ref: "#/components/schemas/PermissionCatalogVO"
         code:
           type: integer
           format: int32
@@ -4375,6 +6566,8 @@ components:
           - ROLE_MANAGE
           - VENUE_PROFILE_VIEW
           - VENUE_PROFILE_EDIT
+          - REVIEW_MANAGE
+          - POST_PUBLISH
           - REPORT_VIEW
           - REPORT_EXPORT
         name:
@@ -4389,7 +6582,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/MemberRechargeVO"
+            $ref: "#/components/schemas/MemberRechargeVO"
         code:
           type: integer
           format: int32
@@ -4399,7 +6592,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/BalanceAccountVO"
+          $ref: "#/components/schemas/BalanceAccountVO"
         code:
           type: integer
           format: int32
@@ -4436,7 +6629,7 @@ components:
           type: array
           description: 余额流水
           items:
-            "$ref": "#/components/schemas/BalanceFlowVO"
+            $ref: "#/components/schemas/BalanceFlowVO"
     BalanceFlowVO:
       type: object
       properties:
@@ -4506,7 +6699,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/EmployeeVO"
+            $ref: "#/components/schemas/EmployeeVO"
         code:
           type: integer
           format: int32
@@ -4516,7 +6709,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/VenueCustomerVO"
+          $ref: "#/components/schemas/VenueCustomerVO"
         code:
           type: integer
           format: int32
@@ -4558,7 +6751,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/VenueCustomerVO"
+            $ref: "#/components/schemas/VenueCustomerVO"
         code:
           type: integer
           format: int32
@@ -4570,7 +6763,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/CourtVO"
+            $ref: "#/components/schemas/CourtVO"
         code:
           type: integer
           format: int32
@@ -4582,7 +6775,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/VenueBookingVO"
+            $ref: "#/components/schemas/VenueBookingVO"
         code:
           type: integer
           format: int32
@@ -4661,7 +6854,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/StaffVerificationRecordVO"
+            $ref: "#/components/schemas/StaffVerificationRecordVO"
         code:
           type: integer
           format: int32
@@ -4705,7 +6898,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/StaffVenueVO"
+            $ref: "#/components/schemas/StaffVenueVO"
         code:
           type: integer
           format: int32
@@ -4757,15 +6950,77 @@ components:
             - ROLE_MANAGE
             - VENUE_PROFILE_VIEW
             - VENUE_PROFILE_EDIT
+            - REVIEW_MANAGE
+            - POST_PUBLISH
             - REPORT_VIEW
             - REPORT_EXPORT
+    ApiResponseVenueReviewSummaryVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VenueReviewSummaryVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReviewTagCountVO:
+      type: object
+      properties:
+        tagId:
+          type: integer
+          format: int64
+          description: 标签 ID
+        tagName:
+          type: string
+          description: 标签名称
+        reviewCount:
+          type: integer
+          format: int64
+          description: 使用评价数
+    VenueReviewSummaryVO:
+      type: object
+      properties:
+        reviewCount:
+          type: integer
+          format: int64
+          description: 公开评价数量
+        overallScore:
+          type: number
+          description: 总体平均评分
+        courtScore:
+          type: number
+          description: 场地平均评分
+        environmentScore:
+          type: number
+          description: 环境平均评分
+        serviceScore:
+          type: number
+          description: 服务平均评分
+        tagCounts:
+          type: array
+          description: 标签分布
+          items:
+            $ref: "#/components/schemas/ReviewTagCountVO"
+    ApiResponseListReviewTagVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewTagVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
     ApiResponseListPlatformVenueVO:
       type: object
       properties:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/PlatformVenueVO"
+            $ref: "#/components/schemas/PlatformVenueVO"
         code:
           type: integer
           format: int32
@@ -4777,7 +7032,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/ReportVenueMemberOperationVO"
+            $ref: "#/components/schemas/ReportVenueMemberOperationVO"
         code:
           type: integer
           format: int32
@@ -4835,7 +7090,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/PlatformRefundVO"
+            $ref: "#/components/schemas/PlatformRefundVO"
         code:
           type: integer
           format: int32
@@ -4902,7 +7157,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/PlatformCustomerSummaryVO"
+            $ref: "#/components/schemas/PlatformCustomerSummaryVO"
         code:
           type: integer
           format: int32
@@ -4926,13 +7181,176 @@ components:
           type: integer
           format: int64
           description: 已激活会员数
+    ApiResponseListVenueReviewModerationVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VenueReviewModerationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueReviewModerationVO:
+      type: object
+      properties:
+        contentType:
+          type: string
+          description: 内容类型
+        replyId:
+          type: integer
+          format: int64
+          description: 回复 ID
+        reviewId:
+          type: integer
+          format: int64
+          description: 评价 ID
+        revisionId:
+          type: integer
+          format: int64
+          description: 待审版本 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        body:
+          type: string
+          description: 评价正文
+        publicBody:
+          type: string
+          description: 当前公开版本正文
+        contentStatus:
+          type: string
+          description: 内容状态
+        moderationStatus:
+          type: string
+          description: 当前版本审核状态
+        overallScore:
+          type: integer
+          format: int32
+          description: 总体评分
+        submittedAt:
+          type: string
+          format: date-time
+          description: 提交时间
+    ApiResponseListUgcMediaVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UgcMediaVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListContentGovernanceVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentGovernanceVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ContentGovernanceVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 记录 ID
+        userId:
+          type: integer
+          format: int64
+          description: 提交用户 ID
+        targetType:
+          type: string
+          description: 目标类型
+        targetId:
+          type: integer
+          format: int64
+          description: 目标 ID
+        moderationLogId:
+          type: integer
+          format: int64
+          description: 处置记录 ID
+        action:
+          type: string
+          description: 处置动作
+        reason:
+          type: string
+          description: 提交原因
+        description:
+          type: string
+          description: 说明
+        status:
+          type: string
+          description: 处理状态
+        decisionReason:
+          type: string
+          description: 处理原因
+        createdAt:
+          type: string
+          format: date-time
+          description: 提交时间
+        decidedAt:
+          type: string
+          format: date-time
+          description: 处理时间
+    ApiResponseListUserActionEventVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserActionEventVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    UserActionEventVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 事件 ID
+        userId:
+          type: integer
+          format: int64
+          description: 用户 ID
+        eventType:
+          type: string
+          description: 事件类型
+        targetType:
+          type: string
+          description: 目标类型
+        targetId:
+          type: integer
+          format: int64
+          description: 目标 ID
+        occurredAt:
+          type: string
+          format: date-time
+          description: 发生时间
     ApiResponseListPublicVenueVO:
       type: object
       properties:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/PublicVenueVO"
+            $ref: "#/components/schemas/PublicVenueVO"
         code:
           type: integer
           format: int32
@@ -4971,7 +7389,7 @@ components:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/PublicVenueDetailVO"
+          $ref: "#/components/schemas/PublicVenueDetailVO"
         code:
           type: integer
           format: int32
@@ -5012,28 +7430,109 @@ components:
       type: object
       properties:
         venue:
-          "$ref": "#/components/schemas/VenueVO"
+          $ref: "#/components/schemas/VenueVO"
           description: 场馆资料
         sports:
           type: array
           description: 运动类型列表
           items:
-            "$ref": "#/components/schemas/SportTypeVO"
+            $ref: "#/components/schemas/SportTypeVO"
         courts:
           type: array
           description: 场地列表
           items:
-            "$ref": "#/components/schemas/CourtVO"
+            $ref: "#/components/schemas/CourtVO"
         slots:
           type: array
           description: 可预约场次列表
           items:
-            "$ref": "#/components/schemas/AvailableSlotVO"
+            $ref: "#/components/schemas/AvailableSlotVO"
+    ApiResponseListPostCommentVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostCommentVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseCommunityUserVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CommunityUserVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CommunityUserVO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: 用户 ID
+        nickname:
+          type: string
+          description: 社区昵称
+        avatarUrl:
+          type: string
+          description: 社区头像
+        sports:
+          type: array
+          description: 运动类型
+          items:
+            type: string
+        posts:
+          type: array
+          description: 公开动态
+          items:
+            $ref: "#/components/schemas/PostVO"
+    ApiResponseListRecruitmentMemberVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecruitmentMemberVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListPostVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListCommunityUserVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommunityUserVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
     ApiResponseMembershipVO:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/MembershipVO"
+          $ref: "#/components/schemas/MembershipVO"
         code:
           type: integer
           format: int32
@@ -5083,17 +7582,57 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/MembershipVO"
+            $ref: "#/components/schemas/MembershipVO"
         code:
           type: integer
           format: int32
         msg:
           type: string
+    ApiResponseListContentNotificationVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentNotificationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ContentNotificationVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 消息 ID
+        title:
+          type: string
+          description: 标题
+        content:
+          type: string
+          description: 正文
+        businessType:
+          type: string
+          description: 业务类型
+        businessId:
+          type: integer
+          format: int64
+          description: 业务 ID
+        readAt:
+          type: string
+          format: date-time
+          description: 阅读时间
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间
     ApiResponseBookingDetailVO:
       type: object
       properties:
         data:
-          "$ref": "#/components/schemas/BookingDetailVO"
+          $ref: "#/components/schemas/BookingDetailVO"
         code:
           type: integer
           format: int32
@@ -5103,19 +7642,19 @@ components:
       type: object
       properties:
         booking:
-          "$ref": "#/components/schemas/BookingVO"
+          $ref: "#/components/schemas/BookingVO"
           description: 预约信息
         payment:
-          "$ref": "#/components/schemas/PaymentVO"
+          $ref: "#/components/schemas/PaymentVO"
           description: 支付信息
         refund:
-          "$ref": "#/components/schemas/RefundVO"
+          $ref: "#/components/schemas/RefundVO"
           description: 退款信息
         composition:
-          "$ref": "#/components/schemas/PaymentCompositionVO"
+          $ref: "#/components/schemas/PaymentCompositionVO"
           description: 固定支付组成
         credential:
-          "$ref": "#/components/schemas/CredentialVO"
+          $ref: "#/components/schemas/CredentialVO"
           description: 核销凭证
     CredentialVO:
       type: object
@@ -5185,7 +7724,7 @@ components:
           type: array
           description: 余额批次明细
           items:
-            "$ref": "#/components/schemas/PaymentCompositionLotVO"
+            $ref: "#/components/schemas/PaymentCompositionLotVO"
     PaymentVO:
       type: object
       properties:
@@ -5226,7 +7765,7 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/UserBookingVO"
+            $ref: "#/components/schemas/UserBookingVO"
         code:
           type: integer
           format: int32

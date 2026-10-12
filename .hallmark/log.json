@@ -1,5 +1,31 @@
 [
   {
+    "date": "2026-10-08",
+    "scope": "app",
+    "macrostructure": "Workbench + Narrative Workflow",
+    "theme": "A / Fresh Sport",
+    "enrichment": "existing licensed venue photography",
+    "brief": "用户确认 A 清爽运动；浅色管理侧栏、排场待办、小程序七天日期与资料/会员分层"
+  },
+  {
+    "date": "2026-10-08",
+    "scope": "home and shared tab bar",
+    "macrostructure": "Narrative Workflow",
+    "theme": "Tennis Club",
+    "enrichment": "existing licensed venue photography",
+    "brief": "首页紧凑筛选与统一横排场馆卡；浅色贴底导航和固定 Lucide 图标"
+  },
+  {
+    "date": "2026-10-03",
+    "scope": "app",
+    "macrostructure": "Workbench + Narrative Workflow + Ecosystem Index",
+    "theme": "Tennis Club",
+    "theme_axes": "warm-paper / athletic-sans / tennis-green",
+    "vibe": "暖白、森林绿、网球绿",
+    "enrichment": "licensed venue photography",
+    "brief": "约场双端全页面视觉统一"
+  },
+  {
     "date": "2026-09-14",
     "scope": "app",
     "macrostructure": "Workbench + Narrative Workflow + Ecosystem Index",

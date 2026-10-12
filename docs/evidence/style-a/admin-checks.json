@@ -1,0 +1,126 @@
+{
+  "mode": "Actual Vue pages with intercepted fixture API; no live backend writes",
+  "results": [
+    {
+      "route": "/today",
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "route": "/bookings",
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "route": "/customers",
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "route": "/reports",
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "route": "/platform/venues",
+      "width": 1440,
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    {
+      "route": "/today",
+      "width": 768,
+      "viewport": 768,
+      "scroll": 768
+    },
+    {
+      "route": "/bookings",
+      "width": 768,
+      "viewport": 768,
+      "scroll": 768
+    },
+    {
+      "route": "/customers",
+      "width": 768,
+      "viewport": 768,
+      "scroll": 768
+    },
+    {
+      "route": "/reports",
+      "width": 768,
+      "viewport": 768,
+      "scroll": 768
+    },
+    {
+      "route": "/platform/venues",
+      "width": 768,
+      "viewport": 768,
+      "scroll": 768
+    },
+    {
+      "route": "/today",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "route": "/bookings",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "route": "/customers",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "route": "/reports",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "route": "/platform/venues",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "route": "/today",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "route": "/bookings",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "route": "/customers",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "route": "/reports",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "route": "/platform/venues",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    }
+  ],
+  "errors": []
+}

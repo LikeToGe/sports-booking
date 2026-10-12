@@ -29,6 +29,28 @@
 | `s_verification` | 成功核销记录，一笔预约最多一次 |
 | `s_notification` | 站内消息及关联业务；预约关联可空 |
 | `s_notification_delivery` | Mock 或未来真实外部消息渠道的独立投递结果 |
+| `s_review_tag` / `s_review_tag_sport` | 平台固定评价标签及适用的平台运动类型 |
+| `s_venue_review` / `s_venue_review_revision` | 一预约一评价，当前版本与公开版本分离，正文和四项评分按版本保留 |
+| `s_venue_review_tag_rel` / `s_venue_review_media` | 评价版本的最多三个标签或三张图片；媒体走独立 UGC 上传与检测链路 |
+| `s_venue_review_reply` / `s_venue_review_reply_revision` | 每条评价最多一条官方回复及其不可变版本；回复提交后进入评价审核队列 |
+| `s_content_moderation_log` | 人工审核/处置的内容版本、原因与平台操作者审计；V8 先用于评价 |
+| `s_content_moderation_setting` | 动态、评论、评价三类新内容审核开关，单行且默认开启 |
+| `s_post` / `s_post_revision` | 动态主体、当前/公开版本、作者类型和运动/场馆/预约关联 |
+| `s_post_media` | 动态版本的图片/视频对象、审核和清理状态，最多三项 |
+| `s_post_comment` / `s_post_comment_revision` | 动态评论及一级父评论的不可变版本 |
+| `s_post_like` | 用户与动态的幂等点赞关系 |
+| `s_post_recruitment` / `s_post_recruitment_member` | 绑定预约的找搭子招募及申请状态 |
+| `s_user_block` | 用户双向内容过滤的拉黑关系 |
+| `s_notification` / `s_notification_delivery` | 站内消息、未读状态和 Mock 投递记录 |
+| `s_content_agreement_setting` / `s_content_agreement_acceptance` | 社区规则/隐私版本和用户接受事实 |
+| `s_content_report` / `s_content_appeal` | 举报和每条处置最多一次申诉 |
+| `s_user_content_restriction` | 发布、评论和找搭子限权 |
+| `s_ugc_upload` / `s_content_detection_job` | UGC 私有暂存对象和异步检测任务 |
+| `s_user_action_event` / `s_user_identity_tombstone` | 最小动作事实和注销身份保留 |
+
+V8 的评价修改只新增内容版本；人工审核通过后切换公开版本。未通过、隐藏和已删除评价不计入公开评分。平台对评价、官方回复、动态和评论按当前版本执行通过、拒绝、隐藏、恢复、删除并写审计；隐藏内容的新版本通过后仍保持隐藏。`ugc.enabled` 默认关闭；当前已实现文字/图片评价、场馆官方回复、标签分布和评分/标签筛选。V10 新增协议、举报、申诉、账号限权、清理保留和注销事实。
+
+V9 已落地动态、评论、媒体、点赞、找搭子和拉黑的数据约束；业务已覆盖媒体上传/检测、30 分钟编辑、详情、评论两层、点赞、拉黑、招募成员和账号限权。
 
 ## 预约状态
 

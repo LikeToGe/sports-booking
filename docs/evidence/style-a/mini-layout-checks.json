@@ -1,0 +1,131 @@
+{
+  "mode": "Browser layout proxy of actual WXML/WXSS with fixture data, not native rendering",
+  "results": [
+    {
+      "page": "home",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "venue",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "confirm",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "bookings",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "membership",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "mine",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "posts",
+      "width": 320,
+      "viewport": 320,
+      "scroll": 320
+    },
+    {
+      "page": "home",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "venue",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "confirm",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "bookings",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "membership",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "mine",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "posts",
+      "width": 375,
+      "viewport": 375,
+      "scroll": 375
+    },
+    {
+      "page": "home",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "venue",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "confirm",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "bookings",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "membership",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "mine",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    },
+    {
+      "page": "posts",
+      "width": 414,
+      "viewport": 414,
+      "scroll": 414
+    }
+  ]
+}
