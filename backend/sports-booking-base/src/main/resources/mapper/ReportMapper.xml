@@ -220,6 +220,40 @@
           AND b.start_at &lt; #{endAt}
         ORDER BY b.start_at, b.id
     </select>
+    <select id="selectBookingsByCourtTime" resultType="com.sportsbooking.admin.base.bo.ReportBookingBO">
+        SELECT b.booking_no AS bookingNo,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%Y-%m-%d') AS sessionDate,
+               DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%H:%i:%s') AS startTime,
+               DATE_FORMAT(CONVERT_TZ(b.end_at, '+00:00', '+08:00'), '%H:%i:%s') AS endTime,
+               b.source,
+               b.contact_name AS contactName,
+               b.contact_phone AS contactPhone,
+               b.court_name AS courtName,
+               b.sport_name AS sportName,
+               b.status,
+               b.payment_status AS paymentStatus,
+               b.amount_fen AS amountFen,
+               CASE WHEN b.source = 'OFFLINE' AND b.payment_status = 'PAID'
+                    THEN b.amount_fen ELSE 0 END AS offlineRegisteredAmountFen,
+               COALESCE(flow.balance_consumption_fen, 0) AS balanceConsumptionFen,
+               CASE WHEN p.status = 'SUCCESS' THEN p.amount_fen ELSE 0 END AS externalPaymentFen,
+               CONVERT_TZ(b.created_at, '+00:00', '+08:00') AS createdAt
+        FROM s_booking b
+        LEFT JOIN (
+            SELECT booking_id, SUM(amount_fen) AS balance_consumption_fen
+            FROM s_member_balance_flow
+            WHERE business_type = 'CONSUME' AND direction = 'DEBIT'
+            GROUP BY booking_id
+        ) flow ON flow.booking_id = b.id
+        LEFT JOIN s_payment p ON p.booking_id = b.id
+        WHERE b.venue_id = #{venueId}
+        <if test="courtId != null">AND b.court_id = #{courtId}</if>
+          AND b.end_at &gt; #{startAt}
+          AND b.start_at &lt; #{endAt}
+        <if test="slotStartAt != null">AND b.start_at &lt; #{slotEndAt} AND b.end_at &gt; #{slotStartAt}</if>
+        <if test="sportTypeId != null">AND b.sport_type_id = #{sportTypeId}</if>
+        ORDER BY b.start_at, b.id
+    </select>
 
     <select id="selectMemberFlows" resultType="com.sportsbooking.admin.base.bo.ReportMemberFlowBO">
         SELECT f.id AS flowId,
@@ -296,5 +330,36 @@
         ) receipt_events
         GROUP BY receiptDate, operatorName, channel, businessType
         ORDER BY receiptDate, operatorName, channel, businessType
+    </select>
+
+
+    <!-- 已占用场次以预约快照贡献容量，人工改时后的场次不能凭空增加另一份供给。 -->
+    <select id="selectUtilizationIntervals" resultType="com.sportsbooking.admin.base.bo.ReportIntervalBO">
+        SELECT ss.venue_id AS venueId, ss.court_id AS courtId, c.name AS courtName,
+               ss.sport_type_id AS sportTypeId, st.name AS sportName, NULL AS bookingId, ss.start_at AS startAt, ss.end_at AS endAt,
+               CASE WHEN ss.status IN ('OPEN','HELD','BOOKED') AND c.status='ACTIVE'
+                          AND v.status='ACTIVE' AND st.status='ACTIVE'
+                          AND EXISTS (SELECT 1 FROM s_court_sport cs
+                              WHERE cs.court_id=ss.court_id AND cs.sport_type_id=ss.sport_type_id)
+                    THEN 'SUPPLY' ELSE 'UNAVAILABLE' END AS kind
+        FROM s_session_slot ss
+        JOIN s_court c ON c.id=ss.court_id AND c.venue_id=ss.venue_id
+        JOIN s_venue v ON v.id=ss.venue_id
+        JOIN s_sport_type st ON st.id=ss.sport_type_id
+        WHERE ss.start_at &lt; #{endAt} AND ss.end_at &gt; #{startAt}
+          AND NOT EXISTS (SELECT 1 FROM s_booking occupied WHERE occupied.session_slot_id=ss.id
+              AND occupied.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED'))
+        <if test="venueId != null">AND ss.venue_id=#{venueId}</if>
+        <if test="courtId != null">AND ss.court_id=#{courtId}</if>
+        <if test="sportTypeId != null">AND ss.sport_type_id=#{sportTypeId}</if>
+        UNION ALL
+        SELECT b.venue_id, b.court_id, b.court_name, b.sport_type_id, b.sport_name, b.id, b.start_at, b.end_at,
+               CASE WHEN b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED') THEN 'BOOKED'
+                    WHEN b.status='CANCELLED' THEN 'CANCELLED' ELSE 'OTHER' END
+        FROM s_booking b
+        WHERE b.start_at &lt; #{endAt} AND b.end_at &gt; #{startAt}
+        <if test="venueId != null">AND b.venue_id=#{venueId}</if>
+        <if test="courtId != null">AND b.court_id=#{courtId}</if>
+        <if test="sportTypeId != null">AND b.sport_type_id=#{sportTypeId}</if>
     </select>
 </mapper>

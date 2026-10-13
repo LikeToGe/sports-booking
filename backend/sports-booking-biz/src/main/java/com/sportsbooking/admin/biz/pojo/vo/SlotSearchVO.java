@@ -19,6 +19,10 @@ public class SlotSearchVO extends AvailableSlotVO {
     @Schema(description = "场馆名称")
     @ApiModelProperty(value = "场馆名称")
     private String venueName;
+    /** 场馆所属区县，未配置时为空。 */
+    @Schema(description = "场馆所属区县，未配置时为空")
+    @ApiModelProperty(value = "场馆所属区县，未配置时为空")
+    private String district;
 
     public static SlotSearchVO from(SlotSearchBO source) {
         SlotSearchVO result = new SlotSearchVO();

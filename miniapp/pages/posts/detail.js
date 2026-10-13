@@ -1,12 +1,13 @@
 const { request, downloadMedia, dateTime } = require("../../utils/api");
 const { reportContent } = require("../../utils/content");
 
+const recruitmentLevels = { BEGINNER_FRIENDLY: "新手友好", CASUAL: "休闲", ADVANCED: "进阶" };
 const recruitmentLabels = { RECRUITING: "招募中", FULL: "已满员", CLOSED: "已关闭", BOOKING_CANCELLED: "预约已取消", ENDED: "已结束" };
 const memberLabels = { APPLIED: "申请中", APPROVED: "已加入", REJECTED: "未通过", LEFT: "已退出", REMOVED: "已移除" };
 
 Page({
   data: { id: null, post: null, comments: [], body: "", parentId: null, editingCommentId: null,
-    draftLabel: "", recruitment: null, level: "", maxMembers: 1, feeMode: "FREE", aaAmount: "",
+    draftLabel: "", levelOptions: ["新手友好", "休闲", "进阶"], levelValues: ["BEGINNER_FRIENDLY", "CASUAL", "ADVANCED"], levelIndex: 0, recruitment: null, level: "", maxMembers: 1, feeMode: "FREE", aaAmount: "",
     recruitmentDescription: "", loading: true, saving: false, error: "", message: "" },
   onLoad(options) {
     this.setData({ id: Number(options.id) });
@@ -25,10 +26,11 @@ Page({
         request(`/mini/posts/${this.data.id}/comments`), request(`/mini/posts/${this.data.id}/recruitment`),
       ]);
       this.setData({ post: { ...post, media }, comments,
-        recruitment: recruitment ? { ...recruitment,
+        recruitment: recruitment ? { ...recruitment, levelLabel: recruitment.levelTag
+          ? recruitmentLevels[recruitment.levelTag] : `其他说明：${recruitment.level || "历史水平"}`,
           statusLabel: recruitmentLabels[recruitment.status], myStatusLabel: memberLabels[recruitment.myStatus] || "",
-          timeLabel: dateTime(recruitment.startAt), feeLabel: recruitment.feeMode === "FREE" ? "免费"
-            : `预计 AA ¥${(recruitment.aaAmountFen / 100).toFixed(2)}`,
+          timeLabel: dateTime(recruitment.startAt), feeLabel: recruitment.feeMode === "FREE" ? "免费（平台不代收）"
+            : `预计 AA ¥${(recruitment.aaAmountFen / 100).toFixed(2)}（平台不代收）`,
           active: ["RECRUITING", "FULL"].includes(recruitment.status),
           members: recruitment.members.map(member => ({ ...member, statusLabel: memberLabels[member.status] })),
         } : null, error: "" });
@@ -114,6 +116,7 @@ Page({
       { method: "POST" }).catch(() => {});
     wx.navigateTo({ url: `/pages/venue/index?id=${this.data.post.venueId}` });
   },
+  selectLevel(event) { const index = Number(event.detail.value) || 0; this.setData({ level: this.data.levelValues[index], levelIndex: index }); },
   onRecruitmentField(event) { this.setData({ [event.currentTarget.dataset.field]: event.detail.value }); },
   selectFee(event) { this.setData({ feeMode: event.detail.value }); },
   async openRecruitment() {

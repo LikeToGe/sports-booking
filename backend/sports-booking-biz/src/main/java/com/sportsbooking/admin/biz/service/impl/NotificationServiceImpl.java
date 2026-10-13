@@ -9,7 +9,13 @@ import com.sportsbooking.admin.base.mapper.NotificationDeliveryMapper;
 import com.sportsbooking.admin.base.po.NotificationDelivery;
 import com.sportsbooking.admin.biz.service.NotificationService;
 import com.sportsbooking.admin.biz.service.NotificationDeliveryAdapter;
+import com.sportsbooking.admin.biz.service.ReminderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Service;
 import org.springframework.dao.DuplicateKeyException;
 import java.time.Instant;
@@ -22,15 +28,18 @@ import java.time.Instant;
  */
 @Service
 public class NotificationServiceImpl implements NotificationService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationServiceImpl.class);
     private final NotificationMapper notificationMapper;
     private final NotificationDeliveryMapper deliveryMapper;
     private final NotificationDeliveryAdapter deliveryAdapter;
+    private final ReminderService reminders;
 
     public NotificationServiceImpl(NotificationMapper notificationMapper, NotificationDeliveryMapper deliveryMapper,
-                                   NotificationDeliveryAdapter deliveryAdapter) {
+                                   NotificationDeliveryAdapter deliveryAdapter, ReminderService reminders) {
         this.notificationMapper = notificationMapper;
         this.deliveryMapper = deliveryMapper;
         this.deliveryAdapter = deliveryAdapter;
+        this.reminders = reminders;
     }
 
     /**
@@ -54,8 +63,29 @@ public class NotificationServiceImpl implements NotificationService {
         notification.businessId = booking.id;
         notification.title = type.getDescription();
         notification.content = type.getDescription();
-        notification.createdAt = LocalDateTime.now();
+        notification.createdAt = LocalDateTime.now(ZoneOffset.UTC);
         notificationMapper.insert(notification);
+        if (type == NotificationType.BOOKING_CONFIRMED) {
+            // 预约事务提交后才补记到场消息；失败只影响附属提醒，不反转预约或资金结果。
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        generateArrival(booking.id);
+                    }
+                });
+            } else {
+                generateArrival(booking.id);
+            }
+        }
+    }
+
+    private void generateArrival(long bookingId) {
+        try {
+            reminders.generateArrivalIfDue(bookingId);
+        } catch (RuntimeException exception) {
+            LOGGER.warn("预约 {} 到场提醒补记失败，调度将继续补发", bookingId, exception);
+        }
     }
 
     @Override
@@ -69,7 +99,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.title = "赠送余额即将到期";
         notification.content = amountFen + " 分赠送余额将于 " + expiresAt + " 到期";
         notification.idempotencyKey = "balance-lot:" + lotId + ":expiry-reminder";
-        notification.createdAt = LocalDateTime.now();
+        notification.createdAt = LocalDateTime.now(ZoneOffset.UTC);
         try {
             notificationMapper.insert(notification);
         } catch (DuplicateKeyException exception) {

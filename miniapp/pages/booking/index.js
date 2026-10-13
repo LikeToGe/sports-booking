@@ -11,9 +11,9 @@ function amount(value) {
 
 Page({
   data: {
-    id: 0, detail: null, booking: null, credential: null, composition: null, payment: null, refund: null,
+    id: 0, detail: null, booking: null, venue: null, credential: null, composition: null, payment: null, refund: null,
     statusLabel: "", paymentLabel: "", paymentTone: "warning", date: "", time: "", amount: "",
-    canPay: false, canReview: false, error: "", loading: true, cancelling: false,
+    canPay: false, canRebook: false, canReview: false, error: "", loading: true, cancelling: false,
   },
   async onLoad(options) { this.setData({ id: Number(options.id) }); await this.load(); },
   async onShow() {
@@ -43,6 +43,7 @@ Page({
       this.setData({
         detail,
         booking,
+        venue: detail.venue || null,
         credential: detail.credential,
         composition: hasComposition ? {
           ...composition,
@@ -76,6 +77,7 @@ Page({
         date: date(booking.startAt),
         time: `${time(booking.startAt)} - ${time(booking.endAt)}`,
         amount: amount(booking.amountFen),
+        canRebook: ["CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"].includes(booking.status),
         canPay: booking.status === "PENDING_PAYMENT" && hasComposition && composition.externalAmountFen > 0 && detail.payment?.status === "PENDING",
         canReview: ugcEnabled && booking.status === "COMPLETED",
         error: "",
@@ -83,6 +85,13 @@ Page({
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ loading: false }); }
   },
+  openMap() {
+    const venue = this.data.venue;
+    if (!venue || venue.latitude == null || venue.longitude == null) return;
+    wx.openLocation({ latitude: Number(venue.latitude), longitude: Number(venue.longitude),
+      name: venue.name, address: venue.address });
+  },
+  rebook() { wx.navigateTo({ url: `/pages/rebook/index?bookingId=${this.data.id}` }); },
   pay() { wx.redirectTo({ url: `/pages/payment/index?id=${this.data.id}` }); },
   review() { wx.navigateTo({ url: `/pages/review/index?bookingId=${this.data.id}` }); },
   stopCredentialRefresh() {

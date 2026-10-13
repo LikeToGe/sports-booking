@@ -1,6 +1,7 @@
 package com.sportsbooking.admin.biz.service.impl;
 
 import com.sportsbooking.admin.base.enums.BookingStatus;
+import com.sportsbooking.admin.base.enums.BookingSource;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.mapper.BookingMapper;
 import com.sportsbooking.admin.base.mapper.PostMapper;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 /** 按动态资源加招募锁；内容互动只读取预约事实，不改动资金或履约。 */
 @Service
 public class PostRecruitmentServiceImpl implements PostRecruitmentService {
+    private static final List<String> LEVEL_TAGS = List.of("BEGINNER_FRIENDLY", "CASUAL", "ADVANCED");
     private final PostMapper posts;
     private final PostRevisionMapper revisions;
     private final BookingMapper bookings;
@@ -76,6 +78,7 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
             // 只接受动态已经绑定的同一预约，运动和场馆关系不能由招募请求另行替换。
             if (revision == null || !Objects.equals(revision.bookingId, request.getBookingId())
                     || booking == null || !Objects.equals(booking.userId, userId)
+                    || booking.source != BookingSource.ONLINE
                     || booking.status != BookingStatus.CONFIRMED || !booking.startAt.isAfter(Instant.now())
                     || !Objects.equals(revision.venueId, booking.venueId)
                     || !Objects.equals(revision.sportTypeId, booking.sportTypeId)) throw invalid();
@@ -84,6 +87,8 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
             row.postId = postId;
             row.bookingId = booking.id;
             row.level = request.getLevel().trim();
+            if (!LEVEL_TAGS.contains(row.level)) throw invalid();
+            row.levelTag = row.level;
             row.maxMembers = request.getMaxMembers();
             row.feeMode = request.getFeeMode();
             row.aaAmountFen = request.getAaAmountFen();
@@ -123,7 +128,7 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
             if (existing != null && List.of("APPLIED", "APPROVED").contains(existing.status)) return;
             if (mapper.countApproved(row.id) >= row.maxMembers) throw conflict();
             mapper.upsertApplication(row.id, userId);
-            events.fact(userId,"RECRUITMENT_APPLY","POST",row.postId);
+            events.fact(userId,"RECRUITMENT_APPLY","RECRUITMENT",row.id);
             messages.record(post.authorId, "POST", post.id,
                     "application:" + row.id + ":" + userId + ":" + Instant.now().toEpochMilli(),
                     "新的找搭子申请", "有人申请加入你的招募");
@@ -146,6 +151,7 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
             }
             if (mapper.transitionMember(row.id, applicantId, "APPLIED", result, null) != 1) throw conflict();
             refreshCapacity(row);
+            if (approve) events.fact(applicantId, "RECRUITMENT_APPROVED", "RECRUITMENT", row.id);
             messages.record(applicantId, "POST", row.postId,
                     "decision:" + row.id + ":" + applicantId + ":" + member.appliedAt + ":" + result,
                     approve ? "找搭子申请已通过" : "找搭子申请未通过", "你的申请已处理");
@@ -294,9 +300,10 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
         boolean owner = post != null && "USER".equals(post.authorType) && post.authorId == userId;
         PostRecruitmentMember mine = mapper.selectMember(row.id, userId);
         boolean approved = mine != null && "APPROVED".equals(mine.status);
-        List<RecruitmentMemberVO> members = owner || approved
+        // 失效或已隐藏的分享页只保留状态，不把历史成员关系带出公开详情。
+        List<RecruitmentMemberVO> members = active(row) && (owner || approved)
                 ? mapper.selectMembers(row.id).stream().map(RecruitmentMemberVO::from).toList() : List.of();
-        return new PostRecruitmentVO(row.id, row.postId, row.level, row.maxMembers, mapper.countApproved(row.id),
+        return new PostRecruitmentVO(row.id, row.postId, row.level, row.levelTag, row.maxMembers, mapper.countApproved(row.id),
                 row.feeMode, row.aaAmountFen, row.description, row.status,
                 booking == null ? null : booking.venueName, booking == null ? null : booking.sportName,
                 booking == null ? null : booking.startAt, booking == null ? null : booking.endAt,
@@ -320,7 +327,7 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
 
     private void validate(PostRecruitmentRequest request) {
         if (request == null || request.getBookingId() == null || request.getBookingId() <= 0
-                || request.getLevel() == null || request.getLevel().isBlank() || request.getLevel().trim().length() > 40
+                || request.getLevel() == null || !List.of("BEGINNER_FRIENDLY", "CASUAL", "ADVANCED").contains(request.getLevel().trim())
                 || request.getMaxMembers() == null || request.getMaxMembers() < 1 || request.getMaxMembers() > 20
                 || request.getFeeMode() == null || !List.of("FREE", "AA").contains(request.getFeeMode())
                 || request.getAaAmountFen() == null || request.getAaAmountFen() < 0

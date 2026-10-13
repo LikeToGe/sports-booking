@@ -26,6 +26,7 @@ export interface Venue {
   name: string;
   coverPath?: string;
   city: string;
+  district?: string | null;
   address: string;
   latitude?: number;
   longitude?: number;
@@ -209,6 +210,49 @@ export interface ReportReceipt {
   businessType: string;
   count: number;
   amountFen: number;
+}
+
+
+export interface ReportUtilizationCell {
+  dayOfWeek: number;
+  hourOfDay: number;
+  availableMinutes: number;
+  bookedMinutes: number;
+  utilizationRateBasisPoints: number;
+  cancelledCount: number;
+}
+
+export interface ReportCourtPerformance {
+  courtId: number;
+  courtName: string;
+  availableMinutes: number;
+  bookedMinutes: number;
+  utilizationRateBasisPoints: number;
+  cancelledCount: number;
+  bookingCount: number;
+}
+
+export interface ReportLowUtilization {
+  courtId: number;
+  courtName: string;
+  slotDate: string;
+  startTime: string;
+  endTime: string;
+  availableMinutes: number;
+  bookedMinutes: number;
+  utilizationRateBasisPoints: number;
+  cancelledCount: number;
+}
+
+export interface ReportUtilization {
+  startDate: string;
+  endDate: string;
+  timeZone: string;
+  generatedAt: string;
+  methodology: string;
+  heatmap: ReportUtilizationCell[];
+  courts: ReportCourtPerformance[];
+  lowUtilization: ReportLowUtilization[];
 }
 
 export interface ServiceFeeBooking {

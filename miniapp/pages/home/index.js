@@ -13,9 +13,10 @@ Page({
   data: {
     sports: [],
     dateOptions: upcomingDates(dateInZhengzhou()),
+    districtOptions: ["全部区县", "金水区", "二七区", "中原区", "管城回族区", "郑东新区", "高新区"], districtIndex: 0,
     venues: [],
     slots: [],
-    startTime: "", endTime: "", minPrice: "", maxPrice: "",
+    startTime: "", endTime: "", district: "", districtIndex: 0, minPrice: "", maxPrice: "",
     searchMode: false, filtersDirty: false, page: 1, hasMore: false,
     selectedSportId: null,
     date: dateInZhengzhou(),
@@ -45,6 +46,7 @@ Page({
     const params = [`date=${this.data.date}`];
     if (this.data.selectedSportId) params.push(`sportTypeId=${this.data.selectedSportId}`);
     if (this.data.keyword) params.push(`keyword=${encodeURIComponent(this.data.keyword)}`);
+    if (this.data.district) params.push(`district=${encodeURIComponent(this.data.district)}`);
     if (this.data.startTime || this.data.endTime) {
       if (!this.data.startTime || !this.data.endTime || this.data.startTime >= this.data.endTime) throw new Error("请选择同一天递增的起止时间");
       params.push(`startTime=${encodeURIComponent(this.data.startTime)}`, `endTime=${encodeURIComponent(this.data.endTime)}`);
@@ -69,8 +71,14 @@ Page({
     this.searchVersion = (this.searchVersion || 0) + 1;
   },
 
+  async selectDistrict(event) {
+    const index = Number(event.detail.value) || 0;
+    this.setData({ districtIndex: index, district: index ? this.data.districtOptions[index] : "" });
+    await this.search();
+  },
+
   async clearFilters() {
-    this.setData({ startTime: "", endTime: "", minPrice: "", maxPrice: "" });
+    this.setData({ startTime: "", endTime: "", district: "", districtIndex: 0, minPrice: "", maxPrice: "" });
     await this.search();
   },
 

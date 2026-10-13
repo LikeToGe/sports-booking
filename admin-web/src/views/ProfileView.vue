@@ -5,6 +5,7 @@ import { api } from "../api";
 import { hasPermission } from "../auth";
 import type { Venue } from "../types";
 
+const districtOptions = ["金水区", "二七区", "中原区", "管城回族区", "郑东新区", "高新区"];
 const form = reactive<Partial<Venue>>({});
 const error = ref("");
 const saved = ref(false);
@@ -29,6 +30,7 @@ async function save() {
       body: JSON.stringify({
         name: form.name,
         city: form.city,
+        district: form.district || null,
         address: form.address,
         latitude: form.latitude,
         longitude: form.longitude,
@@ -62,7 +64,7 @@ onMounted(load);
 
 <template>
   <section class="page">
-    <header class="page-header"><div><h1>场馆资料</h1><p>公开资料和预约规则保存后立即生效。</p></div></header>
+    <header class="page-header"><div><h1>场馆资料</h1><p>公开资料和预约规则保存后立即生效；区县供郑州筛选使用，不从地址推断。</p></div></header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
     <p v-if="saved" class="saved-message" role="status">资料已保存</p>
     <form class="form-panel profile-form" @submit.prevent="save">
@@ -70,6 +72,7 @@ onMounted(load);
       <div class="form-grid">
         <label class="field"><span>场馆名称</span><input v-model.trim="form.name" required></label>
         <label class="field"><span>城市</span><input v-model.trim="form.city" required></label>
+        <label class="field"><span>所属区县</span><select v-model="form.district"><option value="">未设置</option><option v-for="district in districtOptions" :key="district" :value="district">{{ district }}</option><option v-if="form.district && !districtOptions.includes(form.district)" :value="form.district">{{ form.district }}（历史值）</option></select></label>
         <label class="field"><span>联系电话</span><input v-model.trim="form.phone" required></label>
         <label class="field"><span>地址</span><input v-model.trim="form.address" required></label>
         <label class="field"><span>纬度</span><input v-model.number="form.latitude" type="number" step="0.0000001"></label>

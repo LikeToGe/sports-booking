@@ -35,6 +35,8 @@ public class PublicVenueBO {
      */
     private String city;
 
+    private String district;
+
     /**
      * 详细地址
      */

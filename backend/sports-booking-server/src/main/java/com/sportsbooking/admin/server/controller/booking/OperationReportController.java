@@ -7,6 +7,7 @@ import com.sportsbooking.admin.biz.pojo.vo.ReportBookingVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportMemberFlowVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportOperationVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportReceiptVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportUtilizationVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportVenueMemberOperationVO;
 import com.sportsbooking.admin.biz.pojo.vo.ServiceFeeSettlementVO;
 import com.sportsbooking.admin.biz.service.BookingService;
@@ -14,6 +15,7 @@ import com.sportsbooking.admin.biz.service.ReportService;
 import com.sportsbooking.admin.server.api.ApiResponse;
 import com.sportsbooking.admin.server.support.Principals;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +94,31 @@ public class OperationReportController {
         return ApiResponse.success(reportService.getOperationReport(principal.getVenueId(), startDate, endDate));
     }
 
+    /** 查询平台分时段利用率、场地对比和低利用下钻。 */
+    @GetMapping("/platform/reports/utilization")
+    public ApiResponse<ReportUtilizationVO> getPlatformUtilization(
+            @RequestParam(required = false) Long venueId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) Long courtId,
+            @RequestParam(required = false) Long sportTypeId) {
+        Principals.platform();
+        return ApiResponse.success(reportService.getUtilizationReport(
+                venueId, startDate, endDate, courtId, sportTypeId, false));
+    }
+
+    /** 查询当前场馆分时段利用率、场地对比和低利用下钻。 */
+    @GetMapping("/venue-admin/reports/utilization")
+    public ApiResponse<ReportUtilizationVO> getVenueUtilization(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) Long courtId,
+            @RequestParam(required = false) Long sportTypeId) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.REPORT_VIEW);
+        return ApiResponse.success(reportService.getUtilizationReport(
+                principal.getVenueId(), startDate, endDate, courtId, sportTypeId, true));
+    }
+
     /** 查询当前场馆预约经营下钻。 */
     @GetMapping("/venue-admin/reports/bookings")
     public ApiResponse<List<ReportBookingVO>> listBookings(
@@ -100,6 +127,20 @@ public class OperationReportController {
         AdminPrincipal principal = Principals.venue(VenuePermission.REPORT_VIEW);
         return ApiResponse.success(reportService.listBookings(principal.getVenueId(), startDate, endDate,
                 canViewCustomer(principal)));
+    }
+
+    /** 按场地保留低利用下钻条件查询预约。 */
+    @GetMapping("/venue-admin/reports/bookings-filtered")
+    public ApiResponse<List<ReportBookingVO>> listFilteredBookings(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam Long courtId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime slotStart,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime slotEnd,
+            @RequestParam(required = false) Long sportTypeId) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.REPORT_VIEW);
+        return ApiResponse.success(reportService.listBookings(principal.getVenueId(), startDate, endDate, courtId,
+                sportTypeId, slotStart, slotEnd, canViewCustomer(principal)));
     }
 
     /** 查询当前场馆跨会员余额流水。 */

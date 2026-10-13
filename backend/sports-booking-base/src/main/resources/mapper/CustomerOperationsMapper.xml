@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.CustomerOperationsMapper">
+    <sql id="operationCtes">
+        WITH booking_stats AS (
+            SELECT b.venue_id AS venueId,
+                   b.venue_customer_id AS customerId,
+                   SUM(CASE WHEN b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+                       THEN 1 ELSE 0 END) AS validBookingCount,
+                   MAX(CASE WHEN b.source='ONLINE' AND b.status='COMPLETED'
+                       THEN b.completed_at END) AS lastCompletedAt,
+                   MAX(CASE WHEN b.source='ONLINE' AND b.status='COMPLETED'
+                       THEN ver.verified_at END) AS latestVerifiedAt,
+                   SUM(CASE WHEN b.status='CONFIRMED' AND b.start_at &gt; UTC_TIMESTAMP(3)
+                       THEN 1 ELSE 0 END) AS futureConfirmedCount
+            FROM s_booking b
+            LEFT JOIN s_verification ver ON ver.booking_id=b.id
+            WHERE b.venue_customer_id IS NOT NULL AND b.venue_id=#{venueId}
+            GROUP BY b.venue_id,b.venue_customer_id
+        ), ranked_valid_bookings AS (
+            SELECT b.venue_id AS venueId,b.venue_customer_id AS customerId,b.start_at AS bookingAt,
+                   b.source AS bookingSource,
+                   ROW_NUMBER() OVER (PARTITION BY b.venue_id,b.venue_customer_id
+                       ORDER BY b.start_at DESC,b.id DESC) AS rankValue
+            FROM s_booking b
+            WHERE b.venue_customer_id IS NOT NULL AND b.venue_id=#{venueId}
+              AND b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+        ), latest_valid_bookings AS (
+            SELECT venueId,customerId,bookingAt,bookingSource
+            FROM ranked_valid_bookings WHERE rankValue=1
+        ), usual_hour_counts AS (
+            SELECT b.venue_id AS venueId, b.venue_customer_id AS customerId,
+                   HOUR(CONVERT_TZ(b.start_at,'+00:00','+08:00')) AS hourValue, COUNT(*) AS countValue
+            FROM s_booking b
+            WHERE b.venue_customer_id IS NOT NULL AND b.venue_id=#{venueId}
+              AND b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+            GROUP BY b.venue_id,b.venue_customer_id,hourValue
+        ), usual_hours AS (
+            SELECT venueId,customerId,
+                   GROUP_CONCAT(CONCAT(hourValue,':',countValue)
+                       ORDER BY countValue DESC,hourValue ASC SEPARATOR ',') AS usualHours
+            FROM usual_hour_counts
+            GROUP BY venueId,customerId
+        ), tag_names AS (
+            SELECT tr.venue_id AS venueId,tr.customer_id AS customerId,
+                   GROUP_CONCAT(t.name ORDER BY t.name,t.id SEPARATOR ',') AS tagNames
+            FROM s_venue_customer_tag_relation tr
+            JOIN s_venue_customer_tag t ON t.id=tr.tag_id AND t.venue_id=tr.venue_id
+            WHERE tr.venue_id=#{venueId}
+            GROUP BY tr.venue_id,tr.customer_id
+        )
+    </sql>
+    <sql id="operationColumns">
+        vc.id AS customerId,vc.venue_id AS venueId,u.contact_name AS contactName,u.phone,
+        COALESCE(bs.validBookingCount,0) AS validBookingCount,
+        vb.bookingAt AS lastValidBookingAt,vb.bookingSource AS lastValidBookingSource,
+        bs.lastCompletedAt,bs.latestVerifiedAt,
+        COALESCE(bs.futureConfirmedCount,0) AS futureConfirmedCount,
+        uh.usualHours,tn.tagNames,vc.created_at AS customerCreatedAt
+    </sql>
+    <select id="selectOperations" resultType="com.sportsbooking.admin.base.bo.CustomerOperationBO">
+        <include refid="operationCtes"/>
+        SELECT <include refid="operationColumns"/>
+        FROM s_venue_customer vc JOIN s_user_account u ON u.id=vc.user_id
+        LEFT JOIN booking_stats bs ON bs.venueId=vc.venue_id AND bs.customerId=vc.id
+        LEFT JOIN latest_valid_bookings vb ON vb.venueId=vc.venue_id AND vb.customerId=vc.id
+        LEFT JOIN usual_hours uh ON uh.venueId=vc.venue_id AND uh.customerId=vc.id
+        LEFT JOIN tag_names tn ON tn.venueId=vc.venue_id AND tn.customerId=vc.id
+        WHERE vc.venue_id=#{venueId}
+        <if test="segment == '30_DAY_NO_REBOOK'">
+          AND bs.lastCompletedAt IS NOT NULL
+          AND bs.lastCompletedAt &lt;= UTC_TIMESTAMP(3) - INTERVAL 30 DAY
+          AND COALESCE(bs.futureConfirmedCount,0)=0
+        </if>
+        ORDER BY bs.lastCompletedAt IS NULL,bs.lastCompletedAt ASC,vc.id ASC
+    </select>
+    <select id="selectOperation" resultType="com.sportsbooking.admin.base.bo.CustomerOperationBO">
+        <include refid="operationCtes"/>
+        SELECT <include refid="operationColumns"/>
+        FROM s_venue_customer vc JOIN s_user_account u ON u.id=vc.user_id
+        LEFT JOIN booking_stats bs ON bs.venueId=vc.venue_id AND bs.customerId=vc.id
+        LEFT JOIN latest_valid_bookings vb ON vb.venueId=vc.venue_id AND vb.customerId=vc.id
+        LEFT JOIN usual_hours uh ON uh.venueId=vc.venue_id AND uh.customerId=vc.id
+        LEFT JOIN tag_names tn ON tn.venueId=vc.venue_id AND tn.customerId=vc.id
+        WHERE vc.venue_id=#{venueId} AND vc.id=#{customerId}
+    </select>
+    <select id="selectTags" resultType="com.sportsbooking.admin.base.bo.VenueCustomerTagBO">
+        SELECT id,venue_id AS venueId,name,created_by_admin_id AS createdByAdminId,
+               created_by_employee_id AS createdByEmployeeId,created_by_name AS createdByName,created_at AS createdAt
+        FROM s_venue_customer_tag WHERE venue_id=#{venueId} ORDER BY name,id
+    </select>
+    <select id="selectTag" resultType="com.sportsbooking.admin.base.bo.VenueCustomerTagBO">
+        SELECT id,venue_id AS venueId,name,created_by_admin_id AS createdByAdminId,
+               created_by_employee_id AS createdByEmployeeId,created_by_name AS createdByName,created_at AS createdAt
+        FROM s_venue_customer_tag WHERE venue_id=#{venueId} AND id=#{tagId}
+    </select>
+    <insert id="insertTag" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO s_venue_customer_tag(venue_id,name,created_by_admin_id,created_by_employee_id,created_by_name,created_at)
+        VALUES(#{venueId},#{name},#{createdByAdminId},#{createdByEmployeeId},#{createdByName},UTC_TIMESTAMP(3))
+    </insert>
+    <delete id="deleteTag">DELETE FROM s_venue_customer_tag WHERE venue_id=#{venueId} AND id=#{tagId}</delete>
+    <select id="countCustomer" resultType="int">
+        SELECT COUNT(*) FROM s_venue_customer WHERE venue_id=#{venueId} AND id=#{customerId}
+    </select>
+    <select id="countTag" resultType="int">
+        SELECT COUNT(*) FROM s_venue_customer_tag WHERE venue_id=#{venueId} AND id=#{tagId}
+    </select>
+    <select id="countTagRelation" resultType="int">
+        SELECT COUNT(*) FROM s_venue_customer_tag_relation
+        WHERE venue_id=#{venueId} AND customer_id=#{customerId} AND tag_id=#{tagId}
+    </select>
+    <insert id="addTag">
+        INSERT INTO s_venue_customer_tag_relation(venue_id,customer_id,tag_id,created_by_admin_id,
+               created_by_employee_id,created_by_name,created_at)
+        VALUES(#{venueId},#{customerId},#{tagId},#{createdByAdminId},#{createdByEmployeeId},#{createdByName},UTC_TIMESTAMP(3))
+    </insert>
+    <delete id="removeTag">
+        DELETE FROM s_venue_customer_tag_relation
+        WHERE venue_id=#{venueId} AND customer_id=#{customerId} AND tag_id=#{tagId}
+    </delete>
+    <insert id="archiveTagRelations">
+        INSERT INTO s_venue_customer_tag_audit(venue_id,customer_id,tag_id,tag_name,action,
+               actor_admin_id,actor_employee_id,actor_name,occurred_at)
+        SELECT tr.venue_id,tr.customer_id,tr.tag_id,t.name,'UNASSIGNED_BY_TAG_DELETE',
+               #{createdByAdminId},#{createdByEmployeeId},#{createdByName},UTC_TIMESTAMP(3)
+        FROM s_venue_customer_tag_relation tr
+        JOIN s_venue_customer_tag t ON t.id=tr.tag_id AND t.venue_id=tr.venue_id
+        WHERE tr.venue_id=#{venueId} AND tr.tag_id=#{tagId}
+    </insert>
+    <insert id="insertTagAudit">
+        INSERT INTO s_venue_customer_tag_audit(venue_id,customer_id,tag_id,tag_name,action,
+               actor_admin_id,actor_employee_id,actor_name,occurred_at)
+        VALUES(#{venueId},#{customerId},#{tagId},#{tagName},#{action},
+               #{createdByAdminId},#{createdByEmployeeId},#{createdByName},UTC_TIMESTAMP(3))
+    </insert>
+    <delete id="deleteTagRelationsByTag">
+        DELETE FROM s_venue_customer_tag_relation WHERE venue_id=#{venueId} AND tag_id=#{tagId}
+    </delete>
+    <sql id="followupColumns">
+        f.id,f.venue_id AS venueId,f.customer_id AS customerId,u.contact_name AS contactName,
+        f.purpose,f.source_group AS sourceGroup,f.status,f.note,
+        f.created_by_admin_id AS createdByAdminId,f.created_by_employee_id AS createdByEmployeeId,
+        f.created_by_name AS createdByName,f.created_at AS createdAt,
+        f.handled_by_admin_id AS handledByAdminId,f.handled_by_employee_id AS handledByEmployeeId,
+        f.handled_by_name AS handledByName,f.handled_at AS handledAt,
+        CASE WHEN f.handled_at IS NULL THEN NULL
+             WHEN EXISTS (SELECT 1 FROM s_booking b WHERE b.venue_id=f.venue_id
+                 AND b.venue_customer_id=f.customer_id
+                 AND b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+                 AND b.start_at &gt; f.handled_at) THEN 1 ELSE 0 END AS rebookedAfterHandled,
+        (SELECT b.start_at FROM s_booking b WHERE b.venue_id=f.venue_id
+             AND b.venue_customer_id=f.customer_id
+             AND b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+             AND b.start_at &gt; f.handled_at
+         ORDER BY b.start_at,b.id LIMIT 1) AS rebookedAfterHandledAt,
+        (SELECT b.source FROM s_booking b WHERE b.venue_id=f.venue_id
+             AND b.venue_customer_id=f.customer_id
+             AND b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+             AND b.start_at &gt; f.handled_at
+         ORDER BY b.start_at,b.id LIMIT 1) AS rebookedAfterHandledSource
+    </sql>
+    <select id="selectFollowups" resultType="com.sportsbooking.admin.base.bo.CustomerFollowupBO">
+        SELECT <include refid="followupColumns"/>
+        FROM s_venue_customer_followup f
+        JOIN s_venue_customer c ON c.id=f.customer_id AND c.venue_id=f.venue_id
+        JOIN s_user_account u ON u.id=c.user_id
+        WHERE f.venue_id=#{venueId}<if test="status != null and status != ''"> AND f.status=#{status}</if>
+        ORDER BY f.status,f.created_at DESC,f.id DESC
+    </select>
+    <select id="selectFollowup" resultType="com.sportsbooking.admin.base.bo.CustomerFollowupBO">
+        SELECT <include refid="followupColumns"/>
+        FROM s_venue_customer_followup f
+        JOIN s_venue_customer c ON c.id=f.customer_id AND c.venue_id=f.venue_id
+        JOIN s_user_account u ON u.id=c.user_id
+        WHERE f.venue_id=#{venueId} AND f.id=#{id}
+    </select>
+    <select id="selectPendingFollowup" resultType="com.sportsbooking.admin.base.bo.CustomerFollowupBO">
+        SELECT <include refid="followupColumns"/>
+        FROM s_venue_customer_followup f
+        JOIN s_venue_customer c ON c.id=f.customer_id AND c.venue_id=f.venue_id
+        JOIN s_user_account u ON u.id=c.user_id
+        WHERE f.venue_id=#{venueId} AND f.customer_id=#{customerId}
+          AND f.purpose=#{purpose} AND f.status='PENDING'
+    </select>
+    <insert id="insertFollowup">
+        INSERT INTO s_venue_customer_followup(venue_id,customer_id,purpose,source_group,status,
+               created_by_admin_id,created_by_employee_id,created_by_name,created_at)
+        SELECT vc.venue_id,vc.id,#{purpose},#{sourceGroup},'PENDING',
+               #{createdByAdminId},#{createdByEmployeeId},#{createdByName},UTC_TIMESTAMP(3)
+        FROM s_venue_customer vc
+        WHERE vc.venue_id=#{venueId} AND vc.id=#{customerId}
+          AND (SELECT MAX(b.completed_at) FROM s_booking b
+               WHERE b.venue_id=vc.venue_id AND b.venue_customer_id=vc.id
+                 AND b.source='ONLINE' AND b.status='COMPLETED') &lt;= UTC_TIMESTAMP(3) - INTERVAL 30 DAY
+          AND NOT EXISTS (SELECT 1 FROM s_booking future_booking
+               WHERE future_booking.venue_id=vc.venue_id AND future_booking.venue_customer_id=vc.id
+                 AND future_booking.status='CONFIRMED' AND future_booking.start_at &gt; UTC_TIMESTAMP(3))
+    </insert>
+    <update id="updateFollowup">
+        UPDATE s_venue_customer_followup SET status=#{status},note=#{note},
+          handled_by_admin_id=#{handledByAdminId},handled_by_employee_id=#{handledByEmployeeId},
+          handled_by_name=#{handledByName},handled_at=UTC_TIMESTAMP(3)
+        WHERE venue_id=#{venueId} AND id=#{id} AND status='PENDING'
+    </update>
+</mapper>

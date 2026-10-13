@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.FavouriteVenueMapper">
+    <sql id="venueColumns">v.id,v.name,v.city,v.district,v.address,v.cover_path AS coverPath,v.status</sql>
+    <select id="selectFavourites" resultType="com.sportsbooking.admin.base.bo.FavouriteVenueBO">
+        SELECT <include refid="venueColumns"/> FROM s_user_venue_favourite f JOIN s_venue v ON v.id=f.venue_id
+        WHERE f.user_id=#{userId} AND v.status &lt;&gt; 'DRAFT'
+        ORDER BY f.created_at DESC, f.venue_id DESC
+    </select>
+    <select id="selectRecent" resultType="com.sportsbooking.admin.base.bo.FavouriteVenueBO">
+        SELECT <include refid="venueColumns"/>
+        FROM s_booking b JOIN s_venue v ON v.id=b.venue_id
+        WHERE b.user_id=#{userId} AND (b.status IN ('CONFIRMED','COMPLETED','NO_SHOW','ENDED_UNTRACKED')
+          OR b.status='CANCELLED' AND b.payment_status IN ('REFUNDING','REFUNDED','REFUND_FAILED'))
+          AND v.status &lt;&gt; 'DRAFT'
+        GROUP BY v.id,v.name,v.city,v.district,v.address,v.cover_path,v.status
+        ORDER BY MAX(b.created_at) DESC, v.id DESC LIMIT 20
+    </select>
+    <insert id="insertIdempotent">
+        INSERT INTO s_user_venue_favourite(user_id,venue_id) VALUES(#{userId},#{venueId})
+        ON DUPLICATE KEY UPDATE venue_id=VALUES(venue_id)
+    </insert>
+    <delete id="delete">DELETE FROM s_user_venue_favourite WHERE user_id=#{userId} AND venue_id=#{venueId}</delete>
+    <delete id="deleteByUser">DELETE FROM s_user_venue_favourite WHERE user_id=#{userId}</delete>
+</mapper>

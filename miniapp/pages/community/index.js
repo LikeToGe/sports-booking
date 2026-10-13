@@ -12,7 +12,7 @@ Page({
   async load() {
     this.setData({ loading: true,error: "" });
     try {
-      const ugcEnabled = await request("/public/ugc-config");
+      const ugcEnabled = await request("/public/ugc-config").catch(() => false);
       this.setData({ ugcEnabled,mode: ugcEnabled ? this.data.mode : "messages" });
       const rows = await request(paths[this.data.mode]);
       this.setData({ rows: rows.map(row => ({ ...row,
@@ -30,6 +30,9 @@ Page({
     try {
       await request(`/mini/content/notifications/${row.id}/read`,{ method: "POST" });
       if (row.businessType === "POST") wx.navigateTo({ url: `/pages/posts/detail?id=${row.businessId}` });
+      else if (row.businessType === "BOOKING") wx.navigateTo({ url: `/pages/booking/index?id=${row.businessId}` });
+      else if (row.subscriptionId) wx.navigateTo({ url: `/pages/reminders/index?subscriptionId=${row.subscriptionId}`
+        + (row.type === "SLOT_RELEASED_ALERT" ? `&slotId=${row.businessId}` : "") });
       else await this.load();
     } catch (error) { this.setData({ error: error.message }); }
   },

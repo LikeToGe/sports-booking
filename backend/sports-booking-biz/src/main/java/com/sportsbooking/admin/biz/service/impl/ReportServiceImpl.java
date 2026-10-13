@@ -1,6 +1,7 @@
 package com.sportsbooking.admin.biz.service.impl;
 
 import com.sportsbooking.admin.base.bo.ReportBookingBO;
+import com.sportsbooking.admin.base.bo.ReportIntervalBO;
 import com.sportsbooking.admin.base.bo.ReportMemberFlowBO;
 import com.sportsbooking.admin.base.bo.ReportOperationDailyBO;
 import com.sportsbooking.admin.base.bo.ReportOperationExtraBO;
@@ -14,6 +15,10 @@ import com.sportsbooking.admin.biz.pojo.vo.ReportBookingVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportMemberFlowVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportOperationDailyVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportOperationVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportCourtPerformanceVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportLowUtilizationVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportUtilizationCellVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportUtilizationVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportReceiptVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportVenueMemberOperationVO;
 import com.sportsbooking.admin.biz.service.ReportService;
@@ -47,6 +52,8 @@ import org.springframework.stereotype.Service;
 public class ReportServiceImpl implements ReportService {
     private static final int MAX_DATE_RANGE_DAYS = 90;
     private static final int RATE_BASIS_POINTS = 10_000;
+    private static final int LOW_UTILIZATION_RATE_BASIS_POINTS = 3_000;
+    private static final int MAX_LOW_UTILIZATION_ROWS = 100;
     private static final int MAX_COLUMN_WIDTH = 40 * 256;
     private static final int MIN_COLUMN_WIDTH = 10 * 256;
 
@@ -132,6 +139,165 @@ public class ReportServiceImpl implements ReportService {
                 value(safeExtra.getMemberAvailableBalanceFen()), value(safeExtra.getMemberFrozenBalanceFen()), daily);
     }
 
+    /** 批量读取事实，按场地合并区间，再分小时；快照本身贡献占用和容量。 */
+    @Override
+    public ReportUtilizationVO getUtilizationReport(Long venueId, LocalDate startDate, LocalDate endDate,
+                                                     Long courtId, Long sportTypeId, boolean includeCourtDetails) {
+        validateRange(startDate, endDate);
+        if ((courtId != null && courtId <= 0) || (sportTypeId != null && sportTypeId <= 0)
+                || (!includeCourtDetails && courtId != null)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
+        }
+        if (venueId != null) venueService.getVenue(venueId);
+        List<ReportIntervalBO> facts = reportMapper.selectUtilizationIntervals(
+                venueId, toStartAt(startDate), toEndAt(endDate), courtId, sportTypeId);
+        Map<ReportHour, MinuteBucket> buckets = new java.util.LinkedHashMap<>();
+        Map<Long, String> courtNames = new HashMap<>();
+        Map<Long, String> sports = new java.util.TreeMap<>();
+        for (ReportIntervalBO fact : facts) {
+            courtNames.put(fact.getCourtId(), fact.getCourtName());
+            if (fact.getSportTypeId() != null) sports.put(fact.getSportTypeId(), fact.getSportName());
+            LocalDateTime begin = fact.getStartAt().atZone(BusinessConstants.BUSINESS_ZONE).toLocalDateTime();
+            LocalDateTime finish = fact.getEndAt().atZone(BusinessConstants.BUSINESS_ZONE).toLocalDateTime();
+            LocalDateTime clippedBegin = begin.isBefore(startDate.atStartOfDay()) ? startDate.atStartOfDay() : begin;
+            LocalDateTime clippedEnd = finish.isAfter(endDate.plusDays(1).atStartOfDay())
+                    ? endDate.plusDays(1).atStartOfDay() : finish;
+            for (LocalDateTime hour = clippedBegin.withMinute(0).withSecond(0).withNano(0);
+                 hour.isBefore(clippedEnd); hour = hour.plusHours(1)) {
+                MinuteBucket bucket = buckets.computeIfAbsent(new ReportHour(fact.getCourtId(), hour), key -> new MinuteBucket());
+                LocalDateTime left = clippedBegin.isAfter(hour) ? clippedBegin : hour;
+                LocalDateTime right = clippedEnd.isBefore(hour.plusHours(1)) ? clippedEnd : hour.plusHours(1);
+                MinuteSpan span = new MinuteSpan(java.time.Duration.between(hour, left).toMinutes(),
+                        java.time.Duration.between(hour, right).toMinutes());
+                if ("SUPPLY".equals(fact.getKind()) || "BOOKED".equals(fact.getKind())) {
+                    bucket.supply.add(span);
+                    bucket.known = true;
+                }
+                if ("BOOKED".equals(fact.getKind())) bucket.booked.add(span);
+                if ("UNAVAILABLE".equals(fact.getKind())) bucket.known = true;
+                // 取消和预约笔数只归开始小时，不随跨小时切片重复；不依赖当前库存是否关闭。
+                if (fact.getBookingId() != null && !begin.isBefore(hour) && begin.isBefore(hour.plusHours(1))) {
+                    bucket.bookingIds.add(fact.getBookingId());
+                    if ("CANCELLED".equals(fact.getKind())) bucket.cancelledIds.add(fact.getBookingId());
+                }
+            }
+        }
+        LocalDate today = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
+        Map<String, MinuteSummary> history = new HashMap<>();
+        Map<String, MinuteSummary> future = new HashMap<>();
+        Map<Long, MinuteSummary> historicalCourts = new java.util.TreeMap<>();
+        Map<Long, MinuteSummary> futureCourts = new java.util.TreeMap<>();
+        List<ReportLowUtilizationVO> low = new ArrayList<>();
+        for (Map.Entry<ReportHour, MinuteBucket> entry : buckets.entrySet()) {
+            ReportHour key = entry.getKey();
+            MinuteBucket bucket = entry.getValue();
+            long available = unionMinutes(bucket.supply);
+            long booked = unionMinutes(bucket.booked);
+            boolean historical = key.getHour().toLocalDate().isBefore(today);
+            String cell = key.getHour().getDayOfWeek().getValue() + ":" + key.getHour().getHour();
+            (historical ? history : future).computeIfAbsent(cell, ignored -> new MinuteSummary())
+                    .add(bucket, available, booked);
+            (historical ? historicalCourts : futureCourts).computeIfAbsent(key.getCourtId(), ignored -> new MinuteSummary())
+                    .add(bucket, available, booked);
+            if (includeCourtDetails && historical && bucket.known && available > 0
+                    && rate(booked, available) <= LOW_UTILIZATION_RATE_BASIS_POINTS) {
+                low.add(new ReportLowUtilizationVO(key.getCourtId(), courtNames.get(key.getCourtId()),
+                        key.getHour().toLocalDate().toString(), key.getHour().toString(), key.getHour().plusHours(1).toString(),
+                        available, booked, rate(booked, available), bucket.cancelledIds.size()));
+            }
+        }
+        low.sort(java.util.Comparator.comparingInt(ReportLowUtilizationVO::getUtilizationRateBasisPoints)
+                .thenComparing(ReportLowUtilizationVO::getStartTime).thenComparingLong(ReportLowUtilizationVO::getCourtId));
+        if (low.size() > MAX_LOW_UTILIZATION_ROWS) low = new ArrayList<>(low.subList(0, MAX_LOW_UTILIZATION_ROWS));
+        return new ReportUtilizationVO(startDate.toString(), endDate.toString(),
+                BusinessConstants.BUSINESS_ZONE.getId(), LocalDateTime.now(BusinessConstants.BUSINESS_ZONE),
+                "基于当前留存供给与预约快照，按场地区间并集统计分钟；历史截至昨日，今日及未来单列供给预订分布。"
+                        + "缺失供给显示数据不足，不还原不存在的历史开售/封场记录；关闭和不可供给不计容量，"
+                        + "支付占位不计确认占用；取消与预约数按开始日期去重。",
+                utilizationCells(history), includeCourtDetails ? courtSummaries(historicalCourts, courtNames) : List.of(),
+                low, utilizationCells(future), includeCourtDetails ? courtSummaries(futureCourts, courtNames) : List.of(),
+                includeCourtDetails, sports);
+    }
+
+    /** 同场地同小时内取真正区间并集，重叠和相邻区间均不会重复容量。 */
+    private long unionMinutes(List<MinuteSpan> spans) {
+        spans.sort(java.util.Comparator.comparingLong(MinuteSpan::getStart));
+        long total = 0, left = 0, right = 0;
+        for (MinuteSpan span : spans) {
+            if (span.getStart() > right) {
+                total += right - left;
+                left = span.getStart();
+                right = span.getEnd();
+            } else right = Math.max(right, span.getEnd());
+        }
+        return total + right - left;
+    }
+
+    /** 缺少事实的小时保持未知，不能把无数据伪装成不可售或零利用率。 */
+    private List<ReportUtilizationCellVO> utilizationCells(Map<String, MinuteSummary> totals) {
+        List<ReportUtilizationCellVO> cells = new ArrayList<>();
+        for (int day = 1; day <= 7; day++) {
+            for (int hour = 0; hour < 24; hour++) {
+                MinuteSummary summary = totals.get(day + ":" + hour);
+                String state = summary == null || summary.unknown ? "DATA_INSUFFICIENT"
+                        : summary.available == 0 ? "UNAVAILABLE" : "KNOWN";
+                cells.add(new ReportUtilizationCellVO(day, hour, summary == null ? 0 : summary.available,
+                        summary == null ? 0 : summary.booked,
+                        summary == null ? 0 : rate(summary.booked, summary.available),
+                        summary == null ? 0 : summary.cancelled.size(), state));
+            }
+        }
+        return cells;
+    }
+
+    /** 场地笔数取业务 ID 集合，避免一笔跨小时预约计成多笔。 */
+    private List<ReportCourtPerformanceVO> courtSummaries(Map<Long, MinuteSummary> totals, Map<Long, String> names) {
+        List<ReportCourtPerformanceVO> rows = new ArrayList<>();
+        for (Map.Entry<Long, MinuteSummary> entry : totals.entrySet()) {
+            MinuteSummary total = entry.getValue();
+            rows.add(new ReportCourtPerformanceVO(entry.getKey(), names.get(entry.getKey()), total.available, total.booked,
+                    rate(total.booked, total.available), total.cancelled.size(), total.bookings.size(),
+                    total.unknown ? "DATA_INSUFFICIENT" : total.available == 0 ? "UNAVAILABLE" : "KNOWN"));
+        }
+        rows.sort(java.util.Comparator.comparingInt(ReportCourtPerformanceVO::getUtilizationRateBasisPoints)
+                .thenComparingLong(ReportCourtPerformanceVO::getCourtId));
+        return rows;
+    }
+
+    /** 同一场地的自然小时分桶键。 */
+    @lombok.Value
+    private static class ReportHour {
+        long courtId;
+        LocalDateTime hour;
+    }
+    /** 单个小时内的半开分钟区间。 */
+    @lombok.Value
+    private static class MinuteSpan {
+        long start;
+        long end;
+    }
+    private static class MinuteBucket {
+        private final List<MinuteSpan> supply = new ArrayList<>();
+        private final List<MinuteSpan> booked = new ArrayList<>();
+        private final java.util.Set<Long> bookingIds = new java.util.HashSet<>();
+        private final java.util.Set<Long> cancelledIds = new java.util.HashSet<>();
+        private boolean known;
+    }
+    private static class MinuteSummary {
+        private long available;
+        private long booked;
+        private boolean unknown;
+        private final java.util.Set<Long> bookings = new java.util.HashSet<>();
+        private final java.util.Set<Long> cancelled = new java.util.HashSet<>();
+        private void add(MinuteBucket bucket, long availableMinutes, long bookedMinutes) {
+            available += availableMinutes;
+            booked += bookedMinutes;
+            unknown |= !bucket.known;
+            bookings.addAll(bucket.bookingIds);
+            cancelled.addAll(bucket.cancelledIds);
+        }
+    }
+
     @Override
     public List<ReportVenueMemberOperationVO> listVenueMemberOperations(LocalDate startDate, LocalDate endDate) {
         validateRange(startDate, endDate);
@@ -152,8 +318,28 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<ReportBookingVO> listBookings(long venueId, LocalDate startDate, LocalDate endDate,
                                               boolean includeSensitive) {
+        return listBookings(venueId, startDate, endDate, null, null, null, null, includeSensitive);
+    }
+
+    /** 下钻按区间重叠匹配，结束可为次日零点，运动条件与来源报表一致。 */
+    @Override
+    public List<ReportBookingVO> listBookings(long venueId, LocalDate startDate, LocalDate endDate,
+            Long courtId, Long sportTypeId, LocalDateTime slotStart, LocalDateTime slotEnd, boolean includeSensitive) {
         validateRange(startDate, endDate);
-        List<ReportBookingBO> rows = reportMapper.selectBookings(venueId, toStartAt(startDate), toEndAt(endDate));
+        if ((courtId != null && courtId <= 0) || (sportTypeId != null && sportTypeId <= 0)
+                || (slotStart == null) != (slotEnd == null)
+                || (slotStart != null && (!slotStart.isBefore(slotEnd)
+                    || slotStart.isBefore(startDate.atStartOfDay()) || slotEnd.isAfter(endDate.plusDays(1).atStartOfDay())))) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
+        }
+        List<ReportBookingBO> rows;
+        if (courtId == null && sportTypeId == null && slotStart == null) {
+            rows = reportMapper.selectBookings(venueId, toStartAt(startDate), toEndAt(endDate));
+        } else {
+            rows = reportMapper.selectBookingsByCourtTime(venueId, toStartAt(startDate), toEndAt(endDate), courtId,
+                    slotStart == null ? null : slotStart.atZone(BusinessConstants.BUSINESS_ZONE).toInstant(),
+                    slotEnd == null ? null : slotEnd.atZone(BusinessConstants.BUSINESS_ZONE).toInstant(), sportTypeId);
+        }
         List<ReportBookingVO> result = new ArrayList<>();
         for (ReportBookingBO row : rows) {
             String contactName = includeSensitive ? row.getContactName() : maskName(row.getContactName());

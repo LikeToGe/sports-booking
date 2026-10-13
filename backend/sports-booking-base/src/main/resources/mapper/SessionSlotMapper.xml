@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sportsbooking.admin.base.mapper.SessionSlotMapper">
+    <select id="selectOpenMatching" resultType="com.sportsbooking.admin.base.po.SessionSlot">
+        SELECT s.* FROM s_session_slot s
+        JOIN s_venue v ON v.id = s.venue_id AND v.status = 'ACTIVE'
+        JOIN s_court c ON c.id = s.court_id AND c.status = 'ACTIVE'
+        JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = s.sport_type_id
+        JOIN s_sport_type st ON st.id = s.sport_type_id AND st.status = 'ACTIVE'
+        WHERE s.venue_id = #{venueId}
+          AND s.sport_type_id = #{sportTypeId}
+          AND s.slot_date = #{date}
+          AND s.status = 'OPEN'
+          AND s.start_at &gt; DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE)
+          AND s.slot_date BETWEEN DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00'))
+              AND DATE_ADD(DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00')),
+                  INTERVAL (v.booking_days_ahead - 1) DAY)
+          AND TIME(CONVERT_TZ(s.start_at, '+00:00', '+08:00')) &gt;= #{startTime}
+          AND TIME(CONVERT_TZ(s.end_at, '+00:00', '+08:00')) &lt;= #{endTime}
+        ORDER BY s.start_at, s.id
+    </select>
     <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.SessionSlot">
         SELECT * FROM s_session_slot WHERE id = #{id} FOR UPDATE
     </select>

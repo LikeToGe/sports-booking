@@ -15,6 +15,11 @@ import org.apache.ibatis.annotations.Param;
  * @author gjm
  */
 public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
+    List<SessionSlot> selectOpenMatching(@Param("venueId") long venueId,
+                                         @Param("sportTypeId") long sportTypeId,
+                                         @Param("date") LocalDate date,
+                                         @Param("startTime") java.time.LocalTime startTime,
+                                         @Param("endTime") java.time.LocalTime endTime);
     /**
      * 功能描述: 按 ID 加排他锁查询具体场次。
      * 创建时间: 2026/08/28 16:29

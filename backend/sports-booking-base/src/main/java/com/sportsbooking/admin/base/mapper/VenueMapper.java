@@ -33,7 +33,8 @@ public interface VenueMapper extends BaseMapper<Venue> {
     List<PublicVenueBO> selectPublicVenues(@Param("keyword") String keyword,
                                            @Param("sportTypeId") Long sportTypeId,
                                            @Param("date") LocalDate date,
-                                           @Param("now") Instant now);
+                                           @Param("now") Instant now,
+                                           @Param("district") String district);
 
     /**
      * 功能描述: 查询场馆场地及关联运动展示数据。
@@ -79,7 +80,7 @@ public interface VenueMapper extends BaseMapper<Venue> {
     /** 按完整时间范围检索可订具体场次，每页最多 20 条。 */
     List<SlotSearchBO> selectMatchingSlots(@Param("keyword") String keyword,
             @Param("sportTypeId") Long sportTypeId, @Param("date") LocalDate date,
-            @Param("rangeStart") Instant rangeStart, @Param("rangeEnd") Instant rangeEnd,
+            @Param("district") String district, @Param("rangeStart") Instant rangeStart, @Param("rangeEnd") Instant rangeEnd,
             @Param("minPriceFen") Integer minPriceFen, @Param("maxPriceFen") Integer maxPriceFen,
             @Param("now") Instant now, @Param("today") LocalDate today, @Param("offset") int offset);
 }

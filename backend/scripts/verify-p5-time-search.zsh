@@ -9,7 +9,7 @@ server_log=$(mktemp /tmp/sports-booking-p5-time-search-runtime.XXXXXX)
 server_pid=''
 media_root=$(mktemp -d /tmp/sports-booking-p5-time-search-media.XXXXXX)
 profiles='demo,runtime-test'
-ugc_enabled=false
+ugc_enabled=true
 
 cleanup() {
   [[ -n "$server_pid" ]] && kill "$server_pid" >/dev/null 2>&1 || true
@@ -17,7 +17,9 @@ cleanup() {
   docker rm -f "$mysql_container" "$redis_container" >/dev/null 2>&1 || true
   rm -rf "$media_root"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if lsof -nP -iTCP:8091 -sTCP:LISTEN >/dev/null 2>&1; then
   print -u2 '8091 端口已有服务，不能隔离验证'
@@ -84,3 +86,22 @@ print 'P5 runtime: isolated HTTP server ready'
 env P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p5-time-search.py"
 VERIFY_API_BASE="$base" zsh "${backend_dir}/scripts/verify-p2.zsh"
 VERIFY_API_BASE="$base" zsh "${backend_dir}/scripts/verify-p2-concurrency.zsh"
+
+env P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p5-favourites.py"
+env P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p5-slot-comparison.py"
+env P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p5-district.py"
+env P5_API_BASE="$base" P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p5-recruitment-discovery.py"
+verification_status=0
+if [[ "${P6_VERIFY:-false}" == true ]]; then
+  for area in migrations reminders utilization customers; do
+    if ! env P5_API_BASE="$base" P5_MYSQL_CONTAINER="$mysql_container" python3 "${backend_dir}/scripts/verify-p6-${area}.py"; then
+      verification_status=1
+      break
+    fi
+  done
+fi
+if [[ "${P5_PREVIEW:-false}" == true ]]; then
+  print "Isolated preview ready: http://127.0.0.1:8091/api; verification_status=$verification_status"
+  while true; do sleep 30; done
+fi
+exit "$verification_status"

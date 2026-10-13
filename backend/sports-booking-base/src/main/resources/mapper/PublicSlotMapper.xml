@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.PublicSlotMapper">
+    <select id="selectComparison" resultType="com.sportsbooking.admin.base.bo.PublicSlotBO">
+        SELECT ss.id, ss.court_id AS courtId, c.name AS courtName,
+               ss.sport_type_id AS sportTypeId, st.name AS sportName,
+               DATE_FORMAT(CONVERT_TZ(ss.start_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS startAt,
+               DATE_FORMAT(CONVERT_TZ(ss.end_at, '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS endAt,
+               ss.price_fen AS priceFen,
+               DATE_FORMAT(CONVERT_TZ(TIMESTAMPADD(MINUTE, -v.cancel_cutoff_minutes, ss.start_at),
+                   '+00:00', '+08:00'), '%Y-%m-%dT%H:%i:%s+08:00') AS cancelDeadline,
+               CASE WHEN ss.status IN ('HELD', 'BOOKED', 'CLOSED') THEN ss.status
+                    WHEN c.status != 'ACTIVE' OR st.status != 'ACTIVE'
+                      OR NOT EXISTS (SELECT 1 FROM s_court_sport cs
+                          WHERE cs.court_id = c.id AND cs.sport_type_id = ss.sport_type_id)
+                      OR ss.start_at &lt;= TIMESTAMPADD(MINUTE, v.min_booking_minutes, #{now})
+                      OR ss.slot_date &lt; #{today}
+                      OR ss.slot_date &gt;= DATE_ADD(#{today}, INTERVAL v.booking_days_ahead DAY)
+                      THEN 'UNAVAILABLE'
+                    WHEN ss.status = 'OPEN' THEN 'OPEN'
+                    ELSE 'UNAVAILABLE' END AS status
+        FROM s_session_slot ss
+        JOIN s_court c ON c.id = ss.court_id AND c.venue_id = ss.venue_id
+        JOIN s_venue v ON v.id = ss.venue_id AND v.status = 'ACTIVE'
+        JOIN s_sport_type st ON st.id = ss.sport_type_id
+        WHERE ss.venue_id = #{venueId} AND ss.slot_date = #{date}
+        <if test="sportTypeId != null">AND ss.sport_type_id = #{sportTypeId}</if>
+        <if test="rangeStart != null">AND ss.start_at &gt;= #{rangeStart}</if>
+        <if test="rangeEnd != null">AND ss.end_at &lt;= #{rangeEnd}</if>
+        <if test="minPriceFen != null">AND ss.price_fen &gt;= #{minPriceFen}</if>
+        <if test="maxPriceFen != null">AND ss.price_fen &lt;= #{maxPriceFen}</if>
+        ORDER BY ss.start_at, ss.end_at, c.id, ss.id
+    </select>
+</mapper>

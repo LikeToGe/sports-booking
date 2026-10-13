@@ -50,12 +50,16 @@ import com.sportsbooking.admin.base.mapper.SportTypeMapper;
 import com.sportsbooking.admin.biz.service.VenueService;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -204,8 +208,10 @@ class BookingServiceImplTest {
         assertThat(bookingCaptor.getValue().paymentStatus).isEqualTo(BookingPaymentStatus.PAYING);
     }
 
-    @Test
-    void fullBalanceBookingConfirmsWithoutExternalPaymentRecord() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"TIME_SEARCH", "BOOK_AGAIN", "REMINDER_ENTRY"})
+    void fullBalanceBookingConfirmsWithoutExternalPaymentRecord(String entryType) {
         SessionSlot slot = openSlot(Instant.now().plusSeconds(2 * 60 * 60L));
         Venue venue = venue(30);
         Court court = new Court();
@@ -233,13 +239,41 @@ class BookingServiceImplTest {
             return 1;
         }).when(bookingMapper).insert(any(Booking.class));
 
-        Booking booking = service.createOnline(1L, 11L, "张三", "13800000000");
+        Booking booking = service.createOnline(1L, 11L, "张三", "13800000000", null, slot.priceFen, entryType);
 
+        assertThat(booking.entryType).isEqualTo(entryType);
+        assertThat(booking.amountFen).isEqualTo(slot.priceFen);
         assertThat(booking.status).isEqualTo(BookingStatus.CONFIRMED);
         assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
         verify(paymentService, never()).createPending(any());
         verify(memberFundsService).consume(org.mockito.ArgumentMatchers.eq(booking.id),
                 org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void ownBookingKeepsSnapshotAndProvidesCurrentVenueArrivalInformation() {
+        Booking booking = new Booking();
+        booking.id = 77L;
+        booking.userId = 1L;
+        booking.venueId = 21L;
+        booking.venueName = "预约时场馆名称";
+        booking.status = BookingStatus.CANCELLED;
+        booking.source = BookingSource.ONLINE;
+        booking.amountFen = 5050;
+        Venue current = venue(30);
+        current.name = "当前场馆名称";
+        current.entryNotice = "请穿运动鞋";
+        current.latitude = new BigDecimal("34.7");
+        current.longitude = new BigDecimal("113.7");
+        current.status = com.sportsbooking.admin.base.enums.VenueStatus.SUSPENDED;
+        when(bookingMapper.selectById(77L)).thenReturn(booking);
+        when(venueService.getVenue(21L)).thenReturn(current);
+        var detail = service.getUserBooking(1L, 77L);
+        assertThat(detail.getBooking().getVenueName()).isEqualTo("预约时场馆名称");
+        assertThat(detail.getBooking().getAmountFen()).isEqualTo(5050);
+        assertThat(detail.getVenue().getEntryNotice()).isEqualTo("请穿运动鞋");
+        assertThat(detail.getVenue().getLatitude()).isEqualByComparingTo("34.7");
+        assertThatThrownBy(() -> service.getUserBooking(2L, 77L)).isInstanceOf(ApiException.class);
     }
 
     @Test

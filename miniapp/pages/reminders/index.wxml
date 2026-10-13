@@ -1,0 +1,18 @@
+<view class="page reminders-page">
+  <view class="screen-head"><text class="screen-title">提醒登记</text><text class="muted">提醒仅提供查询机会，不保留名额或自动付款。</text></view>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}<button class="button-secondary" bindtap="load">重新加载</button></view>
+  <view wx:if="{{message}}" class="saved" role="status">{{message}}</view>
+  <view class="surface reminder-form"><text class="section-title">登记开售或空位提醒</text>
+    <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="field-control">场馆：{{venues[venueIndex].name || '请选择场馆'}}</view></picker>
+    <picker range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="field-control">运动：{{sports[sportIndex].name || '请选择运动'}}</view></picker>
+    <picker range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="selectType"><view class="field-control">类型：{{typeOptions[typeIndex].label}}</view></picker>
+    <picker mode="date" value="{{targetDate}}" start="{{today}}" end="{{dateMax}}" bindchange="selectDate"><view class="field-control">日期：{{targetDate}}</view></picker>
+    <text class="muted">{{ruleText}}</text>
+    <view class="time-row"><picker mode="time" value="{{startTime}}" bindchange="selectStart"><view class="field-control">{{startTime}}</view></picker><text>至</text><picker mode="time" value="{{endTime}}" bindchange="selectEnd"><view class="field-control">{{endTime}}</view></picker></view>
+    <button class="button-primary" disabled="{{saving || loading}}" bindtap="save">{{saving ? '保存中' : '登记提醒'}}</button>
+  </view>
+  <view wx:if="{{focus}}" class="surface reminder-focus"><text class="section-title">当前供给 · {{focus.targetDate}}</text><text class="muted">{{focus.startTime}}–{{focus.endTime}} · {{focus.status === 'ACTIVE' ? '登记中' : '登记已停止'}}</text><text>{{supplyNotice}}</text><button class="button-secondary" disabled="{{checking}}" bindtap="checkSupply">{{checking ? '查询中' : '刷新当前场次'}}</button><view wx:for="{{supply}}" wx:key="id" class="reminder-slot"><text>{{item.courtName}} · {{item.timeLabel}}</text><text>{{item.statusLabel}}</text></view><button class="button-primary" bindtap="openVenue">查看场馆并选择</button><button class="button-secondary" data-relaxed="true" bindtap="openVenue">查看该馆其他时段</button></view>
+  <text class="section-title">我的登记</text>
+  <view wx:for="{{rows}}" wx:key="id" class="surface reminder-row"><view><text class="section-title">{{item.typeLabel}} · {{item.targetDate}}</text><text class="muted block">{{item.venueName}} · {{item.sportName}} · {{item.startTime}}–{{item.endTime}}</text><text class="muted block">{{item.ruleText}}</text><text class="muted block">{{item.status === 'ACTIVE' ? '登记中' : item.status === 'EXPIRED' ? '已到期' : '已撤回'}}</text></view><view class="reminder-actions"><button class="button-secondary" data-id="{{item.id}}" bindtap="view">查看</button><button wx:if="{{item.status === 'ACTIVE'}}" class="button-secondary" data-id="{{item.id}}" bindtap="cancel">撤回</button></view></view>
+  <view wx:if="{{!rows.length && !loading && !error}}" class="empty">暂无提醒登记</view>
+</view>

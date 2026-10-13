@@ -7,10 +7,156 @@
     <update id="markRead">UPDATE s_notification SET read_at = UTC_TIMESTAMP(3) WHERE id = #{id} AND user_id = #{userId} AND read_at IS NULL</update>
     <select id="selectUndeliveredContent" resultType="com.sportsbooking.admin.base.po.Notification">
         SELECT n.* FROM s_notification n
-        LEFT JOIN s_notification_delivery d ON d.notification_id = n.id AND d.channel = 'MOCK'
-        WHERE n.type = 'CONTENT_ACTIVITY' AND d.id IS NULL ORDER BY n.id LIMIT 100
+        WHERE (n.status = 'PENDING_DELIVERY'
+                AND (n.delivery_next_attempt_at IS NULL OR n.delivery_next_attempt_at &lt;= UTC_TIMESTAMP(3))
+            OR n.status = 'DELIVERING' AND n.delivery_claimed_at &lt; DATE_SUB(UTC_TIMESTAMP(3), INTERVAL 1 MINUTE))
+        ORDER BY n.id LIMIT 100
     </select>
     <update id="markMockSent">
-        UPDATE s_notification SET status = 'MOCK_SENT' WHERE id = #{id} AND status = 'PENDING_DELIVERY'
+        UPDATE s_notification SET status = 'MOCK_SENT', delivery_claimed_at = NULL,
+            delivery_next_attempt_at = NULL
+        WHERE id = #{id} AND status = 'DELIVERING'
     </update>
+    <update id="markSkipped">
+        UPDATE s_notification SET status = 'SKIPPED', delivery_claimed_at = NULL,
+            delivery_next_attempt_at = NULL
+        WHERE id = #{id} AND status = 'DELIVERING'
+    </update>
+    <update id="claimDelivery">
+        UPDATE s_notification SET status = 'DELIVERING', delivery_claimed_at = UTC_TIMESTAMP(3)
+        WHERE id = #{id} AND (status = 'PENDING_DELIVERY'
+            AND (delivery_next_attempt_at IS NULL OR delivery_next_attempt_at &lt;= UTC_TIMESTAMP(3))
+          OR status = 'DELIVERING' AND delivery_claimed_at &lt; DATE_SUB(UTC_TIMESTAMP(3), INTERVAL 1 MINUTE))
+    </update>
+    <update id="markDeliveryPending">
+        UPDATE s_notification SET status = 'PENDING_DELIVERY', delivery_claimed_at = NULL,
+            delivery_next_attempt_at = DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 30 SECOND)
+        WHERE id = #{id} AND status = 'DELIVERING'
+    </update>
+    <select id="countDeliveryEligible" resultType="int">
+        SELECT COUNT(*) FROM s_notification n
+        JOIN s_user_account u ON u.id = n.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        LEFT JOIN s_booking b ON n.type = 'ARRIVAL_REMINDER' AND b.id = n.booking_id
+        LEFT JOIN s_reminder_subscription rs ON rs.id = n.subscription_id AND rs.user_id = n.user_id
+        LEFT JOIN s_session_slot ss ON n.type = 'SLOT_RELEASED_ALERT' AND ss.id = n.business_id
+        WHERE n.id = #{id}
+          AND (n.type NOT IN ('ARRIVAL_REMINDER', 'OPENING_ALERT', 'SLOT_RELEASED_ALERT')
+               OR (n.type = 'ARRIVAL_REMINDER' AND b.user_id = n.user_id AND b.source = 'ONLINE'
+                   AND b.status = 'CONFIRMED' AND b.start_at &gt; UTC_TIMESTAMP(3))
+               OR (n.type = 'OPENING_ALERT' AND rs.status = 'ACTIVE' AND rs.type = 'OPENING'
+                   AND EXISTS (SELECT 1 FROM s_session_slot available
+                       JOIN s_venue v ON v.id = available.venue_id AND v.status = 'ACTIVE'
+                       JOIN s_court c ON c.id = available.court_id AND c.status = 'ACTIVE'
+                       JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = available.sport_type_id
+                       JOIN s_sport_type st ON st.id = available.sport_type_id AND st.status = 'ACTIVE'
+                       WHERE available.venue_id = rs.venue_id AND available.sport_type_id = rs.sport_type_id
+                         AND available.slot_date = rs.target_date AND available.status = 'OPEN'
+                         AND available.slot_date &gt;= DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00'))
+                         AND available.slot_date &lt; DATE_ADD(
+                             DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00')),
+                             INTERVAL v.booking_days_ahead DAY)
+                         AND available.start_at &gt; DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE)
+                         AND TIME(CONVERT_TZ(available.start_at, '+00:00', '+08:00')) &gt;= rs.start_time
+                         AND TIME(CONVERT_TZ(available.end_at, '+00:00', '+08:00')) &lt;= rs.end_time))
+               OR (n.type = 'SLOT_RELEASED_ALERT' AND rs.status = 'ACTIVE' AND rs.type = 'RELEASED'
+                   AND ss.venue_id = rs.venue_id AND ss.sport_type_id = rs.sport_type_id
+                   AND ss.slot_date = rs.target_date AND ss.status = 'OPEN'
+                   AND TIME(CONVERT_TZ(ss.start_at, '+00:00', '+08:00')) &gt;= rs.start_time
+                   AND TIME(CONVERT_TZ(ss.end_at, '+00:00', '+08:00')) &lt;= rs.end_time
+                   AND EXISTS (SELECT 1 FROM s_venue v JOIN s_court c ON c.id = ss.court_id
+                       JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = ss.sport_type_id
+                       JOIN s_sport_type st ON st.id = ss.sport_type_id
+                       WHERE v.id = ss.venue_id AND v.status = 'ACTIVE'
+                         AND c.status = 'ACTIVE' AND st.status = 'ACTIVE'
+                         AND ss.slot_date &gt;= DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00'))
+                         AND ss.slot_date &lt; DATE_ADD(
+                             DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00')),
+                             INTERVAL v.booking_days_ahead DAY)
+                         AND ss.start_at &gt; DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE))))
+    </select>
+    <insert id="insertArrivalIfEligible">
+        INSERT INTO s_notification (user_id, booking_id, business_type, business_id, type,
+            title, content, idempotency_key, status, created_at)
+        SELECT b.user_id, b.id, 'BOOKING', b.id, 'ARRIVAL_REMINDER',
+            #{title}, #{content}, #{key}, 'PENDING_DELIVERY', UTC_TIMESTAMP(3)
+        FROM s_booking b JOIN s_user_account u ON u.id = b.user_id
+        WHERE b.id = #{bookingId} AND b.source = 'ONLINE' AND b.status = 'CONFIRMED'
+          AND b.start_at &gt; UTC_TIMESTAMP(3)
+          AND b.start_at &lt;= DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 2 HOUR)
+          AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        ON DUPLICATE KEY UPDATE idempotency_key = VALUES(idempotency_key)
+    </insert>
+    <insert id="insertReadyOpeningAlerts">
+        INSERT INTO s_notification (user_id, business_type, business_id, subscription_id, type,
+            title, content, idempotency_key, status, created_at)
+        SELECT DISTINCT s.user_id, 'REMINDER_SUBSCRIPTION', s.id, s.id,
+            'OPENING_ALERT', '场次已开售',
+            '你登记的日期和时段已有可预约场次，名额未为你保留，请重新查询。',
+            CONCAT('alert:opening:', s.id), 'PENDING_DELIVERY', UTC_TIMESTAMP(3)
+        FROM s_reminder_subscription s
+        JOIN s_user_account u ON u.id = s.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        JOIN s_venue v ON v.id = s.venue_id AND v.status = 'ACTIVE'
+        JOIN s_session_slot slot ON slot.venue_id = s.venue_id AND slot.sport_type_id = s.sport_type_id
+            AND slot.slot_date = s.target_date AND slot.status = 'OPEN'
+        JOIN s_court c ON c.id = slot.court_id AND c.status = 'ACTIVE'
+        JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = slot.sport_type_id
+        JOIN s_sport_type st ON st.id = slot.sport_type_id AND st.status = 'ACTIVE'
+        WHERE s.status = 'ACTIVE' AND s.type = 'OPENING' AND s.opening_notified_at IS NULL
+          AND slot.start_at &gt; DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE)
+          AND s.target_date &gt;= DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00'))
+          AND s.target_date &lt; DATE_ADD(DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00')),
+              INTERVAL v.booking_days_ahead DAY)
+          AND TIME(CONVERT_TZ(slot.start_at, '+00:00', '+08:00')) &gt;= s.start_time
+          AND TIME(CONVERT_TZ(slot.end_at, '+00:00', '+08:00')) &lt;= s.end_time
+        ON DUPLICATE KEY UPDATE idempotency_key = VALUES(idempotency_key)
+    </insert>
+    <insert id="insertReleasedAlerts">
+        INSERT INTO s_notification (user_id, business_type, business_id, subscription_id, type,
+            title, content, idempotency_key, status, created_at)
+        SELECT DISTINCT s.user_id, 'SESSION_SLOT', slot.id, s.id,
+            'SLOT_RELEASED_ALERT', '有空位了',
+            '目标时段刚刚释放一个具体场次，名额未为你保留，请重新查询。',
+            CONCAT('alert:', e.event_key, ':', s.id), 'PENDING_DELIVERY', UTC_TIMESTAMP(3)
+        FROM s_slot_release_event e
+        JOIN s_session_slot slot ON slot.id = e.session_slot_id AND slot.status = 'OPEN'
+        JOIN s_reminder_subscription s ON s.venue_id = slot.venue_id
+            AND s.sport_type_id = slot.sport_type_id AND s.target_date = slot.slot_date
+            AND s.status = 'ACTIVE' AND s.type = 'RELEASED'
+            AND s.created_at &lt;= e.created_at
+            AND s.start_time &lt;= TIME(CONVERT_TZ(slot.start_at, '+00:00', '+08:00'))
+            AND s.end_time &gt;= TIME(CONVERT_TZ(slot.end_at, '+00:00', '+08:00'))
+        JOIN s_user_account u ON u.id = s.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        JOIN s_venue v ON v.id = slot.venue_id AND v.status = 'ACTIVE'
+        JOIN s_court c ON c.id = slot.court_id AND c.status = 'ACTIVE'
+        JOIN s_court_sport cs ON cs.court_id = c.id AND cs.sport_type_id = slot.sport_type_id
+        JOIN s_sport_type st ON st.id = slot.sport_type_id AND st.status = 'ACTIVE'
+        WHERE e.processed_at IS NULL AND e.id IN
+          <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+          AND slot.start_at &gt; DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE)
+          AND slot.slot_date &gt;= DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00'))
+          AND slot.slot_date &lt; DATE_ADD(DATE(CONVERT_TZ(UTC_TIMESTAMP(3), '+00:00', '+08:00')),
+              INTERVAL v.booking_days_ahead DAY)
+        ON DUPLICATE KEY UPDATE idempotency_key = VALUES(idempotency_key)
+    </insert>
+    <insert id="insertDueArrivalAlerts">
+        INSERT INTO s_notification (user_id, booking_id, business_type, business_id, type,
+            title, content, idempotency_key, status, created_at)
+        SELECT b.user_id, b.id, 'BOOKING', b.id, 'ARRIVAL_REMINDER', '到场提醒',
+            CONCAT('你的 ', b.venue_name, ' 预约将于 ',
+                DATE_FORMAT(CONVERT_TZ(b.start_at, '+00:00', '+08:00'), '%m月%d日 %H:%i'),
+                ' 开始，请打开预约详情查看导航、入场须知和核销凭证。'),
+            CONCAT('alert:arrival:', b.id), 'PENDING_DELIVERY', UTC_TIMESTAMP(3)
+        FROM s_booking b
+        JOIN s_user_account u ON u.id = b.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        WHERE b.source = 'ONLINE'
+          AND b.status = 'CONFIRMED'
+          AND b.user_id IS NOT NULL
+          AND b.start_at &gt; UTC_TIMESTAMP(3)
+          AND b.start_at &lt;= DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 2 HOUR)
+          AND NOT EXISTS (SELECT 1 FROM s_notification n
+              WHERE n.idempotency_key = CONCAT('alert:arrival:', b.id))
+        ORDER BY b.start_at, b.id
+        LIMIT 200
+        ON DUPLICATE KEY UPDATE idempotency_key = VALUES(idempotency_key)
+    </insert>
 </mapper>

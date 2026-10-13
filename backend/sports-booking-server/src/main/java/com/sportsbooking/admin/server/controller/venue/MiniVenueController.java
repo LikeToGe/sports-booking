@@ -66,8 +66,9 @@ public class MiniVenueController {
     public ApiResponse<List<PublicVenueVO>> listVenues(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long sportTypeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return ApiResponse.success(venueService.listPublicVenues(keyword, sportTypeId, date));
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) String district) {
+        return ApiResponse.success(venueService.listPublicVenues(keyword, sportTypeId, date, district));
     }
 
     /**
@@ -103,8 +104,9 @@ public class MiniVenueController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "HH:mm") LocalTime endTime,
             @RequestParam(required = false) Integer minPriceFen,
             @RequestParam(required = false) Integer maxPriceFen,
+            @RequestParam(required = false) String district,
             @RequestParam(defaultValue = "1") int page) {
-        return ApiResponse.success(venueService.searchSlots(keyword, sportTypeId, date,
+        return ApiResponse.success(venueService.searchSlots(keyword, sportTypeId, date, district,
                 startTime, endTime, minPriceFen, maxPriceFen, page));
     }
 

@@ -16,6 +16,7 @@ import com.sportsbooking.admin.biz.service.BookingService;
 import com.sportsbooking.admin.biz.service.CredentialService;
 import com.sportsbooking.admin.biz.service.PaymentService;
 import com.sportsbooking.admin.biz.pojo.vo.BookingDetailVO;
+import com.sportsbooking.admin.biz.pojo.vo.VenueVO;
 import com.sportsbooking.admin.biz.pojo.vo.BookingVO;
 import com.sportsbooking.admin.biz.pojo.vo.CredentialVO;
 import com.sportsbooking.admin.biz.pojo.vo.PaymentVO;
@@ -150,7 +151,7 @@ public class BookingServiceImpl implements BookingService {
     public Booking createOnline(long userId, long sessionSlotId, String contactName, String contactPhone,
                                 String idempotencyKey, Integer expectedPriceFen, String entryType) {
         if ((expectedPriceFen != null && expectedPriceFen < 0)
-                || (entryType != null && !"TIME_SEARCH".equals(entryType))) {
+                || (entryType != null && !List.of("TIME_SEARCH", "BOOK_AGAIN", "REMINDER_ENTRY").contains(entryType))) {
             throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
         }
         String clientKey = idempotencyKey == null || idempotencyKey.trim().isEmpty() ? null : idempotencyKey.trim();
@@ -584,7 +585,9 @@ public class BookingServiceImpl implements BookingService {
             SignedCredentialVO signedCredential = credentialService.createCredential(booking.id);
             credential = new CredentialVO(signedCredential.getQrDataUrl(), signedCredential.getShortCode());
         }
-        return new BookingDetailVO(BookingVO.from(booking), PaymentVO.from(payment), RefundVO.from(refund),
+        return new BookingDetailVO(BookingVO.from(booking),
+                VenueVO.from(venueService.getVenue(booking.venueId)),
+                PaymentVO.from(payment), RefundVO.from(refund),
                 memberFundsService.getComposition(booking), credential);
     }
 

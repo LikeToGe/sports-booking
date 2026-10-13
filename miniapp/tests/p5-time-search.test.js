@@ -15,6 +15,7 @@ Module._load = function (name, parent, main) {
       calls.push([url, options]);
       if (fail) throw new Error('网络失败');
       if (url.startsWith('/mini/slots/search')) return [{ id: 12, venueId: 2, venueName: '测试馆', courtId: 3, courtName: '1 号场', sportTypeId: 1, sportName: '羽毛球', startAt: '2026-10-13T19:00:00+08:00', endAt: '2026-10-13T20:00:00+08:00', priceFen: 5050 }];
+      if (url.includes('/slot-comparison')) return [{ id: 12, courtId: 3, priceFen: 5050, status: 'OPEN', startAt: '2026-10-13T19:00:00+08:00', endAt: '2026-10-13T20:00:00+08:00', cancelDeadline: '2026-10-13T17:00:00+08:00' }];
       if (url.startsWith('/mini/venues/')) return { venue: { id: 2, name: '测试馆' }, sports: [], courts: [{ id: 3 }], slots: [{ id: 12, courtId: 3, priceFen: 5050, startAt: '2026-10-13T19:00:00+08:00', endAt: '2026-10-13T20:00:00+08:00' }] };
       if (url === '/public/ugc-config') return false;
       return [];

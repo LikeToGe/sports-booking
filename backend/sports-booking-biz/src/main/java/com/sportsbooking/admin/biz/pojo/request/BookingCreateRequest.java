@@ -48,8 +48,8 @@ public class BookingCreateRequest {
     @ApiModelProperty(value = "用户确认的单场次价格，单位为分；旧调用可省略")
     private Integer expectedPriceFen;
 
-    /** 可选预约入口 TIME_SEARCH，仅用于业务结果关联。 */
-    @Schema(description = "可选预约入口 TIME_SEARCH，仅用于业务结果关联")
-    @ApiModelProperty(value = "可选预约入口 TIME_SEARCH，仅用于业务结果关联")
+    /** 可选预约入口 TIME_SEARCH、BOOK_AGAIN 或 REMINDER_ENTRY，仅用于业务结果关联。 */
+    @Schema(description = "可选预约入口 TIME_SEARCH、BOOK_AGAIN 或 REMINDER_ENTRY，仅用于业务结果关联")
+    @ApiModelProperty(value = "可选预约入口 TIME_SEARCH、BOOK_AGAIN 或 REMINDER_ENTRY，仅用于业务结果关联")
     private String entryType;
 }

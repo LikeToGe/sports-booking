@@ -24,6 +24,8 @@ public class Venue {
     public String coverPath;
     /** 所在城市。 */
     public String city;
+    /** 所属区县，未配置时为空。 */
+    public String district;
     /** 详细地址。 */
     public String address;
     /** 纬度。 */

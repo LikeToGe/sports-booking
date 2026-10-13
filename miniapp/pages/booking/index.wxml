@@ -2,6 +2,11 @@
 <view class="page detail-page" wx:if="{{booking}}">
   <view class="detail-head surface"><view><text class="screen-title">{{statusLabel}}</text><text class="muted block">预约号 {{booking.bookingNo}}</text></view><view class="amount-block"><text class="price amount">{{amount}}</text><text class="status status-{{paymentTone}}">{{paymentLabel}}</text></view></view>
   <view class="facts surface"><view><text class="muted">场馆</text><text>{{booking.venueName}}</text></view><view><text class="muted">场地</text><text>{{booking.courtName}} · {{booking.sportName}}</text></view><view><text class="muted">时间</text><text>{{date}}　{{time}}</text></view><view><text class="muted">联系人</text><text>{{booking.contactName}} · {{booking.contactPhone}}</text></view></view>
+  <view wx:if="{{venue}}" class="facts surface">
+    <view><text class="muted">场馆导航</text><text>{{venue.address}}</text></view>
+    <view><text class="muted">当前入场须知</text><text>{{venue.entryNotice || '请按预约时间到场，如需帮助请联系场馆。'}}</text></view>
+    <button class="button-secondary" bindtap="openMap" disabled="{{venue.latitude == null || venue.longitude == null}}">导航到场馆</button>
+  </view>
   <view wx:if="{{composition}}" class="composition surface">
     <text class="section-title">支付组成</text>
     <view class="composition-row"><text>赠送余额</text><strong>{{composition.giftBalanceAmount}}</strong></view>
@@ -13,6 +18,7 @@
   <view wx:if="{{refund}}" class="refund-panel surface"><view class="section-head"><text class="section-title">退款</text><text class="status status-{{refund.statusTone}}">{{refund.statusLabel}}</text></view><view class="refund-facts"><text>{{refund.amount}}</text><text wx:if="{{refund.retryLabel}}" class="muted">{{refund.retryLabel}}</text><text wx:if="{{refund.nextRetryAtLabel}}" class="muted">下次重试 {{refund.nextRetryAtLabel}}</text><text wx:if="{{refund.lastFailureReason}}" class="error-text">{{refund.lastFailureReason}}</text></view></view>
   <view wx:if="{{booking.status === 'CONFIRMED' && credential.shortCode}}" class="credential surface"><text class="section-title">到场核销</text><image class="qr" src="{{credential.qr}}" mode="aspectFit" aria-label="预约核销二维码" /><text class="short-code">{{credential.shortCode}}</text><text class="muted">二维码会自动更新，短码可在扫码失败时使用。</text></view>
   <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
+  <button wx:if="{{canRebook}}" class="button-secondary" bindtap="rebook">再次预约</button>
   <button wx:if="{{canPay}}" class="button-primary" bindtap="pay">继续支付</button>
   <button wx:if="{{canReview}}" class="button-secondary" bindtap="review">场地评价</button>
   <button wx:if="{{booking.status === 'CONFIRMED'}}" class="button-danger" disabled="{{cancelling}}" bindtap="cancel">{{cancelling ? '正在取消预约' : '取消预约'}}</button>

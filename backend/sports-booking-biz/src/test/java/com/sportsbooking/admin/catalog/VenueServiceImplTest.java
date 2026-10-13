@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
 import com.sportsbooking.admin.base.mapper.AdminAccountMapper;
@@ -14,10 +16,14 @@ import com.sportsbooking.admin.base.mapper.VenueMapper;
 import com.sportsbooking.admin.base.po.AdminAccount;
 import com.sportsbooking.admin.base.po.Venue;
 import com.sportsbooking.admin.biz.exception.ApiException;
+import com.sportsbooking.admin.biz.pojo.request.VenueSaveRequest;
 import com.sportsbooking.admin.biz.service.impl.VenueServiceImpl;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -32,6 +38,43 @@ class VenueServiceImplTest {
     private final BCryptPasswordEncoder passwordEncoder = mock(BCryptPasswordEncoder.class);
     private final VenueServiceImpl service = new VenueServiceImpl(venueMapper,
             adminAccountMapper, mock(CourtMapper.class), passwordEncoder, ".");
+
+    @Test
+    void carriesDistrictIntoSlotSearchAndKeepsUnfilteredCallsCompatible() {
+        LocalDate date = LocalDate.of(2026, 12, 1);
+        ArgumentCaptor<String> district = ArgumentCaptor.forClass(String.class);
+
+        service.searchSlots(" 球馆 ", null, date, " 金水区 ", LocalTime.of(19, 0),
+                LocalTime.of(21, 0), 100, 10000, 1);
+        verify(venueMapper).selectMatchingSlots(eq("球馆"), eq(null), eq(date), district.capture(),
+                any(), any(), eq(100), eq(10000), any(), any(), eq(0));
+        assertThat(district.getValue()).isEqualTo("金水区");
+
+        service.searchSlots(null, null, date, "  ", null, null, null, null, 1);
+        verify(venueMapper).selectMatchingSlots(eq(null), eq(null), eq(date), eq(null), any(), any(),
+                eq(null), eq(null), any(), any(), eq(0));
+    }
+
+    @Test
+    void appliesAndClearsOptionalDistrictWithoutGuessingFromAddress() {
+        Venue venue = new Venue();
+        venue.id = 1L;
+        when(venueMapper.selectById(1L)).thenReturn(venue);
+        VenueSaveRequest body = new VenueSaveRequest();
+        body.setName("测试场馆");
+        body.setCity("郑州市");
+        body.setDistrict(" 金水区 ");
+        body.setAddress("金水区测试路");
+        body.setPhone("00000000000");
+
+        service.updateVenue(1L, body);
+        assertThat(venue.district).isEqualTo("金水区");
+
+        body.setDistrict(" ");
+        service.updateVenue(1L, body);
+        assertThat(venue.district).isNull();
+        assertThat(venue.address).isEqualTo("金水区测试路");
+    }
 
     @Test
     void savesExactServiceFeeRateAsBasisPoints() {

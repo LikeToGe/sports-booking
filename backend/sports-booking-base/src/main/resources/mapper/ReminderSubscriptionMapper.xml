@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.ReminderSubscriptionMapper">
+    <select id="selectByUser" resultType="com.sportsbooking.admin.base.bo.ReminderSubscriptionBO">
+        SELECT s.*, v.booking_days_ahead AS bookingDaysAhead,
+               v.min_booking_minutes AS minBookingMinutes
+        FROM s_reminder_subscription s JOIN s_venue v ON v.id = s.venue_id
+        WHERE s.user_id = #{userId}
+        ORDER BY s.created_at DESC, s.id DESC
+    </select>
+    <update id="markOpeningNotifiedForMessages">
+        UPDATE s_reminder_subscription s
+        JOIN s_notification n ON n.idempotency_key = CONCAT('alert:opening:', s.id)
+        SET s.opening_notified_at = n.created_at, s.updated_at = UTC_TIMESTAMP(3)
+        WHERE s.status = 'ACTIVE' AND s.type = 'OPENING' AND s.opening_notified_at IS NULL
+    </update>
+    <update id="cancelActive">
+        UPDATE s_reminder_subscription SET status = 'CANCELLED', updated_at = UTC_TIMESTAMP(3)
+        WHERE id = #{id} AND user_id = #{userId} AND status = 'ACTIVE'
+    </update>
+    <update id="expirePast">
+        UPDATE s_reminder_subscription s JOIN s_venue v ON v.id = s.venue_id
+        SET s.status = 'EXPIRED', s.updated_at = UTC_TIMESTAMP(3)
+        WHERE s.status = 'ACTIVE'
+          AND TIMESTAMP(s.target_date, s.end_time) &lt;= CONVERT_TZ(
+              DATE_ADD(UTC_TIMESTAMP(3), INTERVAL v.min_booking_minutes MINUTE), '+00:00', '+08:00')
+    </update>
+</mapper>

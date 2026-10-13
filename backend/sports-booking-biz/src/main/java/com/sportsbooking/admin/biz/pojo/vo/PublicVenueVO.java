@@ -46,6 +46,11 @@ public class PublicVenueVO {
     @ApiModelProperty(value = "所在城市")
     private String city;
 
+    /** 所属区县，未配置时为空。 */
+    @Schema(description = "所属区县")
+    @ApiModelProperty(value = "所属区县")
+    private String district;
+
     /**
      * 详细地址
      */
@@ -75,7 +80,7 @@ public class PublicVenueVO {
     private String nextAvailableAt;
 
     public static PublicVenueVO from(PublicVenueBO source) {
-        return new PublicVenueVO(source.getId(), source.getName(), source.getCoverPath(), source.getCity(),
+        return new PublicVenueVO(source.getId(), source.getName(), source.getCoverPath(), source.getCity(), source.getDistrict(),
                 source.getAddress(), source.getSportNames(), source.getStartingPriceFen(),
                 source.getNextAvailableAt());
     }

@@ -33,6 +33,11 @@ public class VenueSaveRequest {
     @ApiModelProperty(value = "所在城市")
     private String city;
 
+    /** 所属区县，旧场馆可为空。 */
+    @Schema(description = "所属区县，旧场馆可为空")
+    @ApiModelProperty(value = "所属区县，旧场馆可为空")
+    private String district;
+
     /**
      * 详细地址
      */

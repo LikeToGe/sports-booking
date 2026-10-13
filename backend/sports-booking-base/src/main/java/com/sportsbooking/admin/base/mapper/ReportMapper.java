@@ -32,10 +32,25 @@ public interface ReportMapper {
     List<ReportVenueMemberOperationBO> selectVenueMemberOperations(@Param("startAt") Instant startAt,
                                                                    @Param("endAt") Instant endAt);
 
+    /** 一次批量读取留存供给与预约快照，区间去重在业务层完成。 */
+    List<com.sportsbooking.admin.base.bo.ReportIntervalBO> selectUtilizationIntervals(
+            @Param("venueId") Long venueId, @Param("startAt") Instant startAt,
+            @Param("endAt") Instant endAt, @Param("courtId") Long courtId,
+            @Param("sportTypeId") Long sportTypeId);
+
     /** 查询场馆预约下钻。 */
     List<ReportBookingBO> selectBookings(@Param("venueId") long venueId,
                                          @Param("startAt") Instant startAt,
                                          @Param("endAt") Instant endAt);
+
+    /** 按场地和时段筛选场馆预约下钻。 */
+    List<ReportBookingBO> selectBookingsByCourtTime(@Param("venueId") long venueId,
+                                                    @Param("startAt") Instant startAt,
+                                                    @Param("endAt") Instant endAt,
+                                                    @Param("courtId") Long courtId,
+                                                    @Param("slotStartAt") Instant slotStartAt,
+                                                    @Param("slotEndAt") Instant slotEndAt,
+                                                    @Param("sportTypeId") Long sportTypeId);
 
     /** 查询场馆跨会员余额流水。 */
     List<ReportMemberFlowBO> selectMemberFlows(@Param("venueId") long venueId,

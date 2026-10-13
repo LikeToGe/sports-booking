@@ -106,7 +106,7 @@ public class DemoDataRunner implements CommandLineRunner {
     private void seedVenue(String name, String address, String phone, BigDecimal latitude, BigDecimal longitude,
                            String adminUsername, SportType firstSport, SportType secondSport) {
         Venue venue = venueService.createVenue(new VenueSaveRequest(
-                name, BusinessConstants.DEFAULT_CITY, address, latitude, longitude, phone,
+                name, BusinessConstants.DEFAULT_CITY, null, address, latitude, longitude, phone,
                 "更衣室、淋浴、停车场、饮水", "请提前 15 分钟到场，穿着适合场地的运动鞋。",
                 7, 30, 120
         ), adminUsername, "venue123");

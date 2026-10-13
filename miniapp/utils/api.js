@@ -104,7 +104,7 @@ function dateInZhengzhou(offsetDays = 0) {
 }
 
 function money(fen) {
-  return `¥${(Number(fen || 0) / 100).toFixed(0)}`;
+  return `¥${(Number(fen || 0) / 100).toFixed(2)}`;
 }
 
 function localValue(value) {

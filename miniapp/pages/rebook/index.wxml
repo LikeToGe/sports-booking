@@ -1,0 +1,12 @@
+<operation-toast />
+<view class="page rebook-page">
+  <view class="screen-head"><text class="screen-title">再次预约</text><text class="muted">选择新日期后查看当前价格和库存，不会自动付款。</text></view>
+  <view wx:if="{{loading}}" class="muted" aria-live="polite">正在读取本人预约</view>
+  <view wx:if="{{error}}" class="error" role="alert">{{error}}<button class="button-secondary" bindtap="load">重新加载</button></view>
+  <block wx:if="{{booking}}">
+    <text class="section-title">{{booking.venueName}} · {{booking.sportName}}</text>
+    <picker mode="date" value="{{date}}" bindchange="selectDate"><view class="date-button">{{date || '请选择新日期'}}</view></picker>
+    <text class="muted">优先标出原场地和开始时间；偏好不可用时，可主动选择其他完整场次。</text>
+    <button class="button-primary" bindtap="viewSlots" disabled="{{!date || loading || error}}">查看当日场次</button>
+  </block>
+</view>

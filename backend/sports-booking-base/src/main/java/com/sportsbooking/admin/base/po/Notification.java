@@ -26,6 +26,8 @@ public class Notification {
     public String businessType;
     /** 业务主键。 */
     public Long businessId;
+    /** 提醒登记 ID；用于撤回、过期和消息落地。 */
+    public Long subscriptionId;
     /** 消息类型。 */
     public NotificationType type;
     /** 站内消息标题。 */
@@ -38,6 +40,10 @@ public class Notification {
     public String idempotencyKey;
     /** 消息发送状态。 */
     public NotificationStatus status;
+    /** 外部投递临时领取时间。 */
+    public LocalDateTime deliveryClaimedAt;
+    /** 失败后的下次 Mock 重试时间。 */
+    public LocalDateTime deliveryNextAttemptAt;
     /** 创建时间。 */
     public LocalDateTime createdAt;
 }

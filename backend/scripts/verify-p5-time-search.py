@@ -33,7 +33,9 @@ def http(path, token=None, body=None, admin=False):
     except urllib.error.HTTPError as error:
         response = error
     with response:
-        return json.load(response)
+        result = json.load(response)
+        result["_http_status"] = response.status
+        return result
 
 
 def ok(path, token=None, body=None, admin=False):
@@ -91,7 +93,7 @@ for params in [{'startTime': '21:00', 'endTime': '19:00'}, {'startTime': '19:00'
                {'minPriceFen': -1}, {'minPriceFen': '50.50'}, {'minPriceFen': 100, 'maxPriceFen': 99},
                {'page': 0}, {'page': 10001}]:
     response = http('/mini/slots/search?' + urllib.parse.urlencode({'date': str(DAY), **params}), user)
-    assert response['code'] != 0, params
+    assert response['code'] != 0 and response['_http_status'] == 400 and response['msg'] == '参数不正确', (params, response)
 assert not [r for r in search(user, date=str(TODAY + dt.timedelta(days=7)), startTime='22:00', endTime='23:00') if r['id'] == 880009]
 sql("UPDATE s_venue SET min_booking_minutes=100000 WHERE id=1;")
 assert not [r for r in search(user) if r['venueId'] == 1]
@@ -145,6 +147,23 @@ assert cancelled['status'] == 'CANCELLED' and cancelled['paymentStatus'] == 'REF
 assert any(row['id'] == 880001 for row in search(user))
 print('P5: changed price, last-slot race, idempotency, entry attribution and refund passed')
 
+# 再订从本人历史详情读取偏好，新日期、价格和资金组成全部重新确认。
+legacy = ok(f"/mini/bookings/{created['id']}", winner)['booking']
+assert http(f"/mini/bookings/{created['id']}", loser)['code'] != 0
+new_day = DAY + dt.timedelta(days=1)
+sql(fixture(883001, 880001, 1, '19:00', '20:30', 7777, day=new_day))
+new_slots = ok('/mini/venues/1?date=' + str(new_day), winner)['slots']
+assert next(row for row in new_slots if row['id'] == 883001)['priceFen'] == 7777
+rebook = ok('/mini/bookings/create', winner, {'sessionSlotId': 883001, 'contactName': '新确认联系人',
+    'contactPhone': '13800000000', 'expectedPriceFen': 7777, 'entryType': 'BOOK_AGAIN',
+    'idempotencyKey': 'p5-book-again'})
+assert rebook['amountFen'] == 7777 and rebook['id'] != legacy['id']
+assert rebook['contactName'] == '新确认联系人'
+assert sql(f"SELECT entry_type FROM s_booking WHERE id={rebook['id']}") == 'BOOK_AGAIN'
+ok(f"/mini/bookings/{rebook['id']}/mock-pay", winner, {})
+assert ok(f"/mini/bookings/{rebook['id']}/cancel", winner, {})['paymentStatus'] == 'REFUNDED'
+print('P5: owned history, new date/current price, BOOK_AGAIN attribution and refund passed')
+
 # 同一 DDL 在 V1-V10 数据库升级：保留预约快照与历史来源空值。
 sql('CREATE DATABASE p5_upgrade;')
 migrations = Path(__file__).resolve().parents[1] / 'sports-booking-server/src/main/resources/db/migration'
@@ -158,8 +177,12 @@ INSERT INTO s_booking(id,booking_no,venue_id,court_id,sport_type_id,session_slot
 VALUES(1,'p5-legacy',1,1,1,1,'OFFLINE','测试用户','00000000000','旧馆名','旧场地','旧运动','2026-01-01 10:00:00','2026-01-01 11:00:00',5050,'CONFIRMED','UNPAID');""", 'p5_upgrade')
 sql(next(migrations.glob('V11__*.sql')).read_text(), 'p5_upgrade')
 assert sql("SELECT CONCAT(amount_fen,':',venue_name,':',IF(entry_type IS NULL,'NULL',entry_type)) FROM s_booking WHERE id=1", 'p5_upgrade') == '5050:旧馆名:NULL'
-assert sql('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history WHERE success=1') == '11'
-print('P5: Flyway empty database V1-V11 and SQL upgrade V10-V11 preserve history passed')
+assert int(sql('SELECT MAX(CAST(version AS UNSIGNED)) FROM flyway_schema_history WHERE success=1')) >= 14
+for version in range(12, 16):
+    sql(next(migrations.glob(f'V{version}__*.sql')).read_text(), 'p5_upgrade')
+assert sql("SELECT IF(district IS NULL,'NULL',district) FROM s_venue WHERE id=1", 'p5_upgrade') == 'NULL'
+assert sql("SELECT CONCAT(amount_fen,':',venue_name) FROM s_booking WHERE id=1", 'p5_upgrade') == '5050:旧馆名'
+print('P5: Flyway empty database and SQL upgrade V10-V15 preserve history passed')
 # 运行态 schema 是契约真源，导出新查询和可选字段供仓库审阅。
 request = urllib.request.Request(BASE + '/v3/api-docs.yaml')
 with urllib.request.urlopen(request, timeout=20) as response:

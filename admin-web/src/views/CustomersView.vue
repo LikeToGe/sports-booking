@@ -19,6 +19,47 @@ import { hasPermission } from "../auth";
 import { statusLabel, statusTone } from "../labels";
 import type { VenueCustomer } from "../types";
 
+interface CustomerOperation {
+  customerId: number;
+  contactName: string | null;
+  phone: string | null;
+  validBookingCount: number;
+  lastValidBookingAt: string | null;
+  lastValidBookingSource: "ONLINE" | "OFFLINE" | null;
+  lastCompletedAt: string | null;
+  latestVerifiedAt: string | null;
+  futureConfirmedCount: number;
+  usualHours: string | null;
+  tags: string[];
+  segment: string | null;
+  customerCreatedAt: string;
+}
+
+interface VenueCustomerTag {
+  id: number;
+  name: string;
+  createdByName: string;
+  createdAt: string;
+}
+
+interface CustomerFollowup {
+  id: number;
+  customerId: number;
+  contactName: string | null;
+  purpose: string;
+  sourceGroup: string;
+  status: "PENDING" | "COMPLETED" | "NOT_NEEDED";
+  note: string | null;
+  createdByName: string;
+  createdAt: string;
+  handledByName: string | null;
+  handledAt: string | null;
+  rebookedAfterHandled: boolean | null;
+  /** 首个处理后日期有效预约场次的开始时间，不是预约创建时间。 */
+  rebookedAfterHandledAt: string | null;
+  rebookedAfterHandledSource: "ONLINE" | "OFFLINE" | null;
+}
+
 interface RechargePlan {
   id: number;
   name: string;
@@ -67,10 +108,24 @@ interface MemberRecharge {
 }
 
 const customers = ref<VenueCustomer[]>([]);
+const operations = ref<CustomerOperation[]>([]);
+const tags = ref<VenueCustomerTag[]>([]);
+const followups = ref<CustomerFollowup[]>([]);
 const keyword = ref("");
+const segment = ref("");
+const followupStatus = ref("");
+const newTagName = ref("");
+const operationsError = ref("");
+const tagsError = ref("");
+const followupsError = ref("");
+const actionError = ref("");
+const actionMessage = ref("");
+const creatingTag = ref(false);
+const canEditCustomerOperations = hasPermission("CUSTOMER_OPERATIONS_EDIT");
 const error = ref("");
 const loading = ref(false);
 const selected = ref<VenueCustomer>();
+const selectedOperation = ref<CustomerOperation>();
 const drawer = ref<HTMLDialogElement>();
 const balance = ref<BalanceAccount>();
 const recharges = ref<MemberRecharge[]>([]);
@@ -85,6 +140,11 @@ const rechargePlanId = ref<number | "">("");
 const rechargeChannel = ref<"CASH" | "WECHAT" | "ALIPAY">("CASH");
 let rechargeIdempotencyKey = "";
 const reverseDialog = ref<HTMLDialogElement>();
+const followupDialog = ref<HTMLDialogElement>();
+const updatingFollowup = ref<CustomerFollowup>();
+const followupNextStatus = ref<"COMPLETED" | "NOT_NEEDED">("COMPLETED");
+const followupNote = ref("");
+const updatingFollowupBusy = ref(false);
 const reversingRecharge = ref<MemberRecharge>();
 const reverseReason = ref("");
 const offlineFundsHandled = ref(false);
@@ -95,19 +155,162 @@ const canRecharge = hasPermission("MEMBER_RECHARGE");
 const canReverseRecharge = hasPermission("MEMBER_RECHARGE_REVERSE");
 const filtered = computed(() => {
   const query = keyword.value.trim().toLowerCase();
-  return customers.value.filter(customer => !query || [customer.contactName, customer.phone, customer.memberCode]
-    .some(value => value?.toLowerCase().includes(query)));
+  const groupedIds = segment.value ? new Set(operations.value.map(item => item.customerId)) : null;
+  return customers.value.filter(customer => (!query || [customer.contactName, customer.phone, customer.memberCode]
+    .some(value => value?.toLowerCase().includes(query)))
+    && (!groupedIds || groupedIds.has(customer.customerId)));
 });
 
 async function load() {
   loading.value = true;
   error.value = "";
   try {
-    customers.value = await api<VenueCustomer[]>(`/venue-admin/customers/list?keyword=${encodeURIComponent(keyword.value.trim())}`);
+    const params = new URLSearchParams({ keyword: keyword.value.trim() });
+    const operationParams = new URLSearchParams();
+    if (segment.value) operationParams.set("segment", segment.value);
+    const [rows, summaries] = await Promise.all([
+      api<VenueCustomer[]>(`/venue-admin/customers/list?${params}`),
+      api<CustomerOperation[]>(`/venue-admin/customer-operations?${operationParams}`),
+    ]);
+    customers.value = rows;
+    operations.value = summaries;
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "顾客加载失败";
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadTags() {
+  tagsError.value = "";
+  try {
+    tags.value = await api<VenueCustomerTag[]>("/venue-admin/customer-tags");
+  } catch (reason) {
+    tagsError.value = reason instanceof Error ? reason.message : "顾客标签加载失败";
+  }
+}
+
+async function loadFollowups() {
+  followupsError.value = "";
+  try {
+    const params = new URLSearchParams();
+    if (followupStatus.value) params.set("status", followupStatus.value);
+    followups.value = await api<CustomerFollowup[]>(`/venue-admin/customer-followups?${params}`);
+  } catch (reason) {
+    followupsError.value = reason instanceof Error ? reason.message : "回访待办加载失败";
+  }
+}
+
+function operationFor(customerId: number) {
+  return operations.value.find(item => item.customerId === customerId);
+}
+
+function bookingSourceText(value: "ONLINE" | "OFFLINE" | null | undefined) {
+  return value === "ONLINE" ? "线上" : value === "OFFLINE" ? "线下登记" : "来源未知";
+}
+
+function usualHoursText(value: string | null) {
+  if (!value) return "暂无";
+  return value.split(",").map(row => {
+    const [hour, count] = row.split(":");
+    return `${hour}时 · ${count} 次`;
+  }).join("，");
+}
+
+async function createTag() {
+  const name = newTagName.value.trim();
+  if (!name || creatingTag.value) return;
+  creatingTag.value = true;
+  tagsError.value = "";
+  actionMessage.value = "";
+  try {
+    await api("/venue-admin/customer-tags", { method: "POST", body: JSON.stringify({ name }) });
+    newTagName.value = "";
+    actionMessage.value = "标签已创建";
+    await loadTags();
+  } catch (reason) {
+    tagsError.value = reason instanceof Error ? reason.message : "标签创建失败";
+  } finally {
+    creatingTag.value = false;
+  }
+}
+
+async function deleteTag(tag: VenueCustomerTag) {
+  if (!window.confirm(`删除“${tag.name}”会同时移除本馆全部关联，确定继续吗？`)) return;
+  actionError.value = "";
+  actionMessage.value = "";
+  try {
+    await api(`/venue-admin/customer-tags/${tag.id}`, { method: "DELETE" });
+    actionMessage.value = `标签“${tag.name}”及其关联已删除`;
+    await Promise.all([loadTags(), load()]);
+    if (selected.value) await loadOperation(selected.value.customerId);
+  } catch (reason) {
+    actionError.value = reason instanceof Error ? reason.message : "标签删除失败";
+  }
+}
+
+async function loadOperation(customerId: number) {
+  operationsError.value = "";
+  try {
+    selectedOperation.value = await api<CustomerOperation>(`/venue-admin/customer-operations/${customerId}`);
+  } catch (reason) {
+    operationsError.value = reason instanceof Error ? reason.message : "顾客经营信息加载失败";
+  }
+}
+
+async function changeCustomerTag(tag: VenueCustomerTag) {
+  if (!selected.value || !canEditCustomerOperations) return;
+  const isAssigned = selectedOperation.value?.tags.includes(tag.name);
+  actionError.value = "";
+  actionMessage.value = "";
+  try {
+    await api(`/venue-admin/customers/${selected.value.customerId}/tags/${tag.id}`, {
+      method: isAssigned ? "DELETE" : "POST",
+    });
+    actionMessage.value = isAssigned ? `已移除标签“${tag.name}”` : `已添加标签“${tag.name}”`;
+    await Promise.all([loadOperation(selected.value.customerId), load()]);
+  } catch (reason) {
+    actionError.value = reason instanceof Error ? reason.message : "顾客标签更新失败";
+  }
+}
+
+async function createFollowup(customerId: number) {
+  actionError.value = "";
+  actionMessage.value = "";
+  try {
+    await api("/venue-admin/customer-followups", { method: "POST", body: JSON.stringify({
+      customerId, purpose: "30_DAY_NO_REBOOK", sourceGroup: "30_DAY_NO_REBOOK",
+    }) });
+    actionMessage.value = "回访待办已创建";
+    await loadFollowups();
+  } catch (reason) {
+    actionError.value = reason instanceof Error ? reason.message : "回访待办创建失败";
+  }
+}
+
+function openFollowupUpdate(item: CustomerFollowup, status: "COMPLETED" | "NOT_NEEDED") {
+  updatingFollowup.value = item;
+  followupNextStatus.value = status;
+  followupNote.value = "";
+  followupDialog.value?.showModal();
+}
+
+async function updateFollowup() {
+  if (!updatingFollowup.value || updatingFollowupBusy.value) return;
+  updatingFollowupBusy.value = true;
+  actionError.value = "";
+  actionMessage.value = "";
+  try {
+    await api(`/venue-admin/customer-followups/${updatingFollowup.value.id}`, {
+      method: "PATCH", body: JSON.stringify({ status: followupNextStatus.value, note: followupNote.value.trim() || null }),
+    });
+    actionMessage.value = followupNextStatus.value === "COMPLETED" ? "回访已标记完成" : "回访已标记无需处理";
+    followupDialog.value?.close();
+    await loadFollowups();
+  } catch (reason) {
+    actionError.value = reason instanceof Error ? reason.message : "回访待办更新失败";
+  } finally {
+    updatingFollowupBusy.value = false;
   }
 }
 
@@ -131,6 +334,7 @@ async function loadMemberData(customerId: number) {
 
 async function open(customer: VenueCustomer) {
   selected.value = customer;
+  selectedOperation.value = operationFor(customer.customerId);
   balance.value = undefined;
   recharges.value = [];
   detailError.value = "";
@@ -150,6 +354,7 @@ async function loadDetail() {
     const customerId = selected.value.customerId;
     const [detail] = await Promise.all([
       api<VenueCustomer>(`/venue-admin/customers/${customerId}`),
+      loadOperation(customerId),
       canViewFunds ? loadMemberData(customerId) : Promise.resolve(),
     ]);
     selected.value = detail;
@@ -214,6 +419,10 @@ async function reverseRecharge() {
   }
 }
 
+function followupStatusText(value: CustomerFollowup["status"]) {
+  return { PENDING: "待处理", COMPLETED: "已完成", NOT_NEEDED: "无需处理" }[value];
+}
+
 function flowBusinessLabel(value: string) {
   return {
     RECHARGE: "充值入账",
@@ -244,26 +453,44 @@ watch([rechargePlanId, rechargeChannel], () => {
   if (!recharging.value) rechargeIdempotencyKey = "";
 });
 
-onMounted(() => Promise.all([load(), canRecharge ? loadPlans() : Promise.resolve()]));
+onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? loadPlans() : Promise.resolve()]));
 </script>
 
 <template>
   <section class="page">
     <header class="page-header">
-      <div><h1>顾客与会员</h1><p>用户首次在本场馆预约后形成独立顾客档案。</p></div>
+      <div><h1>顾客与会员</h1><p>顾客档案、场馆内标签、分组和回访待办仅限当前场馆查看。</p></div>
     </header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+    <p v-if="actionMessage" class="saved-message" role="status">{{ actionMessage }}</p>
+    <p v-if="actionError" class="error-banner" role="alert">{{ actionError }}</p>
     <form class="filter-bar" aria-label="顾客搜索" @submit.prevent="load">
       <label class="field filter-search"><span>姓名、完整手机号或会员码</span><input v-model.trim="keyword" type="search"></label>
+      <label class="field"><span>顾客分组</span><select v-model="segment"><option value="">全部顾客</option><option value="30_DAY_NO_REBOOK">30 天未再预约</option></select></label>
       <button class="button" type="submit" :disabled="loading"><Search :size="18" aria-hidden="true" />搜索顾客</button>
       <button class="icon-button filter-action" type="button" aria-label="刷新顾客" title="刷新顾客" :disabled="loading" @click="load"><RefreshCw :size="19" aria-hidden="true" /></button>
     </form>
+    <section class="customer-ops-grid">
+      <section class="data-panel" aria-label="场馆顾客标签"><header class="data-panel-head"><div><h2>顾客标签</h2><p>标签仅在当前场馆内使用，不改变会员身份或计价。</p></div><span class="record-count">{{ tags.length }} 个</span></header>
+        <p v-if="tagsError" class="error-banner" role="alert">{{ tagsError }} <button class="inline-command" type="button" @click="loadTags">重试</button></p>
+        <form v-if="canEditCustomerOperations" class="inline-form" @submit.prevent="createTag"><label class="field"><span>新增标签</span><input v-model.trim="newTagName" maxlength="40" required></label><button class="button" type="submit" :disabled="creatingTag || !newTagName.trim()">{{ creatingTag ? "正在创建" : "创建标签" }}</button></form>
+        <ul v-if="tags.length" class="tag-list"><li v-for="tag in tags" :key="tag.id"><span><strong>{{ tag.name }}</strong><small>{{ tag.createdByName }} · {{ localDateTime(tag.createdAt) }}</small></span><button v-if="canEditCustomerOperations" class="button danger" type="button" @click="deleteTag(tag)">删除</button></li></ul>
+        <div v-else-if="!tagsError" class="empty-state"><strong>暂无标签</strong></div>
+      </section>
+      <section class="data-panel" aria-label="回访待办"><header class="data-panel-head"><div><h2>回访待办</h2><p>来源为“30 天未再预约”分组；备注仅当前场馆授权人员可见。</p></div><span class="record-count">{{ followups.length }} 条</span></header>
+        <form class="inline-form" @submit.prevent="loadFollowups"><label class="field"><span>待办状态</span><select v-model="followupStatus"><option value="">全部</option><option value="PENDING">待处理</option><option value="COMPLETED">已完成</option><option value="NOT_NEEDED">无需处理</option></select></label><button class="button secondary" type="submit">刷新待办</button></form>
+        <p v-if="followupsError" class="error-banner" role="alert">{{ followupsError }} <button class="inline-command" type="button" @click="loadFollowups">重试</button></p>
+        <ul v-if="followups.length" class="followup-list"><li v-for="item in followups" :key="item.id"><div><strong>{{ item.contactName || "未填写姓名" }} · {{ followupStatusText(item.status) }}</strong><small>{{ item.sourceGroup === "30_DAY_NO_REBOOK" ? "30 天未再预约" : item.sourceGroup }} · {{ item.createdByName }} 创建于 {{ localDateTime(item.createdAt) }}</small><small v-if="item.handledByName">{{ item.handledByName }} · {{ item.handledAt ? localDateTime(item.handledAt) : "" }} · {{ item.note || "无备注" }}</small><small v-if="item.handledAt">处理后日期的{{ item.rebookedAfterHandled ? `${bookingSourceText(item.rebookedAfterHandledSource)}有效预约场次：${localDateTime(item.rebookedAfterHandledAt)}` : "暂无有效预约场次" }}（按场次开始时间；不代表预约创建于处理后或由回访导致）</small></div><div v-if="canEditCustomerOperations && item.status === 'PENDING'" class="row-actions"><button class="button secondary" type="button" @click="openFollowupUpdate(item, 'COMPLETED')">完成</button><button class="button secondary" type="button" @click="openFollowupUpdate(item, 'NOT_NEEDED')">无需处理</button></div></li></ul>
+        <div v-else-if="!followupsError" class="empty-state"><strong>暂无回访待办</strong></div>
+      </section>
+    </section>
+
     <section class="data-panel" aria-label="顾客列表">
-      <header class="data-panel-head"><div><h2>场馆顾客</h2><p>会员将在首次成功充值后激活</p></div><span class="record-count">{{ filtered.length }} 条</span></header>
+      <header class="data-panel-head"><div><h2>{{ segment ? "30 天未再预约" : "场馆顾客" }}</h2><p>预约与核销来自本场馆线上预约事实；线下履约未跟踪不视为到场。</p></div><span class="record-count">{{ filtered.length }} 条</span></header>
       <div v-if="filtered.length" class="table-wrap">
         <table>
-          <thead><tr><th>顾客</th><th>手机号</th><th>会员码</th><th>身份</th><th>建档时间</th><th>操作</th></tr></thead>
-          <tbody><tr v-for="customer in filtered" :key="customer.customerId"><td data-label="顾客"><strong>{{ customer.contactName || "未填写" }}</strong></td><td data-label="手机号">{{ customer.phone || "未填写" }}</td><td data-label="会员码"><span class="numeric">{{ customer.memberCode }}</span></td><td data-label="身份"><span class="status" :data-tone="statusTone(customer.status)">{{ statusLabel(customer.status) }}</span></td><td data-label="建档时间">{{ localDateTime(customer.createdAt) }}</td><td data-label="操作"><button class="button secondary" type="button" @click="open(customer)">查看详情</button></td></tr></tbody>
+          <thead><tr><th>顾客</th><th>手机号</th><th>有效预约</th><th>最近有效预约</th><th>最近线上完成</th><th>最近线上核销</th><th>常约时段</th><th>会员码</th><th>身份</th><th>操作</th></tr></thead>
+          <tbody><tr v-for="customer in filtered" :key="customer.customerId"><td data-label="顾客"><strong>{{ customer.contactName || "未填写" }}</strong><span v-if="operationFor(customer.customerId)?.tags.length" class="subline">{{ operationFor(customer.customerId)?.tags.join("、") }}</span></td><td data-label="手机号">{{ customer.phone || "未填写" }}</td><td data-label="有效预约">{{ operationFor(customer.customerId)?.validBookingCount ?? 0 }}</td><td data-label="最近有效预约">{{ operationFor(customer.customerId)?.lastValidBookingAt ? `${localDateTime(operationFor(customer.customerId)!.lastValidBookingAt!)} · ${bookingSourceText(operationFor(customer.customerId)?.lastValidBookingSource)}` : "暂无" }}</td><td data-label="最近线上完成">{{ operationFor(customer.customerId)?.lastCompletedAt ? localDateTime(operationFor(customer.customerId)!.lastCompletedAt!) : "暂无" }}</td><td data-label="最近线上核销">{{ operationFor(customer.customerId)?.latestVerifiedAt ? localDateTime(operationFor(customer.customerId)!.latestVerifiedAt!) : "暂无" }}</td><td data-label="常约时段">{{ usualHoursText(operationFor(customer.customerId)?.usualHours || null) }}</td><td data-label="会员码"><span class="numeric">{{ customer.memberCode }}</span></td><td data-label="身份"><span class="status" :data-tone="statusTone(customer.status)">{{ statusLabel(customer.status) }}</span></td><td data-label="操作"><div class="row-actions"><button class="button secondary" type="button" @click="open(customer)">查看与标签</button><button v-if="canEditCustomerOperations && operationFor(customer.customerId)?.segment === '30_DAY_NO_REBOOK'" class="button secondary" type="button" @click="createFollowup(customer.customerId)">创建回访</button></div></td></tr></tbody>
         </table>
       </div>
       <div v-else-if="!loading" class="empty-state"><UsersRound :size="28" aria-hidden="true" /><strong>暂无匹配顾客</strong><span>线上用户完成首次预约后会显示在这里。</span></div>
@@ -287,6 +514,21 @@ onMounted(() => Promise.all([load(), canRecharge ? loadPlans() : Promise.resolve
               <div><span>建档时间</span><strong>{{ localDateTime(selected.createdAt) }}</strong></div>
               <div><span>会员激活</span><strong>{{ localDateTime(selected.activatedAt) }}</strong></div>
             </div>
+          </section>
+
+          <section class="customer-section" aria-labelledby="customer-operations-heading">
+            <div class="section-heading"><div><h3 id="customer-operations-heading">预约习惯与标签</h3><p>线上核销仅记录已完成预约；线下履约未跟踪不推断到场。</p></div></div>
+            <div v-if="selectedOperation" class="detail-list customer-facts">
+              <div><span>有效预约次数</span><strong>{{ selectedOperation.validBookingCount }}</strong></div>
+              <div><span>最近有效预约</span><strong>{{ selectedOperation.lastValidBookingAt ? `${localDateTime(selectedOperation.lastValidBookingAt)} · ${bookingSourceText(selectedOperation.lastValidBookingSource)}` : "暂无" }}</strong></div>
+              <div><span>最近线上完成</span><strong>{{ selectedOperation.lastCompletedAt ? localDateTime(selectedOperation.lastCompletedAt) : "暂无" }}</strong></div>
+              <div><span>最近线上核销</span><strong>{{ selectedOperation.latestVerifiedAt ? localDateTime(selectedOperation.latestVerifiedAt) : "暂无" }}</strong></div>
+              <div><span>未来已确认预约</span><strong>{{ selectedOperation.futureConfirmedCount }}</strong></div>
+              <div class="span-2"><span>常约时段</span><strong>{{ usualHoursText(selectedOperation.usualHours) }}</strong></div>
+            </div>
+            <p v-if="operationsError" class="error-banner" role="alert">{{ operationsError }}</p>
+            <div v-if="tags.length" class="tag-list compact"><div v-for="tag in tags" :key="tag.id" class="tag-row"><span>{{ tag.name }}</span><button v-if="canEditCustomerOperations" class="button secondary" type="button" @click="changeCustomerTag(tag)">{{ selectedOperation?.tags.includes(tag.name) ? "移除" : "添加" }}</button><span v-else class="muted">{{ selectedOperation?.tags.includes(tag.name) ? "已添加" : "未添加" }}</span></div></div>
+            <p v-else class="muted">暂无场馆标签。</p>
           </section>
 
           <section v-if="canViewFunds" class="customer-section" aria-labelledby="balance-heading">
@@ -352,6 +594,15 @@ onMounted(() => Promise.all([load(), canRecharge ? loadPlans() : Promise.resolve
       </div>
     </dialog>
 
+    <dialog ref="followupDialog" class="modal">
+      <form method="dialog" class="modal-head"><h2>{{ followupNextStatus === "COMPLETED" ? "完成回访" : "无需处理" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <form class="modal-body" @submit.prevent="updateFollowup">
+        <p>{{ updatingFollowup?.contactName || "当前顾客" }} · {{ followupNextStatus === "COMPLETED" ? "确认已完成回访" : "确认无需处理" }}</p>
+        <label class="field"><span>{{ followupNextStatus === "COMPLETED" ? "处理备注" : "无需处理原因" }}</span><textarea v-model="followupNote" maxlength="255" :disabled="updatingFollowupBusy"></textarea></label>
+        <div class="modal-actions"><button class="button secondary" type="button" :disabled="updatingFollowupBusy" @click="followupDialog?.close()">取消</button><button class="button" type="submit" :disabled="updatingFollowupBusy">{{ updatingFollowupBusy ? "正在保存" : "确认" }}</button></div>
+      </form>
+    </dialog>
+
     <dialog ref="reverseDialog" class="modal">
       <form method="dialog" class="modal-head"><h2>确认整笔撤销</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="reverseRecharge">
@@ -372,6 +623,19 @@ onMounted(() => Promise.all([load(), canRecharge ? loadPlans() : Promise.resolve
 .customer-detail {
   align-content: start;
 }
+
+.customer-ops-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+.inline-form { display: flex; align-items: end; gap: var(--space-sm); padding: var(--space-md); }
+.inline-form .field { flex: 1; }
+.tag-list, .followup-list { display: grid; gap: var(--space-xs); margin: 0; padding: var(--space-md); list-style: none; }
+.tag-list li, .followup-list li, .tag-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-sm); border: 1px solid var(--color-rule-2); border-radius: var(--radius-md); }
+.tag-list li > span, .followup-list li > div:first-child { display: grid; gap: var(--space-2xs); min-width: 0; }
+.tag-list small, .followup-list small { color: var(--color-muted); font-size: var(--text-xs); }
+.tag-list .button { min-height: 2.25rem; }
+.tag-list.compact { padding: 0; }
+.tag-row { justify-content: start; }
+.tag-row span:first-child { flex: 1; }
+@media (max-width: 48rem) { .customer-ops-grid { grid-template-columns: 1fr; } .inline-form { align-items: stretch; flex-direction: column; } }
 
 .customer-section {
   display: grid;

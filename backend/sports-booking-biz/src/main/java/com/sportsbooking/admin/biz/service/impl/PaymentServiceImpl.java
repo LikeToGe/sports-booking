@@ -25,6 +25,7 @@ import com.sportsbooking.admin.biz.pojo.vo.PlatformRefundVO;
 import com.sportsbooking.admin.biz.pojo.vo.RefundVO;
 import com.sportsbooking.admin.biz.service.MemberFundsService;
 import com.sportsbooking.admin.biz.service.NotificationService;
+import com.sportsbooking.admin.biz.service.ReminderService;
 import com.sportsbooking.admin.biz.service.PaymentService;
 import com.sportsbooking.admin.biz.service.PaymentChannelAdapter;
 import com.sportsbooking.admin.biz.service.RedisLockService;
@@ -47,11 +48,21 @@ public class PaymentServiceImpl implements PaymentService {
     private final MemberFundsService memberFundsService;
     private final RedisLockService redisLockService;
     private final PaymentChannelAdapter channelAdapter;
+    private final ReminderService reminderService;
 
     public PaymentServiceImpl(BookingMapper bookingMapper, PaymentMapper paymentMapper, RefundMapper refundMapper,
                               SessionSlotMapper sessionSlotMapper, NotificationService notificationService,
                               MemberFundsService memberFundsService, RedisLockService redisLockService,
                               PaymentChannelAdapter channelAdapter) {
+        this(bookingMapper, paymentMapper, refundMapper, sessionSlotMapper, notificationService,
+                memberFundsService, redisLockService, channelAdapter, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PaymentServiceImpl(BookingMapper bookingMapper, PaymentMapper paymentMapper, RefundMapper refundMapper,
+                              SessionSlotMapper sessionSlotMapper, NotificationService notificationService,
+                              MemberFundsService memberFundsService, RedisLockService redisLockService,
+                              PaymentChannelAdapter channelAdapter, ReminderService reminderService) {
         this.bookingMapper = bookingMapper;
         this.paymentMapper = paymentMapper;
         this.refundMapper = refundMapper;
@@ -60,6 +71,7 @@ public class PaymentServiceImpl implements PaymentService {
         this.memberFundsService = memberFundsService;
         this.redisLockService = redisLockService;
         this.channelAdapter = channelAdapter;
+        this.reminderService = reminderService;
     }
 
     @Override
@@ -338,11 +350,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void releaseSlot(SessionSlot slot, long bookingId) {
-        if (slot != null && slot.holdBookingId != null && bookingId == slot.holdBookingId) {
+        if (slot != null && slot.status == SessionSlotStatus.HELD
+                && slot.holdBookingId != null && bookingId == slot.holdBookingId) {
             slot.status = SessionSlotStatus.OPEN;
             slot.holdBookingId = null;
             slot.holdExpiresAt = null;
             sessionSlotMapper.updateById(slot);
+            if (reminderService != null) reminderService.onSlotReleased(slot.id, "booking:" + bookingId);
         }
     }
 

@@ -38,6 +38,8 @@ Page({
   },
   toggleProfileForm() { this.setData({ showProfileForm: !this.data.showProfileForm }); },
   openBookings() { wx.switchTab({ url: "/pages/bookings/index" }); },
+  openFavourites() { wx.navigateTo({ url: "/pages/favourites/index" }); },
+  openReminders() { wx.navigateTo({ url: "/pages/reminders/index" }); },
   openMembership() { wx.switchTab({ url: "/pages/membership/index" }); },
   onName(event) { this.setData({ contactName: event.detail.value, saved: false }); },
   onPhone(event) { this.setData({ phone: event.detail.value, saved: false }); },

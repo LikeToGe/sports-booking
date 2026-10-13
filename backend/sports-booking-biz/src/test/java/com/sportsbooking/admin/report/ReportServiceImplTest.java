@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sportsbooking.admin.base.bo.ReportBookingBO;
+import com.sportsbooking.admin.base.bo.ReportIntervalBO;
 import com.sportsbooking.admin.base.bo.ReportMemberFlowBO;
 import com.sportsbooking.admin.base.bo.ReportOperationDailyBO;
 import com.sportsbooking.admin.base.bo.ReportOperationExtraBO;
@@ -16,6 +17,7 @@ import com.sportsbooking.admin.base.mapper.ReportMapper;
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.biz.pojo.vo.ReportBookingVO;
 import com.sportsbooking.admin.biz.pojo.vo.ReportOperationVO;
+import com.sportsbooking.admin.biz.pojo.vo.ReportUtilizationVO;
 import com.sportsbooking.admin.biz.service.VenueService;
 import com.sportsbooking.admin.biz.service.impl.ReportServiceImpl;
 import java.io.ByteArrayInputStream;
@@ -101,6 +103,71 @@ class ReportServiceImplTest {
                         com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).toInstant()),
                 eq(today.plusDays(1).atStartOfDay(
                         com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).toInstant()));
+    }
+
+    @Test
+    void unionsDifferentIntervalsAndKeepsMovedSnapshotsAndDistinctCancellations() {
+        when(reportMapper.selectUtilizationIntervals(eq(21L), any(), any(), eq(null), eq(null))).thenReturn(List.of(
+                interval(3L, "SUPPLY", null, "2026-09-01T10:00", "2026-09-01T11:00"),
+                interval(3L, "SUPPLY", null, "2026-09-01T10:30", "2026-09-01T11:30"),
+                interval(3L, "BOOKED", 1L, "2026-09-01T10:45", "2026-09-01T11:15"),
+                interval(3L, "CANCELLED", 2L, "2026-09-01T10:15", "2026-09-01T11:15"),
+                interval(4L, "BOOKED", 3L, "2026-09-01T19:00", "2026-09-01T20:00"),
+                interval(5L, "UNAVAILABLE", null, "2026-09-01T12:00", "2026-09-01T13:00"),
+                interval(5L, "CANCELLED", 4L, "2026-09-01T12:00", "2026-09-01T13:00")));
+        ReportUtilizationVO report = service.getUtilizationReport(21L,
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1), null, null, true);
+        var court = report.getCourts().stream().filter(row -> row.getCourtId() == 3).findFirst().orElseThrow();
+        assertThat(court.getAvailableMinutes()).isEqualTo(90);
+        assertThat(court.getBookedMinutes()).isEqualTo(30);
+        assertThat(court.getBookingCount()).isEqualTo(2);
+        assertThat(court.getCancelledCount()).isEqualTo(1);
+        assertThat(report.getCourts().stream().filter(row -> row.getCourtId() == 4).findFirst().orElseThrow()
+                .getBookedMinutes()).isEqualTo(60);
+        assertThat(report.getCourts().stream().filter(row -> row.getCourtId() == 5).findFirst().orElseThrow()
+                .getCancelledCount()).isEqualTo(1);
+        assertThat(report.getHeatmap().stream().filter(cell -> cell.getDayOfWeek() == 2 && cell.getHourOfDay() == 12)
+                .findFirst().orElseThrow().getDataStatus()).isEqualTo("UNAVAILABLE");
+        assertThat(report.getHeatmap().stream().filter(cell -> cell.getDayOfWeek() == 2 && cell.getHourOfDay() == 9)
+                .findFirst().orElseThrow().getDataStatus()).isEqualTo("DATA_INSUFFICIENT");
+        assertThat(report.getHeatmap().stream().mapToLong(cell -> cell.getCancelledCount()).sum()).isEqualTo(2);
+    }
+
+    @Test
+    void separatesFutureAndHidesCourtDetailsForPlatform() {
+        LocalDate tomorrow = LocalDate.now(com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).plusDays(1);
+        when(reportMapper.selectUtilizationIntervals(eq(null), any(), any(), eq(null), eq(null))).thenReturn(List.of(
+                interval(7L, "SUPPLY", null, tomorrow + "T23:00", tomorrow.plusDays(1) + "T00:00")));
+        ReportUtilizationVO report = service.getUtilizationReport(null, tomorrow, tomorrow, null, null, false);
+        assertThat(report.getHeatmap()).allMatch(cell -> cell.getAvailableMinutes() == 0);
+        assertThat(report.getFutureHeatmap().stream().mapToLong(cell -> cell.getAvailableMinutes()).sum()).isEqualTo(60);
+        assertThat(report.getCourts()).isEmpty();
+        assertThat(report.getFutureCourts()).isEmpty();
+        assertThat(report.getLowUtilization()).isEmpty();
+        assertThat(report.isCourtDetailsIncluded()).isFalse();
+        assertThatThrownBy(() -> service.getUtilizationReport(null, tomorrow, tomorrow, 7L, null, false))
+                .isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void midnightDrilldownPreservesSportAndFullInstantRange() {
+        LocalDate date = LocalDate.of(2026, 9, 1);
+        LocalDateTime start = date.atTime(23, 0), end = date.plusDays(1).atStartOfDay();
+        when(reportMapper.selectBookingsByCourtTime(eq(21L), any(), any(), eq(3L), any(), any(), eq(2L)))
+                .thenReturn(List.of());
+        service.listBookings(21L, date, date, 3L, 2L, start, end, false);
+        verify(reportMapper).selectBookingsByCourtTime(21L, Instant.parse("2026-08-31T16:00:00Z"),
+                Instant.parse("2026-09-01T16:00:00Z"), 3L, Instant.parse("2026-09-01T15:00:00Z"),
+                Instant.parse("2026-09-01T16:00:00Z"), 2L);
+    }
+
+    private ReportIntervalBO interval(long courtId, String kind, Long bookingId, String start, String end) {
+        ReportIntervalBO row = new ReportIntervalBO();
+        row.setCourtId(courtId); row.setCourtName("测试场地" + courtId); row.setVenueId(21L);
+        row.setBookingId(bookingId); row.setKind(kind);
+        row.setStartAt(LocalDateTime.parse(start).atZone(com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).toInstant());
+        row.setEndAt(LocalDateTime.parse(end).atZone(com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).toInstant());
+        return row;
     }
 
     @Test

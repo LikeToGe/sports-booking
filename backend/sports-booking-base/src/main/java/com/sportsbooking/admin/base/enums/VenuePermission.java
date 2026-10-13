@@ -9,6 +9,7 @@ public enum VenuePermission {
     ONLINE_BOOKING_CANCEL("取消线上预约", "预约"),
     OFFLINE_PAYMENT_STATUS_EDIT("编辑线下收款状态", "预约"),
     CUSTOMER_VIEW("查看顾客", "会员"),
+    CUSTOMER_OPERATIONS_EDIT("编辑顾客经营", "会员"),
     MEMBER_FUNDS_VIEW("查看会员资金", "会员"),
     MEMBER_RECHARGE("会员充值", "会员"),
     MEMBER_RECHARGE_REVERSE("撤销充值", "会员"),

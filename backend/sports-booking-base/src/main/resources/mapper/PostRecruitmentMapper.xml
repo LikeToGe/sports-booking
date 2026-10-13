@@ -34,8 +34,8 @@
     <select id="selectByPostForUpdate" resultType="com.sportsbooking.admin.base.po.PostRecruitment">SELECT * FROM s_post_recruitment WHERE post_id = #{postId} FOR UPDATE</select>
     <select id="selectByIdForUpdate" resultType="com.sportsbooking.admin.base.po.PostRecruitment">SELECT * FROM s_post_recruitment WHERE id = #{id} FOR UPDATE</select>
     <insert id="insert" useGeneratedKeys="true" keyProperty="recruitment.id">
-        INSERT INTO s_post_recruitment (post_id, booking_id, level, max_members, fee_mode, aa_amount_fen, description)
-        VALUES (#{recruitment.postId}, #{recruitment.bookingId}, #{recruitment.level}, #{recruitment.maxMembers}, #{recruitment.feeMode}, #{recruitment.aaAmountFen}, #{recruitment.description})
+        INSERT INTO s_post_recruitment (post_id, booking_id, level, level_tag, max_members, fee_mode, aa_amount_fen, description)
+        VALUES (#{recruitment.postId}, #{recruitment.bookingId}, #{recruitment.level}, #{recruitment.levelTag}, #{recruitment.maxMembers}, #{recruitment.feeMode}, #{recruitment.aaAmountFen}, #{recruitment.description})
     </insert>
     <update id="updateStatus">UPDATE s_post_recruitment SET status = #{status}, updated_at = UTC_TIMESTAMP(3) WHERE id = #{id}</update>
     <insert id="insertMember">INSERT INTO s_post_recruitment_member (recruitment_id, user_id) VALUES (#{member.recruitmentId}, #{member.userId})</insert>

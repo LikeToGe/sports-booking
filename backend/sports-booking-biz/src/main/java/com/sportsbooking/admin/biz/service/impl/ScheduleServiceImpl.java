@@ -17,6 +17,7 @@ import com.sportsbooking.admin.biz.service.ScheduleService;
 import com.sportsbooking.admin.biz.service.RedisLockService;
 import com.sportsbooking.admin.biz.pojo.vo.SessionSlotVO;
 import com.sportsbooking.admin.biz.service.VenueService;
+import com.sportsbooking.admin.biz.service.ReminderService;
 import com.sportsbooking.admin.base.po.Court;
 import com.sportsbooking.admin.base.po.SportType;
 import com.sportsbooking.admin.base.po.Venue;
@@ -49,16 +50,25 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final SportTypeMapper sportTypeMapper;
     private final VenueService venueService;
     private final RedisLockService redisLockService;
+    private final ReminderService reminderService;
 
     public ScheduleServiceImpl(WeeklySlotMapper weeklySlotMapper, SessionSlotMapper sessionSlotMapper,
                            CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService,
                            RedisLockService redisLockService) {
+        this(weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, redisLockService, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ScheduleServiceImpl(WeeklySlotMapper weeklySlotMapper, SessionSlotMapper sessionSlotMapper,
+                           CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService,
+                           RedisLockService redisLockService, ReminderService reminderService) {
         this.weeklySlotMapper = weeklySlotMapper;
         this.sessionSlotMapper = sessionSlotMapper;
         this.courtMapper = courtMapper;
         this.sportTypeMapper = sportTypeMapper;
         this.venueService = venueService;
         this.redisLockService = redisLockService;
+        this.reminderService = reminderService;
     }
 
     /**
@@ -401,6 +411,8 @@ public class ScheduleServiceImpl implements ScheduleService {
         slot.status = SessionSlotStatus.OPEN;
         slot.updatedAt = LocalDateTime.now();
         sessionSlotMapper.updateById(slot);
+        if (reminderService != null) reminderService.onSlotReleased(slot.id,
+                "manual:" + java.util.UUID.randomUUID());
     }
 
     /**
@@ -463,6 +475,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (slot == null) {
             return;
         }
+        SessionSlotStatus previousStatus = slot.status;
         boolean templateActive = slot.weeklySlotId == null || Boolean.TRUE.equals(slot.manualOverride);
         if (slot.weeklySlotId != null && !Boolean.TRUE.equals(slot.manualOverride)) {
             WeeklySlot weekly = weeklySlotMapper.selectById(slot.weeklySlotId);
@@ -475,6 +488,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         slot.holdExpiresAt = null;
         slot.updatedAt = LocalDateTime.now();
         sessionSlotMapper.updateById(slot);
+        if (reminderService != null && previousStatus != SessionSlotStatus.OPEN
+                && slot.status == SessionSlotStatus.OPEN) reminderService.onSlotReleased(slot.id,
+                        "release:" + java.util.UUID.randomUUID());
     }
 
     /**

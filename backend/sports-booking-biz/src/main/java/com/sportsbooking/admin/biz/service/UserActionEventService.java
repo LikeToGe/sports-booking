@@ -18,7 +18,7 @@ public class UserActionEventService {
         if (eventType == null || targetType == null || targetId <= 0) throw invalid();
         boolean valid = switch (eventType) {
             case "VENUE_TO_BOOKING", "POST_TO_VENUE" -> "VENUE".equals(targetType);
-            case "POST_TO_BOOKING" -> "POST".equals(targetType);
+            case "POST_TO_BOOKING", "RECRUITMENT_DISCOVERY_OPEN" -> "POST".equals(targetType);
             case "SHARE_OPEN" -> List.of("POST","VENUE").contains(targetType);
             default -> false;
         };

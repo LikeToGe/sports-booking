@@ -150,7 +150,7 @@ admin_json POST "/platform/content-moderation/posts/$recruit_post_id" \
   "{\"revisionId\":$recruit_revision_id,\"action\":\"APPROVE\",\"reason\":\"招募动态通过\"}" \
   | jq -e '.data == true' >/dev/null
 recruitment_id=$(mini_json POST "/mini/posts/$recruit_post_id/recruitment" \
-  '{"bookingId":999998,"level":"基础","maxMembers":1,"feeMode":"FREE","aaAmountFen":0}' | jq -er '.data.id')
+  '{"bookingId":999998,"level":"CASUAL","maxMembers":1,"feeMode":"FREE","aaAmountFen":0}' | jq -er '.data.id')
 other_json GET "/mini/posts/$recruit_post_id/recruitment" \
   | jq -e '.data.courtName == null and .data.members == []' >/dev/null
 other_json GET "/mini/posts/$recruit_post_id" | jq -e '.data.bookingId == null' >/dev/null

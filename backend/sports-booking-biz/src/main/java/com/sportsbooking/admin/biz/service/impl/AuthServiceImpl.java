@@ -24,6 +24,7 @@ import com.sportsbooking.admin.base.po.Employee;
 import com.sportsbooking.admin.base.mapper.EmployeeMapper;
 import com.sportsbooking.admin.base.mapper.BookingMapper;
 import com.sportsbooking.admin.base.mapper.VenueCustomerMapper;
+import com.sportsbooking.admin.base.mapper.FavouriteVenueMapper;
 import com.sportsbooking.admin.base.po.Booking;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final BookingMapper bookingMapper;
     private final VenueCustomerMapper venueCustomerMapper;
+    private final FavouriteVenueMapper favouriteVenueMapper;
     private final TokenService tokens;
     private final RedisLockService locks;
     private final PostRecruitmentService recruitments;
@@ -55,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
                            EmployeeMapper employeeMapper, SessionService sessionService,
                            BCryptPasswordEncoder passwordEncoder, BookingMapper bookingMapper,
                            VenueCustomerMapper venueCustomerMapper, TokenService tokens, RedisLockService locks,
-                           PostRecruitmentService recruitments) {
+                           PostRecruitmentService recruitments, FavouriteVenueMapper favouriteVenueMapper) {
         this.adminAccountMapper = adminAccountMapper;
         this.userAccountMapper = userAccountMapper;
         this.employeeMapper = employeeMapper;
@@ -63,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
         this.passwordEncoder = passwordEncoder;
         this.bookingMapper = bookingMapper;
         this.venueCustomerMapper = venueCustomerMapper;
+        this.favouriteVenueMapper = favouriteVenueMapper;
         this.tokens = tokens;
         this.locks = locks;
         this.recruitments = recruitments;
@@ -168,6 +171,8 @@ public class AuthServiceImpl implements AuthService {
                     || Integer.valueOf(1).equals(userAccountMapper.hasUnsettledFunds(userId))) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
             }
+            // 收藏属于可撤销偏好，和账号注销共用用户行锁并在同一事务清除，避免并发请求复活关系。
+            favouriteVenueMapper.deleteByUser(userId);
             userAccountMapper.insertIdentityTombstone(userId, tokens.hash(user.mockOpenid));
             if (userAccountMapper.closeAccount(userId) != 1) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);

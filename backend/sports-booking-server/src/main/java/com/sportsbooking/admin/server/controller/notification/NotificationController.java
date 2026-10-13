@@ -10,12 +10,18 @@ import org.springframework.web.bind.annotation.*;
 
 /** 小程序站内消息列表与已读。 */
 @RestController
-@RequestMapping("/mini/content/notifications")
+@RequestMapping({"/mini/content/notifications", "/mini/notifications"})
 public class NotificationController {
     @Autowired
     private ContentMessageService service;
     @GetMapping
     public ApiResponse<List<ContentNotificationVO>> list() {
+        return ApiResponse.success(service.list(AuthContext.getMiniUserId()));
+    }
+
+    /** 统一消息中心别名，提醒消息与社区消息共享同一列表。 */
+    @GetMapping("/all")
+    public ApiResponse<List<ContentNotificationVO>> all() {
         return ApiResponse.success(service.list(AuthContext.getMiniUserId()));
     }
     @PostMapping("/{id}/read")

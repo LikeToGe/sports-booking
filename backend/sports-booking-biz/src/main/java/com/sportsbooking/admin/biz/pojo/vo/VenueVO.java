@@ -48,6 +48,11 @@ public class VenueVO {
     @ApiModelProperty(value = "所在城市")
     private String city;
 
+    /** 所属区县。 */
+    @Schema(description = "所属区县")
+    @ApiModelProperty(value = "所属区县")
+    private String district;
+
     /**
      * 详细地址
      */
@@ -127,7 +132,7 @@ public class VenueVO {
      * @author gjm
      */
     public static VenueVO from(Venue venue) {
-        return new VenueVO(venue.id, venue.name, venue.coverPath, venue.city, venue.address,
+        return new VenueVO(venue.id, venue.name, venue.coverPath, venue.city, venue.district, venue.address,
                 venue.latitude, venue.longitude, venue.phone, venue.facilities, venue.entryNotice,
                 venue.bookingDaysAhead, venue.minBookingMinutes, venue.cancelCutoffMinutes, venue.status);
     }

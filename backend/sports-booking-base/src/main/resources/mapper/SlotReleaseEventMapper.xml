@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.SlotReleaseEventMapper">
+    <insert id="insertIdempotent" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO s_slot_release_event (session_slot_id, event_key, created_at)
+        VALUES (#{sessionSlotId}, #{eventKey}, UTC_TIMESTAMP(3))
+        ON DUPLICATE KEY UPDATE event_key = VALUES(event_key)
+    </insert>
+    <select id="selectUnprocessedIds" resultType="long">
+        SELECT id FROM s_slot_release_event WHERE processed_at IS NULL
+        ORDER BY id LIMIT #{limit} FOR UPDATE SKIP LOCKED
+    </select>
+    <update id="markProcessed">
+        UPDATE s_slot_release_event SET processed_at = UTC_TIMESTAMP(3)
+        WHERE processed_at IS NULL AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+    </update>
+</mapper>

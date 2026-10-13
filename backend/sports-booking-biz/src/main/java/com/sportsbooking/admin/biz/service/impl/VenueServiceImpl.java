@@ -299,9 +299,10 @@ public class VenueServiceImpl implements VenueService {
      * @author gjm
      */
     @Override
-    public List<PublicVenueVO> listPublicVenues(String keyword, Long sportTypeId, LocalDate date) {
+    public List<PublicVenueVO> listPublicVenues(String keyword, Long sportTypeId, LocalDate date, String district) {
         String normalizedKeyword = keyword == null ? null : keyword.trim();
-        return venueMapper.selectPublicVenues(normalizedKeyword, sportTypeId, date, Instant.now()).stream()
+        String normalizedDistrict = district == null ? null : district.trim();
+        return venueMapper.selectPublicVenues(normalizedKeyword, sportTypeId, date, Instant.now(), normalizedDistrict).stream()
                 .map(PublicVenueVO::from).toList();
     }
 
@@ -337,7 +338,7 @@ public class VenueServiceImpl implements VenueService {
 
     /** 按业务时区转换时间条件，查询每页 20 个真实可订场次。 */
     @Override
-    public List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date,
+    public List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date, String district,
             LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen, int page) {
         validateSlotFilters(startTime, endTime, minPriceFen, maxPriceFen);
         if (date == null || page < 1 || page > 10000) {
@@ -351,8 +352,10 @@ public class VenueServiceImpl implements VenueService {
         Instant rangeEnd = endTime == null ? date.plusDays(1).atStartOfDay(BusinessConstants.BUSINESS_ZONE).toInstant()
                 : date.atTime(endTime).atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
         String normalizedKeyword = keyword == null ? null : keyword.trim();
-        return venueMapper.selectMatchingSlots(normalizedKeyword, sportTypeId, date, rangeStart, rangeEnd,
-                minPriceFen, maxPriceFen, now, today, (page - 1) * 20).stream().map(SlotSearchVO::from).toList();
+        String normalizedDistrict = district == null || district.isBlank() ? null : district.trim();
+        return venueMapper.selectMatchingSlots(normalizedKeyword, sportTypeId, date, normalizedDistrict,
+                rangeStart, rangeEnd, minPriceFen, maxPriceFen, now, today, (page - 1) * 20)
+                .stream().map(SlotSearchVO::from).toList();
     }
 
     /** 时间必须成对且同日递增；金额为非负整数分，禁止逆序价格范围。 */
@@ -378,6 +381,8 @@ public class VenueServiceImpl implements VenueService {
         venue.name = requireText(body.getName());
         venue.city = body.getCity() == null || body.getCity().isBlank()
                 ? BusinessConstants.DEFAULT_CITY : body.getCity().trim();
+        venue.district = body.getDistrict() == null || body.getDistrict().isBlank()
+                ? null : body.getDistrict().trim();
         venue.address = requireText(body.getAddress());
         venue.latitude = body.getLatitude();
         venue.longitude = body.getLongitude();

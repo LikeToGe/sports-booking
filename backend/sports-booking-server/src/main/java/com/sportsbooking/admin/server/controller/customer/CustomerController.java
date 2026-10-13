@@ -6,15 +6,28 @@ import com.sportsbooking.admin.biz.pojo.vo.VenueCustomerVO;
 import com.sportsbooking.admin.biz.service.VenueCustomerService;
 import com.sportsbooking.admin.base.po.Employee;
 import com.sportsbooking.admin.base.enums.VenuePermission;
+import com.sportsbooking.admin.base.enums.AdminRole;
+import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.biz.service.PermissionService;
 import com.sportsbooking.admin.biz.service.MemberFundsService;
 import com.sportsbooking.admin.biz.pojo.vo.BalanceAccountVO;
+import com.sportsbooking.admin.biz.pojo.vo.CustomerFollowupVO;
+import com.sportsbooking.admin.biz.pojo.vo.CustomerOperationVO;
+import com.sportsbooking.admin.biz.pojo.vo.VenueCustomerTagVO;
+import com.sportsbooking.admin.biz.pojo.request.CustomerFollowupCreateRequest;
+import com.sportsbooking.admin.biz.pojo.request.CustomerFollowupUpdateRequest;
+import com.sportsbooking.admin.biz.pojo.request.CustomerTagRequest;
+import com.sportsbooking.admin.biz.service.CustomerOperationsService;
 import com.sportsbooking.admin.server.api.ApiResponse;
 import com.sportsbooking.admin.server.context.AuthContext;
 import com.sportsbooking.admin.server.support.Principals;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +48,91 @@ public class CustomerController {
     private PermissionService permissionService;
     @Autowired
     private MemberFundsService memberFundsService;
+    @Autowired
+    private CustomerOperationsService customerOperationsService;
+
+    @GetMapping("venue-admin/customer-operations")
+    public ApiResponse<List<CustomerOperationVO>> listCustomerOperations(
+            @RequestParam(required = false) String segment) {
+        return ApiResponse.success(customerOperationsService.listOperations(
+                Principals.venue(VenuePermission.CUSTOMER_VIEW).getVenueId(), segment));
+    }
+
+    @GetMapping("venue-admin/customer-operations/{customerId}")
+    public ApiResponse<CustomerOperationVO> getCustomerOperation(@PathVariable long customerId) {
+        return ApiResponse.success(customerOperationsService.getOperation(
+                Principals.venue(VenuePermission.CUSTOMER_VIEW).getVenueId(), customerId));
+    }
+
+    @GetMapping("venue-admin/customer-tags")
+    public ApiResponse<List<VenueCustomerTagVO>> listCustomerTags() {
+        return ApiResponse.success(customerOperationsService.listTags(
+                Principals.venue(VenuePermission.CUSTOMER_VIEW).getVenueId()));
+    }
+
+    @PostMapping("venue-admin/customer-tags")
+    public ApiResponse<VenueCustomerTagVO> createCustomerTag(@RequestBody CustomerTagRequest body) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        return ApiResponse.success(customerOperationsService.createTag(principal.getVenueId(), adminActorId(principal),
+                employeeActorId(principal), principal.getDisplayName(), body == null ? null : body.getName()));
+    }
+
+    @DeleteMapping("venue-admin/customer-tags/{tagId}")
+    public ApiResponse<Boolean> deleteCustomerTag(@PathVariable long tagId) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        customerOperationsService.deleteTag(principal.getVenueId(), tagId, adminActorId(principal),
+                employeeActorId(principal), principal.getDisplayName());
+        return ApiResponse.success(true);
+    }
+
+    @PostMapping("venue-admin/customers/{customerId}/tags/{tagId}")
+    public ApiResponse<Boolean> addCustomerTag(@PathVariable long customerId, @PathVariable long tagId) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        customerOperationsService.addTag(principal.getVenueId(), adminActorId(principal), employeeActorId(principal),
+                principal.getDisplayName(), customerId, tagId);
+        return ApiResponse.success(true);
+    }
+
+    @DeleteMapping("venue-admin/customers/{customerId}/tags/{tagId}")
+    public ApiResponse<Boolean> removeCustomerTag(@PathVariable long customerId, @PathVariable long tagId) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        customerOperationsService.removeTag(principal.getVenueId(), adminActorId(principal), employeeActorId(principal),
+                principal.getDisplayName(), customerId, tagId);
+        return ApiResponse.success(true);
+    }
+
+    @GetMapping("venue-admin/customer-followups")
+    public ApiResponse<List<CustomerFollowupVO>> listCustomerFollowups(
+            @RequestParam(required = false) String status) {
+        return ApiResponse.success(customerOperationsService.listFollowups(
+                Principals.venue(VenuePermission.CUSTOMER_VIEW).getVenueId(), status));
+    }
+
+    @PostMapping("venue-admin/customer-followups")
+    public ApiResponse<CustomerFollowupVO> createCustomerFollowup(@RequestBody CustomerFollowupCreateRequest body) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        return ApiResponse.success(customerOperationsService.createFollowup(principal.getVenueId(), adminActorId(principal),
+                employeeActorId(principal), principal.getDisplayName(), body == null ? null : body.getCustomerId(),
+                body == null ? null : body.getPurpose(), body == null ? null : body.getSourceGroup()));
+    }
+
+    @PatchMapping("venue-admin/customer-followups/{id}")
+    public ApiResponse<CustomerFollowupVO> updateCustomerFollowup(@PathVariable long id,
+                                                                    @RequestBody CustomerFollowupUpdateRequest body) {
+        AdminPrincipal principal = Principals.venue(VenuePermission.CUSTOMER_OPERATIONS_EDIT);
+        return ApiResponse.success(customerOperationsService.updateFollowup(principal.getVenueId(), adminActorId(principal),
+                employeeActorId(principal), principal.getDisplayName(), id,
+                body == null ? null : body.getStatus(), body == null ? null : body.getNote()));
+    }
+
+    /** 后台账号和员工使用不同持久化身份列，避免把未关联员工的管理员 ID 写入员工外键。 */
+    private Long adminActorId(AdminPrincipal principal) {
+        return principal.getRole() == AdminRole.VENUE_ADMIN ? principal.getAccountId() : null;
+    }
+
+    private Long employeeActorId(AdminPrincipal principal) {
+        return principal.getRole() == AdminRole.VENUE_EMPLOYEE ? principal.getEmployeeId() : null;
+    }
 
     /**
      * 功能描述: 查询当前登录场馆的顾客列表。

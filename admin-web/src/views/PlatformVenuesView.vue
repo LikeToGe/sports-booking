@@ -10,6 +10,7 @@ import type { PlatformVenue, Venue } from "../types";
 interface VenueForm {
   name: string;
   city: string;
+  district: string;
   address: string;
   latitude: number | "";
   longitude: number | "";
@@ -24,8 +25,10 @@ interface VenueForm {
   adminPassword: string;
 }
 
+const districtOptions = ["金水区", "二七区", "中原区", "管城回族区", "郑东新区", "高新区"];
+
 const emptyForm = (): VenueForm => ({
-  name: "", city: "郑州市", address: "", latitude: "", longitude: "", phone: "",
+  name: "", city: "郑州市", district: "", address: "", latitude: "", longitude: "", phone: "",
   facilities: "", entryNotice: "", bookingDaysAhead: 7, minBookingMinutes: 30,
   cancelCutoffMinutes: 120, serviceFeeRatePercent: 0, adminUsername: "", adminPassword: "",
 });
@@ -67,6 +70,7 @@ function venuePayload() {
   return {
     name: form.name,
     city: form.city,
+    district: form.district || null,
     address: form.address,
     latitude: form.latitude === "" ? null : form.latitude,
     longitude: form.longitude === "" ? null : form.longitude,
@@ -130,6 +134,7 @@ function openEdit(item: PlatformVenue) {
   Object.assign(form, {
     name: venue.name,
     city: venue.city,
+    district: venue.district || "",
     address: venue.address,
     latitude: venue.latitude ?? "",
     longitude: venue.longitude ?? "",
@@ -213,7 +218,7 @@ onMounted(load);
           <tbody>
           <tr v-for="item in pagedItems" :key="item.venue.id">
             <td data-label="场馆"><strong>{{ item.venue.name }}</strong><br><span class="muted">{{ item.venue.phone }}</span></td>
-            <td data-label="地址">{{ item.venue.city }} · {{ item.venue.address }}</td>
+            <td data-label="地址">{{ item.venue.city }} · {{ item.venue.district || "区县未设置" }} · {{ item.venue.address }}</td>
             <td data-label="预约规则">未来 {{ item.venue.bookingDaysAhead }} 天 · 提前 {{ item.venue.cancelCutoffMinutes }} 分钟截止取消</td>
             <td data-label="服务费率"><strong class="rate-value">{{ percent(item.serviceFeeRateBasisPoints) }}</strong></td>
             <td data-label="状态"><span class="status" :data-tone="statusTone(item.venue.status)">{{ statusLabel(item.venue.status) }}</span></td>
@@ -240,6 +245,7 @@ onMounted(load);
           <label class="field"><span>场馆名称 *</span><input v-model.trim="form.name" required></label>
           <label class="field"><span>联系电话 *</span><input v-model.trim="form.phone" type="tel" required></label>
           <label class="field"><span>所在城市 *</span><input v-model.trim="form.city" required></label>
+          <label class="field"><span>所属区县</span><select v-model="form.district" aria-label="所属区县，郑州区县可选填"><option value="">未设置</option><option v-for="district in districtOptions" :key="district" :value="district">{{ district }}</option><option v-if="form.district && !districtOptions.includes(form.district)" :value="form.district">{{ form.district }}（历史值）</option></select></label>
           <label class="field"><span>详细地址 *</span><input v-model.trim="form.address" required></label>
           <label class="field"><span>纬度</span><input v-model.number="form.latitude" type="number" step="any"></label>
           <label class="field"><span>经度</span><input v-model.number="form.longitude" type="number" step="any"></label>
@@ -266,7 +272,7 @@ onMounted(load);
         <dl class="detail-grid">
           <div><dt>状态</dt><dd><span class="status" :data-tone="statusTone(detailItem.venue.status)">{{ statusLabel(detailItem.venue.status) }}</span></dd></div>
           <div><dt>联系电话</dt><dd>{{ detailItem.venue.phone }}</dd></div>
-          <div class="span-2"><dt>地址</dt><dd>{{ detailItem.venue.city }} · {{ detailItem.venue.address }}</dd></div>
+          <div><dt>所属区县</dt><dd>{{ detailItem.venue.district || "区县未设置" }}</dd></div><div class="span-2"><dt>地址</dt><dd>{{ detailItem.venue.city }} · {{ detailItem.venue.address }}</dd></div>
           <div><dt>经纬度</dt><dd>{{ detailItem.venue.latitude ?? "未填写" }} / {{ detailItem.venue.longitude ?? "未填写" }}</dd></div>
           <div><dt>平台服务费率</dt><dd>{{ percent(detailItem.serviceFeeRateBasisPoints) }}</dd></div>
           <div><dt>管理员用户名</dt><dd>{{ detailItem.adminUsername }}</dd></div>

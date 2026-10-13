@@ -5,6 +5,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import org.slf4j.Logger;
@@ -31,6 +34,13 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ApiException.class)
     ResponseEntity<ApiResponse<Object>> handleApiException(ApiException exception) {
         return ResponseEntity.status(exception.getStatus()).body(error(exception.getCode(), exception.getData()));
+    }
+
+    /** 请求值解析失败属于客户端参数错误，不记录可能含身份或联系资料的原始值。 */
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class, HttpMessageNotReadableException.class})
+    ResponseEntity<ApiResponse<Void>> handleInvalidRequest() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error(ErrorCode.INVALID_ARGUMENT));
     }
 
     /**

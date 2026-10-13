@@ -36,3 +36,19 @@
 .venue-loading { min-height: 55vh; }
 
 .active-filters { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xs); margin: var(--space-xs) 0; color: var(--color-ink-2); font-size: var(--text-sm); }
+
+.venue-actions, .view-switch { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
+.venue-actions button { margin: 0; }
+.public-rules { display: grid; gap: var(--space-xs); color: var(--ink-2); font-size: var(--text-sm); }
+.preference-notice { padding: var(--space-sm); border-left: var(--rule-standard); background: var(--paper-2); color: var(--ink); }
+.slot-rule { grid-column: 1 / -1; padding-bottom: 12rpx; color: var(--muted); font-size: 22rpx; white-space: normal; }
+.slot-row[disabled], .matrix-slot[disabled] { background: var(--paper-2); color: var(--muted); }
+.slot-row[disabled] .book-label, .matrix-slot[disabled] .book-label { color: var(--muted); }
+.comparison { display: grid; gap: var(--space-xs); min-width: 0; }
+.matrix-scroll { width: 100%; }
+.matrix-table { display: inline-block; min-width: 100%; vertical-align: top; }
+.matrix-line { display: flex; align-items: stretch; border-bottom: 1rpx solid var(--rule); }
+.matrix-header { background: var(--paper-2); font-weight: 700; }
+.matrix-time { position: sticky; left: 0; z-index: 1; flex: 0 0 190rpx; width: 190rpx; box-sizing: border-box; padding: 18rpx 12rpx; background: var(--surface); color: var(--ink); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.matrix-cell { flex: 0 0 250rpx; width: 250rpx; box-sizing: border-box; padding: 12rpx; border-left: 1rpx solid var(--rule); white-space: normal; }
+.matrix-slot { display: grid; gap: 8rpx; min-height: var(--touch-target); width: 100%; margin: 0 0 10rpx; padding: 12rpx; border: 1rpx solid var(--rule); background: var(--surface-card); color: var(--ink); text-align: left; line-height: 1.5; font-size: 24rpx; }

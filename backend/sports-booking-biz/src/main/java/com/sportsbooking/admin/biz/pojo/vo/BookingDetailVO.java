@@ -24,6 +24,11 @@ public class BookingDetailVO {
     @ApiModelProperty(value = "预约信息")
     private BookingVO booking;
 
+    /** 当前场馆导航与入场资料；预约时间、价格仍以预约快照为准。 */
+    @Schema(description = "当前场馆导航与入场资料")
+    @ApiModelProperty(value = "当前场馆导航与入场资料")
+    private VenueVO venue;
+
     /**
      * 支付信息
      */

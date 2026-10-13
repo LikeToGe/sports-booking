@@ -1,10 +1,11 @@
-const { request, uploadFile, dateTime } = require("../../utils/api");
+const { request, uploadFile, dateTime, time } = require("../../utils/api");
 
 Page({
-  data: { posts: [], body: "", sportTypeId: null, sportIndex: 0, venueId: null, venueIndex: 0,
+  data: { posts: [], recruitments: [], mode: "posts", body: "", sportTypeId: null, sportIndex: 0, venueId: null, venueIndex: 0,
     sports: [], venues: [], bookingId: null, bookingIndex: 0, bookings: [], filterSports: [], filterVenues: [],
     filterSportIndex: 0, filterVenueIndex: 0, filterSportId: null, filterVenueId: null,
     loading: true, saving: false, enabled: false, editingId: null, selectedMedia: [], existingMediaCount: 0,
+    recruitmentDate: "", recruitmentLevel: "", recruitmentLevelLabel: "不限水平", recruitmentLevelIndex: 0, recruitmentMinRemaining: "",
     mediaCleared: false, error: "", message: "", showEditor: false },
 
   onLoad() { this.ready = this.loadOptions(); },
@@ -34,6 +35,7 @@ Page({
       } catch (error) { this.setData({ error: error.message }); }
     }
     await this.load();
+    if (this.data.enabled && this.data.mode === "recruitments") await this.loadRecruitments();
   },
 
   async load() {
@@ -43,8 +45,53 @@ Page({
       if (this.data.filterSportId) params.push(`sportTypeId=${this.data.filterSportId}`);
       if (this.data.filterVenueId) params.push(`venueId=${this.data.filterVenueId}`);
       this.setData({ posts: await request(`/mini/posts/list${params.length ? `?${params.join("&")}` : ""}`), enabled: true });
-    } catch (error) { this.setData({ error: error.message, enabled: !/暂未开放/.test(error.message) }); }
+    } catch (error) { this.setData({ error: error.message, posts: [], enabled: !/暂未开放/.test(error.message) }); }
     finally { this.setData({ loading: false }); }
+  },
+  switchMode(event) {
+    const mode = event.currentTarget.dataset.mode;
+    if (mode !== "recruitments") this.recruitmentRequest = (this.recruitmentRequest || 0) + 1;
+    this.setData({ mode });
+    if (mode === "recruitments") this.loadRecruitments();
+  },
+  async loadRecruitments() {
+    const requestId = this.recruitmentRequest = (this.recruitmentRequest || 0) + 1;
+    this.setData({ loading: true, error: "" });
+    try {
+      const params = [];
+      if (this.data.recruitmentDate) params.push(`date=${this.data.recruitmentDate}`);
+      if (this.data.filterSportId) params.push(`sportTypeId=${this.data.filterSportId}`);
+      if (this.data.filterVenueId) params.push(`venueId=${this.data.filterVenueId}`);
+      if (this.data.recruitmentLevel) params.push(`levelTag=${encodeURIComponent(this.data.recruitmentLevel)}`);
+      if (this.data.recruitmentMinRemaining) params.push(`minRemaining=${this.data.recruitmentMinRemaining}`);
+      const rows = await request(`/mini/recruitments${params.length ? `?${params.join("&")}` : ""}`);
+      const levels = { BEGINNER_FRIENDLY: "新手友好", CASUAL: "休闲", ADVANCED: "进阶" };
+      if (requestId !== this.recruitmentRequest) return;
+      this.setData({ recruitments: rows.map(item => ({ ...item,
+        startLabel: dateTime(item.startAt), endLabel: time(item.endAt),
+        levelLabel: item.levelTag ? levels[item.levelTag] : `其他说明：${item.level || "历史水平"}`,
+        feeLabel: item.feeMode === "FREE" ? "免费（平台不代收）" : `预计 AA ¥${(item.aaAmountFen / 100).toFixed(2)}（平台不代收）`,
+      })) });
+    } catch (error) { if (requestId === this.recruitmentRequest) this.setData({ error: error.message, recruitments: [] }); }
+    finally { if (requestId === this.recruitmentRequest) this.setData({ loading: false }); }
+  },
+  retryLoad() { return this.data.mode === "recruitments" ? this.loadRecruitments() : this.load(); },
+  onRecruitmentFilter(event) {
+    const field = event.currentTarget.dataset.field;
+    const value = field === "recruitmentLevel"
+      ? ["", "BEGINNER_FRIENDLY", "CASUAL", "ADVANCED"][Number(event.detail.value)] || ""
+      : event.detail.value;
+    this.setData({ [field]: value, ...(field === "recruitmentLevel" ? {
+      recruitmentLevelIndex: Number(event.detail.value),
+      recruitmentLevelLabel: ["不限水平", "新手友好", "休闲", "进阶"][Number(event.detail.value)] || "不限水平",
+    } : {}) });
+    this.loadRecruitments();
+  },
+  openRecruitment(event) {
+    const postId = Number(event.currentTarget.dataset.postId);
+    request(`/mini/content/events?eventType=RECRUITMENT_DISCOVERY_OPEN&targetType=POST&targetId=${postId}`,
+      { method: "POST" }).catch(() => {});
+    wx.navigateTo({ url: `/pages/posts/detail?id=${postId}` });
   },
 
   toggleEditor() { this.setData({ showEditor: !this.data.showEditor }); },
@@ -94,12 +141,12 @@ Page({
   selectFilterSport(event) {
     const filterSportIndex = Number(event.detail.value);
     this.setData({ filterSportIndex,filterSportId: this.data.filterSports[filterSportIndex]?.id || null });
-    this.load();
+    this.data.mode === "recruitments" ? this.loadRecruitments() : this.load();
   },
   selectFilterVenue(event) {
     const filterVenueIndex = Number(event.detail.value);
     this.setData({ filterVenueIndex,filterVenueId: this.data.filterVenues[filterVenueIndex]?.id || null });
-    this.load();
+    this.data.mode === "recruitments" ? this.loadRecruitments() : this.load();
   },
 
   openDetail(event) { wx.navigateTo({ url: `/pages/posts/detail?id=${event.currentTarget.dataset.id}` }); },

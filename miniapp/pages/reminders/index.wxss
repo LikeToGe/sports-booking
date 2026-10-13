@@ -1,0 +1,9 @@
+.reminders-page { display: grid; gap: 18rpx; }
+.reminder-form, .reminder-row { display: grid; gap: 18rpx; padding: 24rpx; }
+.time-row { display: flex; align-items: center; gap: 12rpx; }
+.time-row picker { flex: 1; min-width: 0; }
+.reminder-row { grid-template-columns: 1fr auto; align-items: center; }
+.reminder-focus { display: grid; gap: 14rpx; padding: 24rpx; }
+.reminder-actions { display: grid; gap: 8rpx; }
+.reminder-slot { display: flex; justify-content: space-between; gap: 12rpx; padding: 10rpx 0; border-top: 1rpx solid var(--rule); }
+.block { display: block; margin-top: 8rpx; }

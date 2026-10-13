@@ -15,5 +15,7 @@ public class NotificationDelivery {
     public String status;
     public String providerNo;
     public String failureReason;
+    public Integer attemptCount;
+    public LocalDateTime lastAttemptAt;
     public LocalDateTime createdAt;
 }

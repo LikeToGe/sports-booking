@@ -149,7 +149,7 @@ public interface VenueService {
      * @return 首页场馆列表
      * @author gjm
      */
-    List<PublicVenueVO> listPublicVenues(String keyword, Long sportTypeId, LocalDate date);
+    List<PublicVenueVO> listPublicVenues(String keyword, Long sportTypeId, LocalDate date, String district);
 
     /**
      * 功能描述: 查询场馆公开资料和指定日期的开放场次。
@@ -165,6 +165,6 @@ public interface VenueService {
             LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen);
 
     /** 检索完整落在用户可用范围内的具体场次，价格为单场次总价整数分。 */
-    List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date,
+    List<SlotSearchVO> searchSlots(String keyword, Long sportTypeId, LocalDate date, String district,
             LocalTime startTime, LocalTime endTime, Integer minPriceFen, Integer maxPriceFen, int page);
 }

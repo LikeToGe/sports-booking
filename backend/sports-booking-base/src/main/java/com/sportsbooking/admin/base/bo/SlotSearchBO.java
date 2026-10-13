@@ -11,4 +11,6 @@ public class SlotSearchBO extends AvailableSlotBO {
     private Long venueId;
     /** 场馆名称。 */
     private String venueName;
+    /** 场馆所属区县，未配置时为空。 */
+    private String district;
 }

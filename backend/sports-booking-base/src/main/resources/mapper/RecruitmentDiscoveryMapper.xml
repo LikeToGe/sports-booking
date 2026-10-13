@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sportsbooking.admin.base.mapper.RecruitmentDiscoveryMapper">
+    <select id="select" resultType="com.sportsbooking.admin.base.bo.RecruitmentDiscoveryBO">
+        SELECT r.id AS recruitmentId, p.id AS postId, b.sport_type_id AS sportTypeId,
+               st.name AS sportName, b.venue_id AS venueId, v.name AS venueName,
+               b.start_at AS startAt, b.end_at AS endAt,
+               r.level, r.level_tag AS levelTag, r.max_members AS maxMembers,
+               (SELECT COUNT(*) FROM s_post_recruitment_member m
+                  WHERE m.recruitment_id = r.id AND m.status = 'APPROVED') AS approvedCount,
+               r.fee_mode AS feeMode, r.aa_amount_fen AS aaAmountFen, r.description, r.status
+        FROM s_post_recruitment r
+        JOIN s_post p ON p.id = r.post_id
+        JOIN s_post_revision rev ON rev.id = p.public_revision_id
+        JOIN s_booking b ON b.id = r.booking_id
+        JOIN s_sport_type st ON st.id = b.sport_type_id
+        JOIN s_venue v ON v.id = b.venue_id
+        WHERE p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
+          AND rev.moderation_status = 'APPROVED'
+          AND p.author_type = 'USER'
+          AND EXISTS (SELECT 1 FROM s_user_account ua
+               WHERE ua.id = p.author_id AND ua.status = 'ACTIVE' AND ua.deleted_at IS NULL)
+          AND v.status = 'ACTIVE'
+          AND rev.booking_id = b.id AND rev.venue_id = b.venue_id
+          AND rev.sport_type_id = b.sport_type_id
+          AND b.user_id = p.author_id AND b.source = 'ONLINE'
+          AND r.status = 'RECRUITING'
+          AND b.status = 'CONFIRMED' AND b.start_at &gt; UTC_TIMESTAMP(3)
+          AND NOT EXISTS (SELECT 1 FROM s_user_block ub
+              WHERE (ub.blocker_user_id = #{userId} AND ub.blocked_user_id = p.author_id)
+                 OR (ub.blocker_user_id = p.author_id AND ub.blocked_user_id = #{userId}))
+          AND (SELECT COUNT(*) FROM s_post_recruitment_member m2
+               WHERE m2.recruitment_id = r.id AND m2.status = 'APPROVED') &lt; r.max_members
+        <if test="dayStart != null">AND b.start_at &gt;= #{dayStart} AND b.start_at &lt; #{nextDayStart}</if>
+        <if test="sportTypeId != null">AND b.sport_type_id = #{sportTypeId}</if>
+        <if test="venueId != null">AND b.venue_id = #{venueId}</if>
+        <if test="levelTag != null and levelTag != ''">AND r.level_tag = #{levelTag}</if>
+        <if test="minRemaining != null">AND (r.max_members - (SELECT COUNT(*) FROM s_post_recruitment_member m3
+               WHERE m3.recruitment_id = r.id AND m3.status = 'APPROVED')) &gt;= #{minRemaining}</if>
+        ORDER BY b.start_at ASC, r.id ASC LIMIT #{offset}, #{size}
+    </select>
+</mapper>

@@ -23,6 +23,7 @@
   </view></scroll-view>
 
   <view class="time-filters">
+    <picker mode="selector" range="{{districtOptions}}" value="{{districtIndex}}" bindchange="selectDistrict" aria-label="郑州区县"><view class="filter-control"><text>区县</text><text>{{district || "全部区县"}}</text></view></picker>
     <text class="section-title">我有空的时间</text>
     <view class="filter-row">
       <picker mode="time" value="{{startTime}}" data-field="startTime" bindchange="onFilter" aria-label="可用开始时间"><view class="filter-control"><text>开始</text><text>{{startTime || '不限'}}</text></view></picker>
@@ -50,7 +51,7 @@
   </view>
   <view wx:if="{{searchMode}}" class="matched-slots" aria-live="polite">
     <button wx:for="{{slots}}" wx:key="id" class="matched-slot" data-id="{{item.venueId}}" bindtap="openVenue" disabled="{{loading}}">
-      <view><text class="venue-name">{{item.venueName}}</text><text>{{item.courtName}} · {{item.sportName}}</text><text>{{item.time}}</text></view>
+      <view><text class="venue-name">{{item.venueName}}</text><text>{{item.courtName}} · {{item.sportName}}</text><text>{{item.district || "区县未设置"}}</text><text>{{item.time}}</text></view>
       <view class="matched-price"><text class="venue-price">{{item.price}}</text><text>单场总价</text><text>查看场次</text></view>
     </button>
     <button wx:if="{{hasMore}}" class="button-secondary" bindtap="loadMore" disabled="{{loading}}">{{loading ? '正在加载' : '加载更多'}}</button>
@@ -61,7 +62,7 @@
       <view class="venue-copy">
         <text class="venue-name">{{item.name}}</text>
         <text class="venue-sports">{{item.sportNames}}</text>
-        <text class="venue-address">{{item.address}}</text>
+        <text class="venue-address">{{item.district || "区县未设置"}} · {{item.address}}</text>
         <view class="venue-price-row"><text class="venue-price {{item.startingPriceFen == null ? 'price-unavailable' : ''}}">{{item.price}}</text><image class="venue-arrow" src="/assets/icons/arrow-up-right.svg" aria-hidden="true" /></view>
         <text class="next-time {{item.nextAvailableAt ? 'is-available' : ''}}">{{item.nextTime}}</text>
       </view>

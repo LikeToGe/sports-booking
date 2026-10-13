@@ -17,6 +17,8 @@ public class PostRecruitmentVO {
     @Schema(description = "动态 ID") @ApiModelProperty("动态 ID") private Long postId;
     /** 水平。 */
     @Schema(description = "水平") @ApiModelProperty("水平") private String level;
+    /** 新招募有限水平标签；历史记录为空。 */
+    @Schema(description = "有限水平标签，历史记录为空") @ApiModelProperty("有限水平标签") private String levelTag;
     /** 需要人数。 */
     @Schema(description = "需要人数") @ApiModelProperty("需要人数") private Integer maxMembers;
     /** 已加入人数。 */
