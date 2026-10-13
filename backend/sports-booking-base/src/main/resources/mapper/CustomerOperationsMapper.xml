@@ -43,7 +43,7 @@
             GROUP BY venueId,customerId
         ), tag_names AS (
             SELECT tr.venue_id AS venueId,tr.customer_id AS customerId,
-                   GROUP_CONCAT(t.name ORDER BY t.name,t.id SEPARATOR ',') AS tagNames
+                   JSON_ARRAYAGG(t.name) AS tagNames
             FROM s_venue_customer_tag_relation tr
             JOIN s_venue_customer_tag t ON t.id=tr.tag_id AND t.venue_id=tr.venue_id
             WHERE tr.venue_id=#{venueId}

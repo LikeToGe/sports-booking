@@ -213,8 +213,8 @@ try:
     assert http(f"/venue-admin/customers/{customer_id}/tags/1", second_venue_token, method='POST')['code'] != 0
     assert http('/venue-admin/customer-operations', platform_token)['code'] != 0
 
-    tag_a_name = f'P6-{suffix}-重点顾客'
-    tag_b_name = f'P6-{suffix}-常约羽毛球'
+    tag_a_name = f'P6-{suffix}-新手,低峰'
+    tag_b_name = f'P6-{suffix}-AA\"约球\"'
     tag_a = ok('/venue-admin/customer-tags', admin_token, {'name': tag_a_name}, 'POST')
     fixture_tag_ids.append(tag_a['id'])
     tag_b = ok('/venue-admin/customer-tags', admin_token, {'name': tag_b_name}, 'POST')

@@ -34,6 +34,15 @@ class CustomerOperationsServiceImplTest {
     }
 
     @Test
+    void preservesTagNamesContainingCommasAndQuotes() {
+        var row = new com.sportsbooking.admin.base.bo.CustomerOperationBO();
+        row.setTagNames("[\"新手,低峰\",\"AA\\\"约球\\\"\"]");
+        when(mapper.selectOperations(3L, null)).thenReturn(java.util.List.of(row));
+        assertThat(service().listOperations(3L, null)).singleElement().satisfies(customer ->
+                assertThat(customer.getTags()).containsExactly("AA\"约球\"", "新手,低峰"));
+    }
+
+    @Test
     void storesVenueAdministratorInAccountColumnWithoutEmployeeId() {
         VenueCustomerTagBO saved = new VenueCustomerTagBO();
         saved.setId(55L);

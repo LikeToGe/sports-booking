@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
+import org.springframework.boot.json.JsonParserFactory;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -72,8 +72,10 @@ public class CustomerOperationVO {
 
     /** 从当前场馆顾客投影转换，不读取其他场馆关系或余额。 */
     public static CustomerOperationVO from(CustomerOperationBO source, String segment) {
+        // 标签可以包含逗号与引号，数据库 JSON 数组保留名称原文。
         List<String> tags = source.getTagNames() == null || source.getTagNames().isBlank()
-                ? List.of() : Arrays.asList(source.getTagNames().split(","));
+                ? List.of() : JsonParserFactory.getJsonParser().parseList(source.getTagNames()).stream()
+                        .map(String.class::cast).sorted().toList();
         return new CustomerOperationVO(source.getCustomerId(), source.getContactName(), source.getPhone(),
                 source.getValidBookingCount(), source.getLastValidBookingAt(), source.getLastValidBookingSource(),
                 source.getLastCompletedAt(), source.getLatestVerifiedAt(), source.getFutureConfirmedCount(),
