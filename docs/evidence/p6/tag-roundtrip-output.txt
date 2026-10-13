@@ -1,0 +1,1 @@
+P6 customers: venue isolation, 30-day boundary, completed/verification facts, join-safe counts, tags/audit, pending-only followups, concurrency, actor identity and immediate revoke passed

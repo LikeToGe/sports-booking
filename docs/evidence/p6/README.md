@@ -15,7 +15,7 @@
 
 ## 构建与业务证据
 
-- 最新 headless `./mvn-project package`：biz 146 + server 24，共 170 项，0 failures/errors/skipped。
+- 最新 headless `./mvn-project package`：biz 147 + server 24，共 171 项，0 failures/errors/skipped。
 - 后台 `npm run build`（包含类型检查）通过；小程序 13 个 Node 行为测试文件通过，原生 24 WXML / 25 WXSS 编译通过。
 - P6 报表隔离 HTTP：手算 270 分钟容量／40 分钟占用／2 笔取消，覆盖共享场地、异长重叠、HELD、人工改时快照、缺失供给、未来分离、平台范围与午夜/运动下钻。日志 /tmp/sports-booking-p6-utilization-http.log。
 - P6 顾客隔离 HTTP：本馆/越馆、30 天 completed_at 边界、仅线下记录、未来确认预约、多标签不重复计数、后台/员工审计、撤权、并发创建/处理及重复终态均通过。
@@ -39,3 +39,5 @@ P5 本次已完成模拟器预约确认/Mock 支付/本人详情/再订日期与
 构建期间曾遇到并行编辑的签名中间态，以及从仓库根运行 Maven 未找到 reactor 的执行目录错误；最终统一在 backend/ 执行 package 通过，未将这些失败尝试计为通过。
 
 代码已提交到当前分支：`83e70ab`。本次未推送、未创建 PR、未部署，也未关闭远端 Issue。P6 #17 仍保留端侧窗口点验门禁。
+
+最后边界修复 `d5cd86d`：标签名称改为数据库 JSON 数组，无损保留逗号、引号及原文，避免分隔符拆标签和 GROUP_CONCAT 截断。Service 回归和真实 HTTP 均先红后绿；最新 package 共 171 项通过，针对该小修复的 Standards 复核无新增阻断。客户专项输出见 tag-roundtrip-output.txt。
