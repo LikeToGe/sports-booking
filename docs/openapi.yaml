@@ -1003,6 +1003,119 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseEmployeeBindingVO"
+  /venue-admin/customers/{customerId}/tags/{tagId}:
+    post:
+      tags:
+      - customer-controller
+      operationId: addCustomerTag
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+    delete:
+      tags:
+      - customer-controller
+      operationId: removeCustomerTag
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /venue-admin/customer-tags:
+    get:
+      tags:
+      - customer-controller
+      operationId: listCustomerTags
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListVenueCustomerTagVO"
+    post:
+      tags:
+      - customer-controller
+      operationId: createCustomerTag
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerTagRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseVenueCustomerTagVO"
+  /venue-admin/customer-followups:
+    get:
+      tags:
+      - customer-controller
+      operationId: listCustomerFollowups
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListCustomerFollowupVO"
+    post:
+      tags:
+      - customer-controller
+      operationId: createCustomerFollowup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerFollowupCreateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCustomerFollowupVO"
   /venue-admin/courts/{courtId}/image:
     post:
       tags:
@@ -1619,6 +1732,64 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /mini/reminder-subscriptions:
+    get:
+      tags:
+      - reminder-controller
+      operationId: list
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListReminderSubscriptionVO"
+    post:
+      tags:
+      - reminder-controller
+      operationId: subscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderSubscriptionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReminderSubscriptionVO"
+  /mini/reminders:
+    get:
+      tags:
+      - reminder-controller
+      operationId: list_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListReminderSubscriptionVO"
+    post:
+      tags:
+      - reminder-controller
+      operationId: subscribe_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReminderSubscriptionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReminderSubscriptionVO"
   /mini/recharges/{rechargeId}/mock-pay:
     post:
       tags:
@@ -1727,7 +1898,7 @@ paths:
     get:
       tags:
       - post-interaction-controller
-      operationId: list
+      operationId: list_2
       parameters:
       - name: postId
         in: path
@@ -1938,6 +2109,43 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/favourite-venues/{venueId}:
+    post:
+      tags:
+      - mini-favourite-venue-controller
+      operationId: add
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+    delete:
+      tags:
+      - mini-favourite-venue-controller
+      operationId: remove_1
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
   /mini/content/uploads:
     post:
       tags:
@@ -2018,6 +2226,25 @@ paths:
       tags:
       - notification-controller
       operationId: read
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/notifications/{id}/read:
+    post:
+      tags:
+      - notification-controller
+      operationId: read_1
       parameters:
       - name: id
         in: path
@@ -2390,6 +2617,31 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /venue-admin/customer-followups/{id}:
+    patch:
+      tags:
+      - customer-controller
+      operationId: updateCustomerFollowup
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerFollowupUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCustomerFollowupVO"
   /platform/venues/{venueId}/status:
     patch:
       tags:
@@ -2551,6 +2803,43 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListVenueReviewVO"
+  /venue-admin/reports/utilization:
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getVenueUtilization
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: courtId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReportUtilizationVO"
   /venue-admin/reports/service-fees:
     get:
       tags:
@@ -2682,6 +2971,55 @@ paths:
         schema:
           type: string
           format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListReportBookingVO"
+  /venue-admin/reports/bookings-filtered:
+    get:
+      tags:
+      - operation-report-controller
+      operationId: listFilteredBookings
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: courtId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: slotStart
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: slotEnd
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -2894,6 +3232,43 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /venue-admin/customer-operations:
+    get:
+      tags:
+      - customer-controller
+      operationId: listCustomerOperations
+      parameters:
+      - name: segment
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListCustomerOperationVO"
+  /venue-admin/customer-operations/{customerId}:
+    get:
+      tags:
+      - customer-controller
+      operationId: getCustomerOperation
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseCustomerOperationVO"
   /venue-admin/courts/list:
     get:
       tags:
@@ -3064,6 +3439,59 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseVenueCustomerVO"
+  /public/venues/{venueId}/slot-comparison:
+    get:
+      tags:
+      - public-slot-controller
+      operationId: compare
+      parameters:
+      - name: venueId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: startTime
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: endTime
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: minPriceFen
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: maxPriceFen
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListPublicSlotVO"
   /public/venues/{venueId}/reviews:
     get:
       tags:
@@ -3194,6 +3622,49 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListSportTypeVO"
+  /platform/reports/utilization:
+    get:
+      tags:
+      - operation-report-controller
+      operationId: getPlatformUtilization
+      parameters:
+      - name: venueId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: courtId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseReportUtilizationVO"
   /platform/reports/service-fees:
     get:
       tags:
@@ -3326,7 +3797,7 @@ paths:
     get:
       tags:
       - content-moderation-controller
-      operationId: list_1
+      operationId: list_3
       responses:
         "200":
           description: OK
@@ -3435,7 +3906,7 @@ paths:
     get:
       tags:
       - user-action-event-controller
-      operationId: list_2
+      operationId: list_4
       responses:
         "200":
           description: OK
@@ -3466,6 +3937,11 @@ paths:
         schema:
           type: string
           format: date
+      - name: district
+        in: query
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -3583,6 +4059,11 @@ paths:
         schema:
           type: integer
           format: int32
+      - name: district
+        in: query
+        required: false
+        schema:
+          type: string
       - name: page
         in: query
         required: false
@@ -3597,6 +4078,62 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListSlotSearchVO"
+  /mini/recruitments:
+    get:
+      tags:
+      - recruitment-discovery-controller
+      operationId: list_5
+      parameters:
+      - name: date
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: sportTypeId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: venueId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: levelTag
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: minRemaining
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListRecruitmentDiscoveryVO"
   /mini/recharges/{rechargeId}:
     get:
       tags:
@@ -3635,6 +4172,18 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListRechargePlanVO"
+  /mini/recent-venues:
+    get:
+      tags:
+      - mini-favourite-venue-controller
+      operationId: recent
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListFavouriteVenueVO"
   /mini/posts/users/{authorId}:
     get:
       tags:
@@ -3689,7 +4238,7 @@ paths:
     get:
       tags:
       - post-controller
-      operationId: list_3
+      operationId: list_6
       parameters:
       - name: sportTypeId
         in: query
@@ -3772,11 +4321,59 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListMembershipVO"
+  /mini/favourite-venues:
+    get:
+      tags:
+      - mini-favourite-venue-controller
+      operationId: favourites
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListFavouriteVenueVO"
+  /mini/content/notifications/all:
+    get:
+      tags:
+      - notification-controller
+      operationId: all
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentNotificationVO"
+  /mini/notifications/all:
+    get:
+      tags:
+      - notification-controller
+      operationId: all_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentNotificationVO"
   /mini/content/notifications:
     get:
       tags:
       - notification-controller
-      operationId: list_4
+      operationId: list_7
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListContentNotificationVO"
+  /mini/notifications:
+    get:
+      tags:
+      - notification-controller
+      operationId: list_8
       responses:
         "200":
           description: OK
@@ -3935,6 +4532,63 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseEmployeeVO"
+  /venue-admin/customer-tags/{tagId}:
+    delete:
+      tags:
+      - customer-controller
+      operationId: deleteCustomerTag
+      parameters:
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/reminders/{id}:
+    delete:
+      tags:
+      - reminder-controller
+      operationId: cancel
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
+  /mini/reminder-subscriptions/{id}:
+    delete:
+      tags:
+      - reminder-controller
+      operationId: cancel_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseBoolean"
 components:
   schemas:
     WeeklySlotSaveRequest:
@@ -4145,6 +4799,7 @@ components:
             - ONLINE_BOOKING_CANCEL
             - OFFLINE_PAYMENT_STATUS_EDIT
             - CUSTOMER_VIEW
+            - CUSTOMER_OPERATIONS_EDIT
             - MEMBER_FUNDS_VIEW
             - MEMBER_RECHARGE
             - MEMBER_RECHARGE_REVERSE
@@ -4204,6 +4859,7 @@ components:
             - ONLINE_BOOKING_CANCEL
             - OFFLINE_PAYMENT_STATUS_EDIT
             - CUSTOMER_VIEW
+            - CUSTOMER_OPERATIONS_EDIT
             - MEMBER_FUNDS_VIEW
             - MEMBER_RECHARGE
             - MEMBER_RECHARGE_REVERSE
@@ -4340,6 +4996,9 @@ components:
         city:
           type: string
           description: 所在城市
+        district:
+          type: string
+          description: 所属区县，旧场馆可为空
         address:
           type: string
           description: 详细地址
@@ -4396,6 +5055,9 @@ components:
         city:
           type: string
           description: 所在城市
+        district:
+          type: string
+          description: 所属区县
         address:
           type: string
           description: 详细地址
@@ -5373,6 +6035,112 @@ components:
           type: string
           format: date-time
           description: 过期时间
+    CustomerTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 标签名称，最多 40 个字符
+    ApiResponseVenueCustomerTagVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/VenueCustomerTagVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    VenueCustomerTagVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 标签 ID
+        name:
+          type: string
+          description: 标签名称
+        createdByName:
+          type: string
+          description: 创建人姓名快照
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间，UTC Instant
+    CustomerFollowupCreateRequest:
+      type: object
+      properties:
+        customerId:
+          type: integer
+          format: int64
+          description: 当前场馆顾客档案 ID
+        purpose:
+          type: string
+          description: 待办目的，默认 30 天未再预约
+        sourceGroup:
+          type: string
+          description: 来源分组，只允许 30_DAY_NO_REBOOK
+    ApiResponseCustomerFollowupVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CustomerFollowupVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CustomerFollowupVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 待办 ID
+        customerId:
+          type: integer
+          format: int64
+          description: 顾客档案 ID
+        contactName:
+          type: string
+          description: 顾客姓名
+        purpose:
+          type: string
+          description: 待办目的
+        sourceGroup:
+          type: string
+          description: 来源分组
+        status:
+          type: string
+          description: 状态：PENDING、COMPLETED、NOT_NEEDED
+        note:
+          type: string
+          description: 仅当前场馆授权人员可见的内部备注
+        createdByName:
+          type: string
+          description: 创建人姓名快照
+        createdAt:
+          type: string
+          format: date-time
+          description: 创建时间，UTC Instant
+        handledByName:
+          type: string
+          description: 处理人姓名快照
+        handledAt:
+          type: string
+          format: date-time
+          description: 处理时间，UTC Instant
+        rebookedAfterHandled:
+          type: boolean
+          description: 是否存在处理后日期的有效预约场次，按场次开始时间判断；不表示预约创建于处理后或由回访导致
+        rebookedAfterHandledAt:
+          type: string
+          format: date-time
+          description: 首个处理后日期的有效预约场次开始时间，按场次时间判断，UTC Instant
+        rebookedAfterHandledSource:
+          type: string
+          description: 处理后日期首个有效预约场次来源：ONLINE 或 OFFLINE
     OfflineBookingRescheduleRequest:
       type: object
       description: 线下预约同价改期请求
@@ -5669,6 +6437,86 @@ components:
         bindingCode:
           type: string
           description: 一次性员工绑定码
+    ReminderSubscriptionRequest:
+      type: object
+      properties:
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        targetDate:
+          type: string
+          format: date
+          description: 预约日期
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        type:
+          type: string
+          description: 提醒类型 OPENING/RELEASED
+    ApiResponseReminderSubscriptionVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ReminderSubscriptionVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReminderSubscriptionVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 登记 ID
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        targetDate:
+          type: string
+          format: date
+          description: 预约日期
+        startTime:
+          type: string
+          description: 开始时间
+        endTime:
+          type: string
+          description: 结束时间
+        type:
+          type: string
+          description: 提醒类型 OPENING/RELEASED
+        status:
+          type: string
+          description: 登记状态
+        openingNotifiedAt:
+          type: string
+          format: date-time
+          description: 开售提醒生成时间
+        availableNow:
+          type: boolean
+          description: 登记时是否已有可预约场次
+        bookingDaysAhead:
+          type: integer
+          format: int32
+          description: 当前场馆预约窗口天数
+        minBookingMinutes:
+          type: integer
+          format: int32
+          description: 开场前最晚预约分钟数
     MiniRechargeCreateRequest:
       type: object
       properties:
@@ -5731,6 +6579,9 @@ components:
         level:
           type: string
           description: 水平
+        levelTag:
+          type: string
+          description: 有限水平标签，历史记录为空
         maxMembers:
           type: integer
           format: int32
@@ -5867,7 +6718,7 @@ components:
           description: 用户确认的单场次价格，单位为分；旧调用可省略
         entryType:
           type: string
-          description: 可选预约入口 TIME_SEARCH，仅用于业务结果关联
+          description: 可选预约入口 TIME_SEARCH、BOOK_AGAIN 或 REMINDER_ENTRY，仅用于业务结果关联
     MiniLoginRequest:
       type: object
       description: 小程序模拟登录请求
@@ -5968,6 +6819,7 @@ components:
             - ONLINE_BOOKING_CANCEL
             - OFFLINE_PAYMENT_STATUS_EDIT
             - CUSTOMER_VIEW
+            - CUSTOMER_OPERATIONS_EDIT
             - MEMBER_FUNDS_VIEW
             - MEMBER_RECHARGE
             - MEMBER_RECHARGE_REVERSE
@@ -6019,6 +6871,15 @@ components:
           enum:
           - ACTIVE
           - DISABLED
+    CustomerFollowupUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 处理结果：COMPLETED 或 NOT_NEEDED
+        note:
+          type: string
+          description: 当前场馆内部备注，最多 255 个字符
     VenueStatusUpdateRequest:
       type: object
       description: 场馆状态更新请求
@@ -6191,6 +7052,166 @@ components:
           format: int32
         msg:
           type: string
+    ApiResponseReportUtilizationVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/ReportUtilizationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ReportCourtPerformanceVO:
+      type: object
+      properties:
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        courtName:
+          type: string
+          description: 场地名称
+        availableMinutes:
+          type: integer
+          format: int64
+          description: 可售分钟
+        bookedMinutes:
+          type: integer
+          format: int64
+          description: 已预订分钟
+        utilizationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 利用率，万分比
+        cancelledCount:
+          type: integer
+          format: int64
+          description: 取消预约数
+        bookingCount:
+          type: integer
+          format: int64
+          description: 预约总数
+        dataStatus:
+          type: string
+          description: KNOWN、UNAVAILABLE 或 DATA_INSUFFICIENT；缺失供给时不推断零利用率
+    ReportLowUtilizationVO:
+      type: object
+      properties:
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        courtName:
+          type: string
+          description: 场地名称
+        slotDate:
+          type: string
+          description: 统计日期，Asia/Shanghai
+        startTime:
+          type: string
+          description: 开始日期时间，Asia/Shanghai
+        endTime:
+          type: string
+          description: 结束日期时间，Asia/Shanghai，可为次日零点
+        availableMinutes:
+          type: integer
+          format: int64
+          description: 可售分钟
+        bookedMinutes:
+          type: integer
+          format: int64
+          description: 已预订分钟
+        utilizationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 利用率，万分比
+        cancelledCount:
+          type: integer
+          format: int64
+          description: 取消预约数
+    ReportUtilizationCellVO:
+      type: object
+      properties:
+        dayOfWeek:
+          type: integer
+          format: int32
+          description: 星期，1-7
+        hourOfDay:
+          type: integer
+          format: int32
+          description: 小时，0-23
+        availableMinutes:
+          type: integer
+          format: int64
+          description: 可售分钟
+        bookedMinutes:
+          type: integer
+          format: int64
+          description: 已预订分钟
+        utilizationRateBasisPoints:
+          type: integer
+          format: int32
+          description: 利用率，万分比
+        cancelledCount:
+          type: integer
+          format: int64
+          description: 取消预约数
+        dataStatus:
+          type: string
+          description: KNOWN、UNAVAILABLE 或 DATA_INSUFFICIENT；未知时不计算利用率
+    ReportUtilizationVO:
+      type: object
+      properties:
+        startDate:
+          type: string
+          description: 查询开始日期
+        endDate:
+          type: string
+          description: 查询结束日期
+        timeZone:
+          type: string
+          description: 业务时区
+        generatedAt:
+          type: string
+          format: date-time
+          description: 生成时间
+        methodology:
+          type: string
+          description: 统计口径说明
+        heatmap:
+          type: array
+          description: 星期小时热力图
+          items:
+            $ref: "#/components/schemas/ReportUtilizationCellVO"
+        courts:
+          type: array
+          description: 场地对比
+          items:
+            $ref: "#/components/schemas/ReportCourtPerformanceVO"
+        lowUtilization:
+          type: array
+          description: 低利用时段
+          items:
+            $ref: "#/components/schemas/ReportLowUtilizationVO"
+        futureHeatmap:
+          type: array
+          description: 今日及未来供给预订分布，与历史利用率分开
+          items:
+            $ref: "#/components/schemas/ReportUtilizationCellVO"
+        futureCourts:
+          type: array
+          description: 今日及未来场地供给预订分布
+          items:
+            $ref: "#/components/schemas/ReportCourtPerformanceVO"
+        courtDetailsIncluded:
+          type: boolean
+          description: 是否按可信角色返回场地明细
+        sports:
+          type: object
+          additionalProperties:
+            type: string
+          description: 本次结果中的运动类型
     ApiResponseServiceFeeSettlementVO:
       type: object
       properties:
@@ -6638,6 +7659,7 @@ components:
           - ONLINE_BOOKING_CANCEL
           - OFFLINE_PAYMENT_STATUS_EDIT
           - CUSTOMER_VIEW
+          - CUSTOMER_OPERATIONS_EDIT
           - MEMBER_FUNDS_VIEW
           - MEMBER_RECHARGE
           - MEMBER_RECHARGE_REVERSE
@@ -6845,6 +7867,103 @@ components:
           format: int32
         msg:
           type: string
+    ApiResponseListVenueCustomerTagVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/VenueCustomerTagVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListCustomerOperationVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerOperationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    CustomerOperationVO:
+      type: object
+      properties:
+        customerId:
+          type: integer
+          format: int64
+          description: 顾客档案 ID
+        contactName:
+          type: string
+          description: 顾客姓名
+        phone:
+          type: string
+          description: 手机号
+        validBookingCount:
+          type: integer
+          format: int32
+          description: 有效预约次数，不含待支付和已取消
+        lastValidBookingAt:
+          type: string
+          format: date-time
+          description: 最近有效预约开始时间
+        lastValidBookingSource:
+          type: string
+          description: 最近有效预约来源：ONLINE 或 OFFLINE
+        lastCompletedAt:
+          type: string
+          format: date-time
+          description: 最近完成线上预约时间
+        latestVerifiedAt:
+          type: string
+          format: date-time
+          description: 最近线上核销时间
+        futureConfirmedCount:
+          type: integer
+          format: int32
+          description: 未来已确认预约数量
+        usualHours:
+          type: string
+          description: 常约时段统计，小时:次数
+        tags:
+          type: array
+          description: 当前场馆顾客标签
+          items:
+            type: string
+        segment:
+          type: string
+          description: 当前筛选分组标识
+        customerCreatedAt:
+          type: string
+          format: date-time
+          description: 当前场馆建档时间，UTC 时间戳
+    ApiResponseCustomerOperationVO:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CustomerOperationVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListCustomerFollowupVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerFollowupVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
     ApiResponseListCourtVO:
       type: object
       properties:
@@ -7022,6 +8141,7 @@ components:
             - ONLINE_BOOKING_CANCEL
             - OFFLINE_PAYMENT_STATUS_EDIT
             - CUSTOMER_VIEW
+            - CUSTOMER_OPERATIONS_EDIT
             - MEMBER_FUNDS_VIEW
             - MEMBER_RECHARGE
             - MEMBER_RECHARGE_REVERSE
@@ -7042,6 +8162,55 @@ components:
             - POST_PUBLISH
             - REPORT_VIEW
             - REPORT_EXPORT
+    ApiResponseListPublicSlotVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicSlotVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    PublicSlotVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 具体场次 ID
+        courtId:
+          type: integer
+          format: int64
+          description: 场地 ID
+        courtName:
+          type: string
+          description: 场地名称
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动名称
+        startAt:
+          type: string
+          description: 真实开始时间
+        endAt:
+          type: string
+          description: 真实结束时间
+        priceFen:
+          type: integer
+          format: int32
+          description: 当前单场价格，单位为分
+        status:
+          type: string
+          description: 公开状态：OPEN、HELD、BOOKED、CLOSED 或 UNAVAILABLE
+        cancelDeadline:
+          type: string
+          description: 按当前规则计算的取消截止时间
     ApiResponseVenueReviewSummaryVO:
       type: object
       properties:
@@ -7460,6 +8629,9 @@ components:
         city:
           type: string
           description: 所在城市
+        district:
+          type: string
+          description: 所属区县
         address:
           type: string
           description: 详细地址
@@ -7585,6 +8757,134 @@ components:
         venueName:
           type: string
           description: 场馆名称
+        district:
+          type: string
+          description: 场馆所属区县，未配置时为空
+    ApiResponseListReminderSubscriptionVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReminderSubscriptionVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    ApiResponseListRecruitmentDiscoveryVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecruitmentDiscoveryVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    RecruitmentDiscoveryVO:
+      type: object
+      properties:
+        recruitmentId:
+          type: integer
+          format: int64
+          description: 招募 ID
+        postId:
+          type: integer
+          format: int64
+          description: 动态 ID
+        sportTypeId:
+          type: integer
+          format: int64
+          description: 运动类型 ID
+        sportName:
+          type: string
+          description: 运动类型名称
+        venueId:
+          type: integer
+          format: int64
+          description: 场馆 ID
+        venueName:
+          type: string
+          description: 场馆名称
+        startAt:
+          type: string
+          format: date-time
+          description: 开始时间
+        endAt:
+          type: string
+          format: date-time
+          description: 结束时间
+        level:
+          type: string
+          description: 水平显示文本
+        levelTag:
+          type: string
+          description: 有限水平标签，历史数据为空
+        maxMembers:
+          type: integer
+          format: int32
+          description: 招募容量
+        approvedCount:
+          type: integer
+          format: int32
+          description: 已通过人数
+        remainingCount:
+          type: integer
+          format: int32
+          description: 剩余名额
+        feeMode:
+          type: string
+          description: 费用方式
+        aaAmountFen:
+          type: integer
+          format: int32
+          description: 预计 AA 金额，分
+        description:
+          type: string
+          description: 说明
+        status:
+          type: string
+          description: 公开状态
+    ApiResponseListFavouriteVenueVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/FavouriteVenueVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
+    FavouriteVenueVO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 场馆主键
+        name:
+          type: string
+          description: 场馆名称
+        city:
+          type: string
+          description: 所在城市
+        district:
+          type: string
+          description: 所属区县
+        address:
+          type: string
+          description: 详细地址
+        coverPath:
+          type: string
+          description: 封面访问路径
+        status:
+          type: string
+          description: 场馆状态
     ApiResponseListPostCommentVO:
       type: object
       properties:
@@ -7758,6 +9058,10 @@ components:
           type: integer
           format: int64
           description: 业务 ID
+        subscriptionId:
+          type: integer
+          format: int64
+          description: 提醒登记 ID
         readAt:
           type: string
           format: date-time
@@ -7766,6 +9070,12 @@ components:
           type: string
           format: date-time
           description: 创建时间
+        type:
+          type: string
+          description: 消息类型
+        status:
+          type: string
+          description: 投递状态
     ApiResponseBookingDetailVO:
       type: object
       properties:
@@ -7782,6 +9092,9 @@ components:
         booking:
           $ref: "#/components/schemas/BookingVO"
           description: 预约信息
+        venue:
+          $ref: "#/components/schemas/VenueVO"
+          description: 当前场馆导航与入场资料
         payment:
           $ref: "#/components/schemas/PaymentVO"
           description: 支付信息

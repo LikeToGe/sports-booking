@@ -1,0 +1,31 @@
+mysqladmin: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+P5 runtime: isolated HTTP server ready
+P5: full containment, exact cents, stable ordering and public fields passed
+P5: invalid filters, sale window, lead time and suspended venue passed
+P5: bounded pagination, detail filters and old requests passed
+P5: changed price, last-slot race, idempotency, entry attribution and refund passed
+P5: owned history, new date/current price, BOOK_AGAIN attribution and refund passed
+P5: Flyway empty database and SQL upgrade V10-V15 preserve history passed
+[0.1/4] 登录通过
+[0.2/4] 场馆资料通过
+[0.3/4] 场地创建通过
+[0.4/4] 档位创建通过
+[1/4] 充值、重复成功通知与会员激活通过
+[2/4] 全余额无外部支付、取消原批次返还通过
+[3/4] 组合支付 UNKNOWN、成功、取消和原路退款通过
+[4/4] 明确失败释放、后台充值与整笔撤销通过
+P2 runtime verification passed: recharge=2 full=96 combo=97 failed=98
+[1/2] 同会员并发预约未超扣余额
+[2/2] 错误金额保持原状态，重复成功通知幂等消费
+P2 concurrency verification passed: booking=100
+P5 favourites: idempotent add/remove, account isolation, deduplicated recent response passed
+P5 public comparison projection, statuses, full ranges and filters passed
+P5 district: unfiltered compatibility, slot + district/sport/price filters, public list/detail, and venue profile update passed
+P5 recruitment HTTP: business date, ownership, historical level, governance, capacity and invalid detail passed
+P6 SQL upgrade from V15 preserves legacy bookings, messages and delivery results
+P6 reminders HTTP: registration, opening, release, retry, arrival, ownership and landing passed
+P6 utilization HTTP passed: interval union 270/40, snapshots, held supply, unique cancellation counts, missing data, future separation, platform scope and midnight/sport drilldown
+P6 customers: venue isolation, 30-day boundary, completed/verification facts, join-safe counts, tags/audit, pending-only followups, concurrency, actor identity and immediate revoke passed
+Isolated preview ready: http://127.0.0.1:8091/api; verification_status=0

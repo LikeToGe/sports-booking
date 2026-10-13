@@ -2,7 +2,7 @@
 
 父需求：https://github.com/LikeToGe/sports-booking/issues/1
 
-状态：用户已确认拆分，16 个 Issue 已发布，全部 ready-for-agent；2026-10-12 远端复核均仍开放，功能尚未实施。
+状态更新（2026-10-13）：P5 #2–#8 的实现与开发门禁已通过，证据见 docs/evidence/p5/README.md；P6 #9–#16 已实现且自动化/隔离业务验收通过，#17 最后端侧交互点验待可访问窗口；证据见 docs/evidence/p6/README.md。远端 Issue 均仍开放，未自动关闭。
 
 以下序号是本地草案号，GitHub 编号为链接所示；依赖正文是执行依据，不要把草案序号当作 Issue 编号。
 
