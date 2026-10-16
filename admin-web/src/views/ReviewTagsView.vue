@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText, requireSelection } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { Pencil, Plus, RefreshCw, X } from "@lucide/vue";
 import { api } from "../api";
@@ -59,10 +60,12 @@ function sportNames(tag: ReviewTag) {
 }
 
 async function save() {
-  if (saving.value || !name.value.trim() || !sportTypeIds.value.length) return;
+  if (saving.value) return;
   saving.value = true;
   formError.value = "";
   try {
+    requireText(name.value, "评价标签名称", 40);
+    requireSelection(sportTypeIds.value, "适用运动");
     await api(editing.value ? `/platform/review-tags/${editing.value.id}` : "/platform/review-tags", {
       method: editing.value ? "PUT" : "POST",
       body: JSON.stringify({ name: name.value.trim(), status: status.value, sportTypeIds: sportTypeIds.value }),
@@ -101,7 +104,7 @@ onMounted(load);
         <label class="field"><span>标签名称</span><input v-model.trim="name" maxlength="40" required></label>
         <fieldset class="sport-field"><legend>适用运动</legend><label v-for="sport in availableSports" :key="sport.id"><input v-model="sportTypeIds" type="checkbox" :value="sport.id"><span>{{ sport.name }}</span></label></fieldset>
         <label class="field"><span>状态</span><select v-model="status"><option value="ACTIVE">启用</option><option value="DISABLED">停用</option></select></label>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="dialog?.close()">取消</button><button class="button" type="submit" :disabled="saving || !sportTypeIds.length">{{ saving ? "保存中" : "保存" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="dialog?.close()">取消</button><button class="button" type="submit" :disabled="saving">{{ saving ? "保存中" : "保存" }}</button></div>
       </form>
     </dialog>
   </section>

@@ -34,7 +34,20 @@ public class ApiException extends RuntimeException {
      * @author gjm
      */
     public ApiException(HttpStatus status, ErrorCode code, Object data) {
-        super(code.getDescription());
+        this(status, code, code.getDescription(), data);
+    }
+
+    /**
+     * 创建带具体原因的业务异常，不在提示中包含原始参数值。
+     *
+     * @param status HTTP 状态
+     * @param code 业务错误码
+     * @param message 面向用户的具体错误说明
+     * @param data 错误详情
+     * @author gjm
+     */
+    public ApiException(HttpStatus status, ErrorCode code, String message, Object data) {
+        super(message);
         this.status = status;
         this.code = code;
         this.data = data;

@@ -12,6 +12,7 @@ async function reportContent(targetType,targetId) {
       confirmText: "提交",success: resolve,fail: reject,
     }));
     if (!details.confirm) return false;
+    if ((details.content || "").trim().length > 500) throw new Error("举报补充说明不能超过 500 个字");
     const query = `targetType=${targetType}&targetId=${targetId}&reasonCode=${reasons[selected.tapIndex].code}&description=${encodeURIComponent(details.content.trim())}`;
     await request(`/mini/content/reports?${query}`,{ method: "POST" });
     return true;

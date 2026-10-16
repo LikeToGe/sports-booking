@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText, requireNumber } from "../validation";
 import { onMounted, ref } from "vue";
 import { CircleCheck, CircleX, Pencil, Plus, RefreshCw, WalletCards, X } from "@lucide/vue";
 import { api, money } from "../api";
@@ -59,8 +60,12 @@ async function save() {
   saving.value = true;
   formError.value = "";
   message.value = "";
-  const values = { ...form.value, giftValidDays: form.value.giftValidDays || undefined };
+  const values = { ...form.value, giftValidDays: form.value.giftAmountFen > 0 ? form.value.giftValidDays : undefined };
   try {
+    requireText(form.value.name, "充值档位名称");
+    requireNumber(form.value.paidAmountFen, "实付金额（分）", 1);
+    requireNumber(form.value.giftAmountFen, "赠送金额（分）", 0);
+    if (form.value.giftAmountFen > 0) requireNumber(form.value.giftValidDays, "赠送有效天数", 1);
     if (editingPlan.value) {
       await api(`/venue-admin/recharge-plans/${editingPlan.value.id}`, {
         method: "PUT",

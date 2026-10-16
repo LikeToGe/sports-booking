@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { Plus, X } from "@lucide/vue";
 import { api } from "../api";
@@ -35,6 +36,7 @@ async function save() {
   createError.value = "";
   message.value = "";
   try {
+    requireText(name.value, "运动类型名称");
     if (editingSport.value) {
       await api(`/platform/sports/${editingSport.value.id}`, {
         method: "PUT", body: JSON.stringify({ name: name.value }),

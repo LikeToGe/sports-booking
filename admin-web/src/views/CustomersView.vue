@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref, watch } from "vue";
 import {
   ArrowDownLeft,
@@ -219,11 +220,12 @@ function usualHoursText(value: string | null) {
 
 async function createTag() {
   const name = newTagName.value.trim();
-  if (!name || creatingTag.value) return;
+  if (creatingTag.value) return;
   creatingTag.value = true;
   tagsError.value = "";
   actionMessage.value = "";
   try {
+    requireText(name, "顾客标签名称", 40);
     await api("/venue-admin/customer-tags", { method: "POST", body: JSON.stringify({ name }) });
     newTagName.value = "";
     actionMessage.value = "标签已创建";
@@ -301,6 +303,7 @@ async function updateFollowup() {
   actionError.value = "";
   actionMessage.value = "";
   try {
+    if (followupNote.value.trim().length > 255) throw new Error("回访处理备注不能超过 255 个字");
     await api(`/venue-admin/customer-followups/${updatingFollowup.value.id}`, {
       method: "PATCH", body: JSON.stringify({ status: followupNextStatus.value, note: followupNote.value.trim() || null }),
     });
@@ -366,12 +369,13 @@ async function loadDetail() {
 }
 
 async function recharge() {
-  if (!selected.value || !rechargePlanId.value) return;
+  if (!selected.value) return;
   recharging.value = true;
   rechargeError.value = "";
   detailMessage.value = "";
   rechargeIdempotencyKey ||= crypto.randomUUID();
   try {
+    if (!rechargePlanId.value) throw new Error("请选择充值档位");
     await api(`/venue-admin/members/${selected.value.customerId}/recharges`, {
       method: "POST",
       body: JSON.stringify({
@@ -405,6 +409,8 @@ async function reverseRecharge() {
   reverseError.value = "";
   detailMessage.value = "";
   try {
+    requireText(reverseReason.value, "撤销原因");
+    if (reversingRecharge.value.channel !== "MOCK" && !offlineFundsHandled.value) throw new Error("请确认线下退款已处理");
     await api(`/venue-admin/recharges/${reversingRecharge.value.id}/reverse`, {
       method: "POST",
       body: JSON.stringify({ reason: reverseReason.value, offlineFundsHandled: offlineFundsHandled.value }),
@@ -486,7 +492,7 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
     <section class="customer-ops-grid">
       <section class="data-panel" aria-label="场馆顾客标签"><header class="data-panel-head"><div><h2>顾客标签</h2><p>标签仅在当前场馆内使用，不改变会员身份或计价。</p></div><span class="record-count">{{ tags.length }} 个</span></header>
         <p v-if="tagsError" class="error-banner" role="alert">{{ tagsError }} <button class="inline-command" type="button" @click="loadTags">重试</button></p>
-        <form v-if="canEditCustomerOperations" class="inline-form" @submit.prevent="createTag"><label class="field"><span>新增标签</span><input v-model.trim="newTagName" maxlength="40" required></label><button class="button" type="submit" :disabled="creatingTag || !newTagName.trim()">{{ creatingTag ? "正在创建" : "创建标签" }}</button></form>
+        <form v-if="canEditCustomerOperations" class="inline-form" @submit.prevent="createTag"><label class="field"><span>新增标签</span><input v-model.trim="newTagName" maxlength="40" required></label><button class="button" type="submit" :disabled="creatingTag">{{ creatingTag ? "正在创建" : "创建标签" }}</button></form>
         <ul v-if="tags.length" class="tag-list"><li v-for="tag in tags" :key="tag.id"><span><strong>{{ tag.name }}</strong><small>{{ tag.createdByName }} · {{ localDateTime(tag.createdAt) }}</small></span><button v-if="canEditCustomerOperations" class="button danger" type="button" @click="deleteTag(tag)">删除</button></li></ul>
         <div v-else-if="!tagsError" class="empty-state"><strong>暂无标签</strong></div>
       </section>
@@ -549,7 +555,7 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
             <form class="recharge-form" @submit.prevent="recharge">
               <label class="field"><span>充值档位</span><select v-model.number="rechargePlanId" required :disabled="recharging"><option disabled value="">请选择档位</option><option v-for="plan in plans.filter(item => item.status === 'ACTIVE')" :key="plan.id" :value="plan.id">{{ plan.name }} · {{ money(plan.paidAmountFen) }} + 赠送 {{ money(plan.giftAmountFen) }}</option></select></label>
               <label class="field"><span>收款渠道</span><select v-model="rechargeChannel" :disabled="recharging"><option value="CASH">现金</option><option value="WECHAT">微信</option><option value="ALIPAY">支付宝</option></select></label>
-              <button class="button recharge-action" type="submit" :disabled="recharging || !rechargePlanId || !plans.some(item => item.status === 'ACTIVE')" :aria-busy="recharging"><WalletCards :size="17" aria-hidden="true" />{{ recharging ? "充值处理中" : "确认充值" }}</button>
+              <button class="button recharge-action" type="submit" :disabled="recharging || !plans.some(item => item.status === 'ACTIVE')" :aria-busy="recharging"><WalletCards :size="17" aria-hidden="true" />{{ recharging ? "充值处理中" : "确认充值" }}</button>
             </form>
             <p v-if="!planError && !plans.some(item => item.status === 'ACTIVE')" class="muted">当前没有启用的充值档位，请先到“充值档位”页面创建或启用。</p>
           </section>
@@ -599,6 +605,7 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
     <dialog ref="followupDialog" class="modal" aria-labelledby="customersview-followupDialog-title">
       <form method="dialog" class="modal-head"><h2 id="customersview-followupDialog-title">{{ followupNextStatus === "COMPLETED" ? "完成回访" : "无需处理" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="updateFollowup">
+        <p v-if="actionError" class="error-banner" role="alert">{{ actionError }}</p>
         <p>{{ updatingFollowup?.contactName || "当前顾客" }} · {{ followupNextStatus === "COMPLETED" ? "确认已完成回访" : "确认无需处理" }}</p>
         <label class="field"><span>{{ followupNextStatus === "COMPLETED" ? "处理备注" : "无需处理原因" }}</span><textarea v-model="followupNote" maxlength="255" :disabled="updatingFollowupBusy"></textarea></label>
         <div class="modal-actions"><button class="button secondary" type="button" :disabled="updatingFollowupBusy" @click="followupDialog?.close()">取消</button><button class="button" type="submit" :disabled="updatingFollowupBusy">{{ updatingFollowupBusy ? "正在保存" : "确认" }}</button></div>
@@ -615,7 +622,7 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
         <p v-if="reverseError" class="error-banner" role="alert">{{ reverseError }}</p>
         <label class="field"><span>撤销原因</span><textarea v-model.trim="reverseReason" required :disabled="reversing"></textarea></label>
         <label class="confirmation"><input v-model="offlineFundsHandled" type="checkbox" required :disabled="reversing"><span>{{ reversingRecharge?.channel === "MOCK" ? "确认继续撤销整笔充值" : "已在线下完成对应资金处理，并确认继续撤销整笔充值" }}</span></label>
-        <div class="modal-actions"><button class="button secondary" type="button" :disabled="reversing" @click="reverseDialog?.close()">返回检查</button><button class="button danger stable-reverse" type="submit" :disabled="reversing || !offlineFundsHandled" :aria-busy="reversing"><TriangleAlert :size="17" aria-hidden="true" />{{ reversing ? "正在撤销" : "确认整笔撤销" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" :disabled="reversing" @click="reverseDialog?.close()">返回检查</button><button class="button danger stable-reverse" type="submit" :disabled="reversing" :aria-busy="reversing"><TriangleAlert :size="17" aria-hidden="true" />{{ reversing ? "正在撤销" : "确认整笔撤销" }}</button></div>
       </form>
     </dialog>
   </section>

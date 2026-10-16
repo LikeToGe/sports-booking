@@ -1,4 +1,5 @@
 const { request, money, date, time } = require("../../utils/api");
+const { validateContact } = require("../../utils/validation");
 
 Page({
   data: { slot: null, contactName: "", contactPhone: "", idempotencyKey: "", loading: true, error: "" },
@@ -20,6 +21,8 @@ Page({
   async submit() {
     this.setData({ loading: true, error: "" });
     try {
+      validateContact(this.data.contactName, this.data.contactPhone);
+      if (!this.data.slot?.id) throw new Error("场次信息已失效，请返回重新选择");
       const booking = await request("/mini/bookings/create", { method: "POST", data: { sessionSlotId: this.data.slot.id, contactName: this.data.contactName, contactPhone: this.data.contactPhone, idempotencyKey: this.data.idempotencyKey, expectedPriceFen: this.data.slot.priceFen, entryType: this.data.slot.entryType || null } });
       wx.removeStorageSync("yuechangPendingSlot");
       let status = booking.status;

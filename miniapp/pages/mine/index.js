@@ -1,4 +1,5 @@
 const { request } = require("../../utils/api");
+const { validateContact } = require("../../utils/validation");
 
 function isDevelopment() {
   try {
@@ -46,7 +47,7 @@ Page({
   onName(event) { this.setData({ contactName: event.detail.value, saved: false }); },
   onPhone(event) { this.setData({ phone: event.detail.value, saved: false }); },
   async save() {
-    try { await request("/auth/mini/profile/update", { method: "PUT", data: { contactName: this.data.contactName, phone: this.data.phone } }); this.setData({ saved: true, error: "", showProfileForm: false, profile: { ...this.data.profile, contactName: this.data.contactName, phone: this.data.phone } }); }
+    try { validateContact(this.data.contactName, this.data.phone); await request("/auth/mini/profile/update", { method: "PUT", data: { contactName: this.data.contactName, phone: this.data.phone } }); this.setData({ saved: true, error: "", showProfileForm: false, profile: { ...this.data.profile, contactName: this.data.contactName, phone: this.data.phone } }); }
     catch (error) { this.setData({ error: error.message }); }
   },
   bindStaff() { wx.navigateTo({ url: "/pages/staff-bind/index" }); },

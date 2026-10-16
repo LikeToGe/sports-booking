@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText, requireSelection } from "../validation";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { CalendarPlus, Plus, X } from "@lucide/vue";
 import { ApiError, api, localDateTime, money, today } from "../api";
@@ -60,6 +61,7 @@ async function load() {
   loading.value = true;
   error.value = "";
   try {
+    if (!selectedDate.value) throw new Error("请选择预约日期");
     [bookings.value, sessions.value, customers.value] = await Promise.all([
       api<BookingView[]>(`/venue-admin/bookings/list?date=${selectedDate.value}`),
       api<SessionView[]>(`/venue-admin/sessions/list?date=${selectedDate.value}`),
@@ -111,6 +113,10 @@ async function saveOffline() {
   formError.value = "";
   conflictDates.value = [];
   try {
+    requireText(offlineName.value, "联系人姓名");
+    requireText(offlinePhone.value, "联系电话");
+    if (!editingBooking.value && !offlineSlotId.value) throw new Error("请选择可预约场次");
+    if (!editingBooking.value && createMode.value === "batch") requireSelection(batchDates.value, "预约日期");
     if (editingBooking.value) {
       await api(`/venue-admin/bookings/${editingBooking.value.id}/contact`, {
         method: "PUT", body: JSON.stringify({ contactName: offlineName.value, contactPhone: offlinePhone.value }),
@@ -188,6 +194,12 @@ async function saveReschedule() {
 async function submit(dialog: typeof cancelDialog, action: () => Promise<unknown>) {
   formError.value = "";
   try {
+    if (dialog === cancelDialog) requireText(cancelReason.value, "取消原因", 255);
+    if (dialog === paymentDialog) requireText(paymentReason.value, "收款状态修改原因", 255);
+    if (dialog === rescheduleDialog) {
+      if (!rescheduleSlotId.value) throw new Error("请选择同价可预约场次");
+      requireText(rescheduleReason.value, "改期原因", 255);
+    }
     await action();
     dialog.value?.close();
     await load();
@@ -265,7 +277,7 @@ onMounted(load);
           <label class="field"><span>关联顾客（可选）</span><select v-model="venueCustomerId"><option :value="undefined">不关联</option><option v-for="customer in customers" :key="customer.customerId" :value="customer.customerId">{{ customer.contactName }} · {{ customer.phone }}</option></select></label>
           <label class="field"><span>登记收款状态</span><select v-model="offlinePaymentStatus"><option value="UNPAID">未支付</option><option value="PAID">已支付</option></select></label>
         </template>
-        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="!editingBooking && (!offlineSlotId || createMode === 'batch' && !batchDates.length)">{{ editingBooking ? "保存修改" : createMode === "batch" ? "整批创建" : "创建预约" }}</button></div>
+        <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" >{{ editingBooking ? "保存修改" : createMode === "batch" ? "整批创建" : "创建预约" }}</button></div>
       </form>
     </dialog>
 
@@ -276,7 +288,7 @@ onMounted(load);
 
     <dialog ref="rescheduleDialog" class="modal" aria-labelledby="bookingsview-rescheduleDialog-title">
       <form method="dialog" class="modal-head"><h2 id="bookingsview-rescheduleDialog-title">同价改期</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <form class="modal-body" @submit.prevent="saveReschedule"><p v-if="formError" class="error-banner" role="alert">{{ formError }}</p><label class="field"><span>目标日期</span><input v-model="rescheduleDate" type="date" @change="loadRescheduleSessions"></label><label class="field"><span>同价场次</span><select v-model.number="rescheduleSlotId" required><option v-for="session in openSessions.filter(item => item.priceFen === rescheduling?.amountFen)" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }}</option></select></label><label class="field"><span>改期原因</span><textarea v-model.trim="rescheduleReason" required></textarea></label><button class="button" type="submit" :disabled="!rescheduleSlotId">保存改期</button></form>
+      <form class="modal-body" @submit.prevent="saveReschedule"><p v-if="formError" class="error-banner" role="alert">{{ formError }}</p><label class="field"><span>目标日期</span><input v-model="rescheduleDate" type="date" @change="loadRescheduleSessions"></label><label class="field"><span>同价场次</span><select v-model.number="rescheduleSlotId" required><option v-for="session in openSessions.filter(item => item.priceFen === rescheduling?.amountFen)" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }}</option></select></label><label class="field"><span>改期原因</span><textarea v-model.trim="rescheduleReason" required></textarea></label><button class="button" type="submit" >保存改期</button></form>
     </dialog>
 
     <dialog ref="cancelDialog" class="modal" aria-labelledby="bookingsview-cancelDialog-title">

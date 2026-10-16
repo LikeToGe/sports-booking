@@ -52,15 +52,18 @@ Page({
     if (this.data.keyword) params.push(`keyword=${encodeURIComponent(this.data.keyword)}`);
     if (this.data.district) params.push(`district=${encodeURIComponent(this.data.district)}`);
     if (this.data.startTime || this.data.endTime) {
-      if (!this.data.startTime || !this.data.endTime || this.data.startTime >= this.data.endTime) throw new Error("请选择同一天递增的起止时间");
+      if (!this.data.startTime) throw new Error("请选择开始时间");
+      if (!this.data.endTime) throw new Error("请选择结束时间");
+      if (this.data.startTime >= this.data.endTime) throw new Error("结束时间必须晚于开始时间，不能跨天");
       params.push(`startTime=${encodeURIComponent(this.data.startTime)}`, `endTime=${encodeURIComponent(this.data.endTime)}`);
     }
-    const prices = [this.data.minPrice, this.data.maxPrice].map(value => {
+    const prices = [this.data.minPrice, this.data.maxPrice].map((value, index) => {
+      const label = index === 0 ? "最低价格" : "最高价格";
       if (value === "") return null;
-      if (!/^\d+(\.\d{1,2})?$/.test(value)) throw new Error("价格须为非负金额，最多两位小数");
+      if (!/^\d+(\.\d{1,2})?$/.test(value)) throw new Error(`${label}须为非负金额，最多两位小数`);
       const [yuan, fraction = ""] = value.split(".");
       const fen = Number(yuan) * 100 + Number(fraction.padEnd(2, "0"));
-      if (!Number.isSafeInteger(fen) || fen > 2147483647) throw new Error("价格超出允许范围");
+      if (!Number.isSafeInteger(fen) || fen > 2147483647) throw new Error(`${label}超出允许范围`);
       return fen;
     });
     if (prices[0] != null && prices[1] != null && prices[0] > prices[1]) throw new Error("最低价格不能高于最高价格");

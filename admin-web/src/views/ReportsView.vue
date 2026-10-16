@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { validateDateRange } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { Download, Search } from "@lucide/vue";
 import { api, localDateTime, money, percent, preciseYuan, today } from "../api";
@@ -92,6 +93,7 @@ function emptySettlement(): ServiceFeeSettlement {
 }
 
 function query() {
+  validateDateRange(startDate.value, endDate.value);
   const params = new URLSearchParams({ startDate: startDate.value, endDate: endDate.value });
   if (isPlatform.value && venueId.value) params.set("venueId", venueId.value);
   if (!isPlatform.value && courtId.value && ["utilization", "bookings"].includes(activeView.value)) params.set("courtId", courtId.value);
@@ -106,6 +108,7 @@ async function load() {
   error.value = "";
   try {
     if (activeView.value === "service-fees") {
+      if (!billingMonth.value) throw new Error("请选择结算月份");
       const params = new URLSearchParams({ billingMonth: billingMonth.value });
       if (isPlatform.value && venueId.value) params.set("venueId", venueId.value);
       settlement.value = await api<ServiceFeeSettlement>(`${isPlatform.value ? "/platform" : "/venue-admin"}/reports/service-fees?${params}`);
@@ -147,7 +150,10 @@ async function download() {
     const response = await fetch(`${base}/venue-admin/exports/${activeView.value}?${query()}`, {
       headers: { "X-Admin-Token": auth.token },
     });
-    if (!response.ok) throw new Error(`导出失败（${response.status}）`);
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({}));
+      throw new Error(failure.msg || `导出失败（${response.status}）`);
+    }
     const url = URL.createObjectURL(await response.blob());
     const link = document.createElement("a");
     link.href = url;

@@ -1,4 +1,5 @@
 const { request, uploadFile, downloadMedia, dateTime, time } = require("../../utils/api");
+const { requireText, requireNumber } = require("../../utils/validation");
 
 Page({
   onReady() { this.getTabBar?.()?.refresh(); },
@@ -75,7 +76,10 @@ Page({
       if (this.data.filterSportId) params.push(`sportTypeId=${this.data.filterSportId}`);
       if (this.data.filterVenueId) params.push(`venueId=${this.data.filterVenueId}`);
       if (this.data.recruitmentLevel) params.push(`levelTag=${encodeURIComponent(this.data.recruitmentLevel)}`);
-      if (this.data.recruitmentMinRemaining) params.push(`minRemaining=${this.data.recruitmentMinRemaining}`);
+      if (this.data.recruitmentMinRemaining !== "" && this.data.recruitmentMinRemaining != null) {
+        requireNumber(Number(this.data.recruitmentMinRemaining), "最少剩余名额", 1, 20);
+        params.push(`minRemaining=${this.data.recruitmentMinRemaining}`);
+      }
       const rows = await request(`/mini/recruitments${params.length ? `?${params.join("&")}` : ""}`);
       const levels = { BEGINNER_FRIENDLY: "新手友好", CASUAL: "休闲", ADVANCED: "进阶" };
       if (requestId !== this.recruitmentRequest) return;
@@ -182,6 +186,8 @@ Page({
     }
     this.setData({ saving: true, error: "", message: "" });
     try {
+      requireText(this.data.body, "动态正文", 2000);
+      if (!this.data.sportTypeId) throw new Error("请选择运动类型");
       const selectedMedia = await Promise.all(this.data.selectedMedia.map(async item => ({
         ...item, uploadId: item.uploadId || (await uploadFile(item.path, item.duration)).id,
       })));

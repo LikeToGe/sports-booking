@@ -1,4 +1,5 @@
 const { request, money } = require("../../utils/api");
+const { requireNumber } = require("../../utils/validation");
 
 Page({
   data: {
@@ -17,10 +18,13 @@ Page({
   selectPlan(event) { this.setData({ selectedPlanId: Number(event.currentTarget.dataset.id), result: null, error: "" }); },
   selectChannel(event) { this.setData({ channelIndex: Number(event.detail.value), result: null, error: "" }); },
   async submit() {
-    if (!this.data.selectedPlanId) return;
+    if (!this.data.selectedPlanId) { this.setData({ error: "请选择充值档位" }); return; }
     const clientIdempotencyKey = this.data.clientIdempotencyKey || `staff-recharge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     this.setData({ submitting: true, error: "", clientIdempotencyKey });
     try {
+      requireNumber(this.data.venueId, "工作场馆 ID", 1, Number.MAX_SAFE_INTEGER);
+      requireNumber(this.data.customerId, "顾客 ID", 1, Number.MAX_SAFE_INTEGER);
+      if (!this.data.channels[this.data.channelIndex]) throw new Error("请选择收款渠道");
       const result = await request("/staff/recharges", {
         method: "POST",
         data: {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { validateVenue, validateImage } from "../validation";
 import { onMounted, reactive, ref } from "vue";
 import { ImageUp, Save } from "@lucide/vue";
 import { api, API_BASE } from "../api";
@@ -25,6 +26,8 @@ async function save() {
   error.value = "";
   saved.value = false;
   try {
+    validateVenue(form);
+    if (file.value) validateImage(file.value);
     await api("/venue-admin/profile/update", {
       method: "PUT",
       body: JSON.stringify({

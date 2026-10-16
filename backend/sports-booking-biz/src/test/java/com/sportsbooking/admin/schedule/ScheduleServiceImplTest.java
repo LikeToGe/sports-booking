@@ -53,6 +53,32 @@ import org.junit.jupiter.api.Test;
 class ScheduleServiceImplTest {
 
     @Test
+    void explainsUnsupportedSportAndMissingSelectionWithoutWritingInventory() {
+        CourtMapper courts = mock(CourtMapper.class);
+        SportTypeMapper sports = mock(SportTypeMapper.class);
+        SessionSlotMapper slots = mock(SessionSlotMapper.class);
+        Court court = new Court();
+        court.id = 1L;
+        court.venueId = 1L;
+        court.status = EnableStatus.ACTIVE;
+        SportType sport = new SportType();
+        sport.id = 3L;
+        sport.status = EnableStatus.ACTIVE;
+        when(courts.selectById(1L)).thenReturn(court);
+        when(sports.selectById(3L)).thenReturn(sport);
+        when(courts.selectSportIds(1L)).thenReturn(List.of(2L));
+        ScheduleServiceImpl service = new ScheduleServiceImpl(mock(WeeklySlotMapper.class), slots,
+                courts, sports, mock(VenueService.class), lockService(), mock(BookingMapper.class));
+        var body = new com.sportsbooking.admin.biz.pojo.request.ExtraSlotCreateRequest(
+                1L, 3L, LocalDate.now().plusDays(1), LocalTime.of(9, 2), LocalTime.of(10, 0), 6000);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.createExtra(1L, body))
+                .isInstanceOf(ApiException.class).hasMessage("所选场地不支持该运动，请重新选择运动类型");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.createExtra(1L, null))
+                .isInstanceOf(ApiException.class).hasMessage("请选择场地");
+        verify(slots, never()).insertIgnore(any());
+    }
+
+    @Test
     void returnsFilteredDayBoardWithBookingDetailsInOneMapperQuery() {
         WeeklySlotMapper weeklySlotMapper = mock(WeeklySlotMapper.class);
         SessionSlotMapper sessionSlotMapper = mock(SessionSlotMapper.class);

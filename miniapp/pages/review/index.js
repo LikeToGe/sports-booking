@@ -1,4 +1,5 @@
 const { request, uploadFile, downloadMedia } = require("../../utils/api");
+const { requireText } = require("../../utils/validation");
 
 Page({
   data: {
@@ -73,6 +74,7 @@ Page({
     }
     this.setData({ saving: true, error: "", message: "" });
     try {
+      requireText(this.data.body, "评价内容", 2000);
       const selectedImages = await Promise.all(this.data.selectedImages.map(async item => ({
         ...item, uploadId: item.uploadId || (await uploadFile(item.path)).id,
       })));

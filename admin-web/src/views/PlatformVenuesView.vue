@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { validateVenue, validateAmount, requireText } from "../validation";
 import { computed, onMounted, reactive, ref } from "vue";
 import { Plus, X } from "@lucide/vue";
 import { api, percent } from "../api";
@@ -88,6 +89,13 @@ async function submitVenue() {
   formError.value = "";
   message.value = "";
   try {
+    validateVenue(form);
+    requireText(form.adminUsername, "管理员用户名");
+    if (!editingVenue.value || form.adminPassword) requireText(form.adminPassword, "管理员密码");
+    if (editingVenue.value) {
+      validateAmount(form.serviceFeeRatePercent, "平台服务费率");
+      if (form.serviceFeeRatePercent > 30) throw new Error("平台服务费率不能超过 30%");
+    }
     if (editingVenue.value) {
       const venueId = editingVenue.value.venue.id;
       // ponytail: 顺序调用避免两个场馆整行更新互相覆盖；要求原子保存时再合并后端接口。
@@ -169,6 +177,7 @@ async function resetAdminPassword() {
   resetError.value = "";
   message.value = "";
   try {
+    requireText(newPassword.value, "新密码");
     await api(`/platform/venues/${resetVenue.value.id}/admin-password`, {
       method: "PATCH", body: JSON.stringify({ password: newPassword.value }),
     });

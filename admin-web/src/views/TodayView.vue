@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { Ban, CalendarDays, CircleAlert, CircleCheck, CircleX, ClipboardList, Clock3, Plus, RefreshCw, X } from "@lucide/vue";
 import { api, money, percent, today } from "../api";
@@ -114,18 +115,25 @@ function openActions(slot: SessionView) {
 
 async function createOffline() {
   if (!selected.value) return;
-  await perform(async () => api("/venue-admin/bookings/offline", {
-    method: "POST",
-    body: JSON.stringify({ sessionSlotId: selected.value?.id, contactName: contactName.value,
-      contactPhone: contactPhone.value, paymentStatus: paymentStatus.value }),
-  }));
+  await perform(async () => {
+    requireText(contactName.value, "联系人姓名");
+    requireText(contactPhone.value, "联系电话");
+    return api("/venue-admin/bookings/offline", {
+      method: "POST",
+      body: JSON.stringify({ sessionSlotId: selected.value?.id, contactName: contactName.value,
+        contactPhone: contactPhone.value, paymentStatus: paymentStatus.value }),
+    });
+  });
 }
 
 async function savePaymentStatus() {
   if (!selected.value?.bookingId) return;
-  await perform(async () => api(`/venue-admin/bookings/${selected.value?.bookingId}/payment-status`, {
-    method: "PUT", body: JSON.stringify({ paymentStatus: paymentStatus.value, reason: paymentReason.value }),
-  }));
+  await perform(async () => {
+    requireText(paymentReason.value, "收款状态修改原因", 255);
+    return api(`/venue-admin/bookings/${selected.value?.bookingId}/payment-status`, {
+      method: "PUT", body: JSON.stringify({ paymentStatus: paymentStatus.value, reason: paymentReason.value }),
+    });
+  });
 }
 
 async function changeSlot(action: "open" | "close") {

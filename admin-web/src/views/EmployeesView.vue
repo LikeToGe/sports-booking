@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { KeyRound, Plus, ShieldCheck, Unlink, X } from "@lucide/vue";
 import { api, localDateTime } from "../api";
@@ -86,6 +87,7 @@ async function save() {
   createError.value = "";
   loading.value = true;
   try {
+    requireText(name.value, "员工姓名");
     if (editingEmployee.value) {
       await api(`/venue-admin/employees/${editingEmployee.value.id}`, {
         method: "PUT", body: JSON.stringify({ name: name.value }),

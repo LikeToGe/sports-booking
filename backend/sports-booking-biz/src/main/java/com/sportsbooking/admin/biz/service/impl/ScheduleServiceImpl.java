@@ -91,6 +91,10 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 新增或更新周场次模板并同步未来具体场次。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param venueId 场馆 ID
+     * @param weeklySlotId 待编辑的周场次 ID，新增时为空
+     * @param body 周场次保存请求
+     * @return 已保存的周场次
      * @author gjm
      */
     @Transactional
@@ -98,19 +102,20 @@ public class ScheduleServiceImpl implements ScheduleService {
     public WeeklySlot saveWeekly(long venueId, Long weeklySlotId, WeeklySlotSaveRequest body) {
         courtMapper.selectVenueForUpdate(venueId);
         WeeklySlot weekly = weeklySlotId == null ? new WeeklySlot() : requiredWeekly(venueId, weeklySlotId);
+        requireSlotSelection(body == null ? null : body.getCourtId(), body == null ? null : body.getSportTypeId());
         Court court = requiredCourt(venueId, body.getCourtId());
         SportType sport = requiredSport(venueId, body.getSportTypeId(), weeklySlotId == null ? null : weekly.sportTypeId);
         if (body.getDayOfWeek() == null || body.getDayOfWeek() < 1 || body.getDayOfWeek() > 7) {
-            throw badRequest();
+            throw badRequest("请选择星期一至星期日");
         }
         if (body.getStartTime() == null || body.getEndTime() == null || !body.getStartTime().isBefore(body.getEndTime())) {
-            throw badRequest();
+            throw badRequest("请填写开始和结束时间，结束时间必须晚于开始时间");
         }
         if (body.getPriceFen() == null || body.getPriceFen() < 0) {
-            throw badRequest();
+            throw badRequest("场次价格不能为空且不能小于 0");
         }
         if (!courtMapper.selectSportIds(court.id).contains(sport.id)) {
-            throw badRequest();
+            throw badRequest("所选场地不支持该运动，请重新选择运动类型");
         }
         // 锁定物理场地后检查时间区间，防止并发创建两个互相重叠的库存。
         courtMapper.selectForUpdate(court.id);
@@ -159,20 +164,24 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 将源星期的有效模板复制到目标星期。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param venueId 场馆 ID
+     * @param sourceDay 来源星期
+     * @param targetDays 目标星期列表
+     * @return 已复制的周场次列表
      * @author gjm
      */
     @Transactional
     @Override
     public List<WeeklySlot> copyDay(long venueId, int sourceDay, List<Integer> targetDays) {
         if (sourceDay < 1 || sourceDay > 7 || targetDays == null || targetDays.isEmpty()) {
-            throw badRequest();
+            throw badRequest("请选择来源星期和目标星期");
         }
         courtMapper.selectVenueForUpdate(venueId);
         List<WeeklySlot> source = weeklySlotMapper.selectByVenue(venueId, EnableStatus.ACTIVE).stream()
                 .filter(slot -> slot.dayOfWeek == sourceDay)
                 .toList();
         if (source.isEmpty()) {
-            throw badRequest();
+            throw badRequest("来源星期没有启用中的固定排期，无法复制");
         }
         Venue venue = venueService.getVenue(venueId);
         LocalDate firstDate = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
@@ -257,19 +266,21 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 创建不属于周模板的临时具体场次。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param venueId 场馆 ID
+     * @param body 临时场次创建请求
+     * @return 已创建的具体场次
      * @author gjm
      */
     @Transactional
     @Override
     public SessionSlot createExtra(long venueId, ExtraSlotCreateRequest body) {
+        requireSlotSelection(body == null ? null : body.getCourtId(), body == null ? null : body.getSportTypeId());
         Court court = requiredCourt(venueId, body.getCourtId());
         SportType sport = requiredSport(venueId, body.getSportTypeId(), null);
-        if (body.getDate() == null || body.getStartTime() == null || body.getEndTime() == null
-                || !body.getStartTime().isBefore(body.getEndTime())) {
-            throw badRequest();
-        }
+        requireSessionTime(body);
+
         if (!courtMapper.selectSportIds(court.id).contains(sport.id)) {
-            throw badRequest();
+            throw badRequest("所选场地不支持该运动，请重新选择运动类型");
         }
         // 与周模板共用同一场地锁，确保临时场次也不能制造重叠库存。
         courtMapper.selectForUpdate(court.id);
@@ -286,11 +297,15 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 编辑任意库存状态的具体场次并保留状态及预约关联。
      * 创建时间: 2026/09/11
      *
+     * @param venueId 场馆 ID
+     * @param sessionSlotId 待编辑的具体场次 ID
+     * @param body 场次保存请求
+     * @return 已更新的具体场次
      * @author gjm
      */
     @Override
     public SessionSlot updateSession(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
-        if (body == null || body.getCourtId() == null) throw badRequest();
+        requireSlotSelection(body == null ? null : body.getCourtId(), body == null ? null : body.getSportTypeId());
         SessionSlot candidate = sessionSlotMapper.selectById(sessionSlotId);
         if (candidate == null || candidate.venueId != venueId) throw notFound();
         return redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)),
@@ -324,11 +339,12 @@ public class ScheduleServiceImpl implements ScheduleService {
             throw notFound();
         }
         SportType sport = requiredSport(venueId, body.getSportTypeId(), slot.sportTypeId);
-        if (body.getDate() == null || body.getStartTime() == null || body.getEndTime() == null
-                || !body.getStartTime().isBefore(body.getEndTime())
-                || body.getPriceFen() == null || body.getPriceFen() < 0
-                || !courtMapper.selectSportIds(court.id).contains(sport.id)) {
-            throw badRequest();
+        requireSessionTime(body);
+        if (body.getPriceFen() == null || body.getPriceFen() < 0) {
+            throw badRequest("场次价格不能为空且不能小于 0");
+        }
+        if (!courtMapper.selectSportIds(court.id).contains(sport.id)) {
+            throw badRequest("所选场地不支持该运动，请重新选择运动类型");
         }
         Instant startAt = body.getDate().atTime(body.getStartTime())
                 .atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
@@ -609,12 +625,21 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 按郑州业务时区构造一条具体场次实体。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param venueId 场馆 ID
+     * @param weeklyId 来源周场次 ID，临时场次为空
+     * @param courtId 场地 ID
+     * @param sportId 运动类型 ID
+     * @param date 场次日期
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param priceFen 价格，单位为分
+     * @return 待保存的具体场次
      * @author gjm
      */
     private SessionSlot session(long venueId, Long weeklyId, long courtId, long sportId, LocalDate date,
                                 LocalTime startTime, LocalTime endTime, Integer priceFen) {
         if (priceFen == null || priceFen < 0) {
-            throw badRequest();
+            throw badRequest("场次价格不能为空且不能小于 0");
         }
         SessionSlot slot = new SessionSlot();
         slot.venueId = venueId;
@@ -676,13 +701,41 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
-     * 功能描述: 构造统一参数错误。
-     * 创建时间: 2026/08/28 16:29
+     * 功能描述: 构造包含具体原因的参数错误。
      *
+     * @param message 面向用户的错误说明
+     * @return 参数错误异常
      * @author gjm
      */
-    private ApiException badRequest() {
-        return new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
+    private ApiException badRequest(String message) {
+        return new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT, message, null);
+    }
+
+    /**
+     * 在主键拆箱和查库前指出缺失的场地或运动。
+     *
+     * @param courtId 场地 ID
+     * @param sportId 运动类型 ID
+     * @author gjm
+     */
+    private void requireSlotSelection(Long courtId, Long sportId) {
+        if (courtId == null || courtId <= 0) throw badRequest("请选择场地");
+        if (sportId == null || sportId <= 0) throw badRequest("请选择运动类型");
+    }
+
+    /**
+     * 校验新增和编辑具体场次共用的日期与时间规则。
+     *
+     * @param body 场次保存请求
+     * @author gjm
+     */
+    private void requireSessionTime(ExtraSlotCreateRequest body) {
+        if (body.getDate() == null) throw badRequest("请选择场次日期");
+        if (body.getStartTime() == null) throw badRequest("请选择开始时间");
+        if (body.getEndTime() == null) throw badRequest("请选择结束时间");
+        if (!body.getStartTime().isBefore(body.getEndTime())) {
+            throw badRequest("结束时间必须晚于开始时间，不能跨天");
+        }
     }
 
     /**

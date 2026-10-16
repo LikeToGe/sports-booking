@@ -1,4 +1,5 @@
 const { request } = require("../../utils/api");
+const { requireText } = require("../../utils/validation");
 
 Page({
   data: { venues: [], selectedIndex: 0, current: null, ticket: "", error: "", loading: true, confirmed: false },
@@ -32,9 +33,10 @@ Page({
     });
   },
   async confirm() {
-    if (!this.data.current || !this.data.ticket) return;
+    if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "" });
     try {
+      requireText(this.data.ticket, "Web 登录票据，请扫码或手动输入");
       await request(`/staff/web-login-tickets/${encodeURIComponent(this.data.ticket)}/confirm`, {
         method: "POST", data: { venueId: this.data.current.venueId },
       });

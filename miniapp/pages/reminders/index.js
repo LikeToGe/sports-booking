@@ -1,4 +1,5 @@
 const { request, dateInZhengzhou, time } = require("../../utils/api");
+const { validateTimeRange } = require("../../utils/validation");
 
 const typeOptions = [{ value: "OPENING", label: "开售提醒" }, { value: "RELEASED", label: "空位提醒" }];
 const statusLabels = { OPEN: "可预约", HELD: "支付占位", BOOKED: "已预约", CLOSED: "不开放", UNAVAILABLE: "当前不可预约" };
@@ -79,11 +80,14 @@ Page({
     if (this.data.saving) return;
     const venue = this.data.venues[this.data.venueIndex];
     const sport = this.data.sports[this.data.sportIndex];
-    if (!venue || !sport || !this.data.targetDate || this.data.startTime >= this.data.endTime) {
-      this.setData({ error: "请选择场馆、运动、日期和递增的完整时段" }); return;
-    }
     this.setData({ saving: true, error: "", message: "" });
     try {
+      if (!venue) throw new Error("请选择可预约场馆");
+      if (!sport) throw new Error("请选择运动类型");
+      if (!this.data.targetDate) throw new Error("请选择提醒日期");
+      if (this.data.targetDate < dateInZhengzhou()) throw new Error("提醒日期不能早于今天");
+      validateTimeRange(this.data.startTime, this.data.endTime);
+      if (!typeOptions[this.data.typeIndex]) throw new Error("请选择提醒类型");
       const row = await request("/mini/reminder-subscriptions", { method: "POST", data: {
         venueId: venue.id, sportTypeId: sport.id, targetDate: this.data.targetDate,
         startTime: this.data.startTime, endTime: this.data.endTime, type: typeOptions[this.data.typeIndex].value,

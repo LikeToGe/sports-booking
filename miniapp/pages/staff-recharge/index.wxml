@@ -4,7 +4,7 @@
   <view wx:if="{{error}}" class="error">{{error}}</view>
   <view class="surface recharge-customer"><text class="section-title">场馆顾客</text><view><text class="muted">姓名</text><text>{{customerName}}</text></view></view><view class="plan-section surface"><text class="section-title">充值档位</text><button wx:for="{{plans}}" wx:key="id" class="plan-row surface {{selectedPlanId === item.id ? 'is-selected' : ''}}" data-id="{{item.id}}" disabled="{{submitting || result}}" bindtap="selectPlan"><text>{{item.name}}</text><strong>{{item.amountLabel}}</strong></button></view>
   <label wx:if="{{plans.length}}" class="field"><text class="field-label">实收渠道</text><picker mode="selector" range="{{channels}}" range-key="label" value="{{channelIndex}}" disabled="{{submitting || result}}" bindchange="selectChannel"><view class="field-control channel-picker">{{channels[channelIndex].label}}</view></picker></label>
-  <button wx:if="{{plans.length && !result}}" class="button-primary" disabled="{{submitting || !selectedPlanId}}" bindtap="submit">{{submitting ? '充值处理中' : '确认充值'}}</button>
+  <button wx:if="{{plans.length && !result}}" class="button-primary" disabled="{{submitting}}" bindtap="submit">{{submitting ? '充值处理中' : '确认充值'}}</button>
   <view wx:if="{{result}}" class="recharge-result surface"><text class="section-title">充值完成</text><text>{{result.planName}}</text><text class="muted">充值记录 {{result.id}}</text></view>
   <view wx:if="{{!loading && !plans.length}}" class="empty surface"><text class="empty-title">没有启用的充值档位</text></view>
 <view wx:if="{{loading}}" class="empty" role="status">正在加载，请稍候。</view>

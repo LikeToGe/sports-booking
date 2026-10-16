@@ -1,4 +1,5 @@
 const { request, dateTime } = require("../../utils/api");
+const { requireText } = require("../../utils/validation");
 const statuses = { PENDING: "处理中",RESOLVED: "已处理",REJECTED: "未通过",UPHELD: "维持处置",
   REVERSED: "已撤销",PUBLISHED: "已公开",HIDDEN: "已隐藏",APPROVED: "已通过" };
 const targets = { POST: "动态",COMMENT: "评论",REVIEW: "评价",REVIEW_REPLY: "官方回复",USER: "用户" };
@@ -50,8 +51,9 @@ Page({
   async appeal(event) {
     const result = await new Promise(resolve => wx.showModal({ title: "提交申诉",editable: true,
       placeholderText: "申诉说明",success: resolve }));
-    if (!result.confirm || !result.content.trim()) return;
+    if (!result.confirm) return;
     try {
+      requireText(result.content, "申诉说明", 500);
       await request(`/mini/content/appeals?moderationLogId=${event.currentTarget.dataset.id}&body=${encodeURIComponent(result.content.trim())}`,
         { method: "POST" });
       this.setData({ message: "申诉已提交" }); await this.load();

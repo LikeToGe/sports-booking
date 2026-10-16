@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { RefreshCw, Save } from "@lucide/vue";
 import { api } from "../api";
@@ -34,11 +35,12 @@ async function load() {
 }
 
 async function save(review: Review) {
-  if (!canEdit || saving.value || !drafts.value[review.id]?.trim()) return;
+  if (!canEdit || saving.value) return;
   saving.value = review.id;
   error.value = "";
   message.value = "";
   try {
+    requireText(drafts.value[review.id], "回复内容", 1000);
     await api(`/venue-admin/reviews/${review.id}/reply`, {
       method: "PUT", body: JSON.stringify({ body: drafts.value[review.id].trim() }),
     });
@@ -74,7 +76,7 @@ onMounted(load);
               <textarea v-model="drafts[review.id]" maxlength="1000" rows="3" :disabled="!canEdit" placeholder="回复这条评价" />
               <span v-if="review.reply" class="muted">{{ review.reply.moderationStatus === "PENDING" ? "待平台审核" : review.reply.moderationStatus === "REJECTED" ? "已拒绝" : review.reply.contentStatus === "PUBLISHED" ? "已公开" : "未公开" }}</span>
             </td>
-            <td data-label="操作"><button class="button secondary" type="button" :disabled="!canEdit || saving === review.id || !drafts[review.id]?.trim()" @click="save(review)"><Save :size="16" aria-hidden="true" />{{ saving === review.id ? "提交中" : "提交回复" }}</button></td>
+            <td data-label="操作"><button class="button secondary" type="button" :disabled="!canEdit || saving === review.id" @click="save(review)"><Save :size="16" aria-hidden="true" />{{ saving === review.id ? "提交中" : "提交回复" }}</button></td>
           </tr></tbody>
         </table>
       </div>

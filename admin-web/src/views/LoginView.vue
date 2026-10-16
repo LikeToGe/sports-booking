@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { PanelsTopLeft, Clipboard, LogIn, RefreshCw, ScanLine } from "@lucide/vue";
@@ -27,6 +28,8 @@ async function login() {
   error.value = "";
   loading.value = true;
   try {
+    requireText(username.value, "用户名");
+    requireText(password.value, "密码");
     const result = await api<{ token: string; principal: AdminPrincipal }>("/auth/admin/login", {
       method: "POST",
       body: JSON.stringify({ username: username.value.trim(), password: password.value }),

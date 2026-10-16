@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { validateSlot } from "../validation";
 import { computed, onMounted, reactive, ref } from "vue";
 import { Copy, Plus, X } from "@lucide/vue";
 import { api, money } from "../api";
@@ -18,6 +19,17 @@ const loading = ref(false);
 const createDialog = ref<HTMLDialogElement>();
 const editingSlot = ref<WeeklySlot | null>(null);
 const form = reactive({ courtId: 0, sportTypeId: 0, startTime: "09:00", endTime: "10:00", priceYuan: 60 });
+const formCourts = computed(() => courts.value.filter(court => court.status === "ACTIVE"));
+const formSports = computed(() => sports.value.filter(sport =>
+  courts.value.find(court => court.id === form.courtId)?.sportIds.split(",").includes(String(sport.id))));
+function selectCourtSport() {
+  const retained = editingSlot.value?.sportTypeId;
+  const supported = courts.value.find(court => court.id === form.courtId)?.sportIds.split(",") || [];
+  if (!formSports.value.some(sport => sport.id === form.sportTypeId)
+      && !(form.sportTypeId === retained && supported.includes(String(retained)))) {
+    form.sportTypeId = formSports.value[0]?.id || 0;
+  }
+}
 const courtId = ref("");
 const sportId = ref("");
 const canEdit = hasPermission("SCHEDULE_EDIT");
@@ -34,8 +46,8 @@ async function load() {
       api<CourtView[]>("/venue-admin/courts/list"),
       api<SportType[]>("/venue-admin/sports/list"),
     ]);
-    if (!form.courtId && courts.value[0]) form.courtId = courts.value[0].id;
-    if (!form.sportTypeId && sports.value[0]) form.sportTypeId = sports.value[0].id;
+    if (!form.courtId) form.courtId = courts.value.find(court => court.status === "ACTIVE")?.id || 0;
+    selectCourtSport();
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "排期加载失败";
   }
@@ -45,6 +57,7 @@ async function save() {
   createError.value = "";
   loading.value = true;
   try {
+    validateSlot(form, formCourts.value);
     await api(editingSlot.value
       ? `/venue-admin/weekly-slots/${editingSlot.value.id}/update`
       : "/venue-admin/weekly-slots/create", {
@@ -63,12 +76,13 @@ async function save() {
 function openCreate() {
   editingSlot.value = null;
   Object.assign(form, {
-    courtId: courts.value[0]?.id || 0,
+    courtId: courts.value.find(court => court.status === "ACTIVE")?.id || 0,
     sportTypeId: sports.value[0]?.id || 0,
     startTime: "09:00",
     endTime: "10:00",
     priceYuan: 60,
   });
+  selectCourtSport();
   createError.value = "";
   createDialog.value?.showModal();
 }
@@ -169,11 +183,11 @@ onMounted(load);
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>星期</span><input :value="dayNames[activeDay - 1]" disabled></label>
         <div class="form-grid">
-          <label class="field"><span>场地</span><select v-model.number="form.courtId" required><option v-for="court in courts" :key="court.id" :value="court.id">{{ court.name }}</option></select></label>
-          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option v-if="editingSlot && !sports.some(sport => sport.id === editingSlot?.sportTypeId)" :value="editingSlot.sportTypeId">{{ sportName(editingSlot.sportTypeId) }}</option><option v-for="sport in sports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
+          <label class="field"><span>场地</span><select v-model.number="form.courtId" required @change="selectCourtSport"><option :value="0" disabled>请选择场地</option><option v-for="court in formCourts" :key="court.id" :value="court.id">{{ court.name }}</option></select></label>
+          <label class="field"><span>运动</span><select v-model.number="form.sportTypeId" required><option :value="0" disabled>{{ formSports.length ? "请选择运动" : "该场地暂无可用运动" }}</option><option v-if="editingSlot && courts.find(court => court.id === form.courtId)?.sportIds.split(',').includes(String(editingSlot.sportTypeId)) && !sports.some(sport => sport.id === editingSlot?.sportTypeId)" :value="editingSlot.sportTypeId">{{ sportName(editingSlot.sportTypeId) }}</option><option v-for="sport in formSports" :key="sport.id" :value="sport.id">{{ sport.name }}</option></select></label>
           <label class="field"><span>开始</span><input v-model="form.startTime" type="time" required></label>
           <label class="field"><span>结束</span><input v-model="form.endTime" type="time" required></label>
-          <label class="field"><span>价格（元）</span><input v-model.number="form.priceYuan" type="number" min="0" step="1" required></label>
+          <label class="field"><span>价格（元）</span><input v-model.number="form.priceYuan" type="number" min="0" max="21474836.47" step="0.01" required></label>
         </div>
         <div class="modal-actions"><button class="button secondary" type="button" @click="createDialog?.close()">取消</button><button class="button" type="submit" :disabled="loading">{{ loading ? "正在保存" : editingSlot ? "保存修改" : "创建排期" }}</button></div>
       </form>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, ref } from "vue";
 import { Pencil, Plus, Trash2, X } from "@lucide/vue";
 import { api } from "../api";
@@ -53,6 +54,7 @@ async function save() {
   loading.value = true;
   formError.value = "";
   try {
+    requireText(name.value, "角色名称");
     const path = editing.value ? `/venue-admin/roles/${editing.value.id}` : "/venue-admin/roles";
     await api(path, {
       method: editing.value ? "PUT" : "POST",

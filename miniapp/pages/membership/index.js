@@ -108,7 +108,9 @@ Page({
   },
 
   async createRecharge() {
-    if (!this.data.selectedPlanId || !this.data.current || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    if (this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    if (!this.data.current) { this.setData({ actionError: "请选择充值场馆" }); return; }
+    if (!this.data.selectedPlanId) { this.setData({ actionError: "请选择充值档位" }); return; }
     const idempotencyKey = this.data.rechargeIdempotencyKey
       || `mini-recharge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     this.setData({ creatingRecharge: true, rechargeIdempotencyKey: idempotencyKey, actionError: "", actionMessage: "" });

@@ -8,7 +8,10 @@ function page(file, api) {
   let definition;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", file), "utf8"), {
     Page: value => { definition = value; },
-    require: name => { assert.equal(name, "../../utils/api"); return api; },
+    require: name => {
+      if (name === "../../utils/validation") return require("../utils/validation");
+      assert.equal(name, "../../utils/api"); return api;
+    },
   });
   return { ...definition, data: structuredClone(definition.data), setData(values) { Object.assign(this.data, values); } };
 }

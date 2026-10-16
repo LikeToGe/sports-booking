@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText, requireSelection, validateImage } from "../validation";
 import { computed, onMounted, reactive, ref } from "vue";
 import { ImageUp, Plus, X } from "@lucide/vue";
 import { api, API_BASE } from "../api";
@@ -55,6 +56,8 @@ async function saveCourt() {
   loading.value = true;
   createError.value = "";
   try {
+    requireText(name.value, "场地名称");
+    requireSelection(selectedSports.value, "支持的运动");
     if (editingCourt.value) {
       await api(`/venue-admin/courts/${editingCourt.value.id}`, {
         method: "PUT",
@@ -81,6 +84,7 @@ async function saveCourt() {
 async function saveCustomSport() {
   createError.value = "";
   try {
+    requireText(customName.value, "运动类型名称");
     if (editingSport.value) {
       await api(`/venue-admin/sports/${editingSport.value.id}`, {
         method: "PUT", body: JSON.stringify({ name: customName.value }),
@@ -142,6 +146,7 @@ async function uploadCourtImage(court: CourtView, event: Event) {
   if (!file) return;
   error.value = "";
   try {
+    validateImage(file);
     const body = new FormData();
     body.append("file", file);
     await api(`/venue-admin/courts/${court.id}/image`, { method: "POST", body });

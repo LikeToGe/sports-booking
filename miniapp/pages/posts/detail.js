@@ -1,4 +1,5 @@
 const { request, downloadMedia, dateTime } = require("../../utils/api");
+const { requireText, requireNumber } = require("../../utils/validation");
 const { reportContent } = require("../../utils/content");
 
 const recruitmentLevels = { BEGINNER_FRIENDLY: "新手友好", CASUAL: "休闲", ADVANCED: "进阶" };
@@ -52,9 +53,10 @@ Page({
   },
   cancelDraft() { this.setData({ body: "",parentId: null,editingCommentId: null,draftLabel: "" }); },
   async submitComment() {
-    if (this.data.saving || !this.data.body.trim()) return;
+    if (this.data.saving) return;
     this.setData({ saving: true, error: "" });
     try {
+      requireText(this.data.body, "评论内容", 1000);
       const editingId = this.data.editingCommentId;
       const comment = await request(editingId ? `/mini/posts/comments/${editingId}` : `/mini/posts/${this.data.id}/comments`,
         { method: editingId ? "PUT" : "POST",data: {
@@ -126,6 +128,9 @@ Page({
     if (!this.data.post?.bookingId || this.data.saving) return;
     this.setData({ saving: true,error: "" });
     try {
+      if (!this.data.level) throw new Error("请选择运动水平");
+      requireNumber(Number(this.data.maxMembers), "招募人数", 1, 20);
+      if ((this.data.recruitmentDescription || "").trim().length > 500) throw new Error("招募说明不能超过 500 个字");
       let amount = 0;
       if (this.data.feeMode === "AA") {
         if (!/^\d+(\.\d{1,2})?$/.test(this.data.aaAmount)) throw new Error("金额最多两位小数");
@@ -151,7 +156,9 @@ Page({
     if (action === "remove") {
       const result = await new Promise(resolve => wx.showModal({ title: "移除成员",editable: true,
         placeholderText: "移除原因",success: resolve }));
-      if (!result.confirm || !result.content.trim()) return;
+      if (!result.confirm) return;
+      try { requireText(result.content, "移除成员的原因", 255); }
+      catch (error) { this.setData({ error: error.message }); return; }
       path = `${base}/members/${userId}/remove?reason=${encodeURIComponent(result.content.trim())}`;
     }
     this.setData({ saving: true,error: "" });

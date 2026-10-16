@@ -51,6 +51,7 @@ async function main() {
   assert.equal(pendingSlot.entryType, 'TIME_SEARCH');
   const confirm = load('confirm');
   await confirm.onLoad();
+  Object.assign(confirm.data, { contactName: "测试联系人", contactPhone: "18800000000" });
   await confirm.submit();
   const create = calls.find(([url]) => url === '/mini/bookings/create')[1].data;
   assert.equal(create.expectedPriceFen, 5050);

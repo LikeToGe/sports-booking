@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { onMounted, reactive, ref } from "vue";
 import { RefreshCw, Save, ShieldCheck } from "@lucide/vue";
 import { api } from "../api";
@@ -31,6 +32,10 @@ async function saveAgreement() {
   savingAgreement.value = true;
   error.value = "";
   try {
+    requireText(agreement.rulesVersion, "社区规则版本", 40);
+    requireText(agreement.rulesText, "社区规则正文", 3000);
+    requireText(agreement.privacyVersion, "隐私说明版本", 40);
+    requireText(agreement.privacyText, "隐私说明正文", 3000);
     Object.assign(agreement, await api<typeof agreement>("/platform/content-agreement", {
       method: "PUT", body: JSON.stringify(agreement),
     }));
@@ -69,7 +74,7 @@ onMounted(load);
       <label class="field text-field"><span>隐私说明版本</span><input v-model="agreement.privacyVersion" maxlength="40" required /></label>
       <label class="field text-field"><span>隐私说明正文</span><textarea v-model="agreement.privacyText" maxlength="3000" rows="5" required /></label>
       <label><input v-model="agreement.forceReaccept" type="checkbox" /><span>版本变化后要求重新接受</span></label>
-      <button class="button primary" type="button" :disabled="savingAgreement || loading || !agreement.rulesVersion.trim() || !agreement.privacyVersion.trim() || !agreement.rulesText.trim() || !agreement.privacyText.trim()" @click="saveAgreement"><Save :size="17" aria-hidden="true" />{{ savingAgreement ? "保存中" : "保存协议" }}</button>
+      <button class="button primary" type="button" :disabled="savingAgreement || loading" @click="saveAgreement"><Save :size="17" aria-hidden="true" />{{ savingAgreement ? "保存中" : "保存协议" }}</button>
     </section>
   </section>
 </template>

@@ -1,4 +1,5 @@
 const { request } = require("../../utils/api");
+const { requireText } = require("../../utils/validation");
 
 Page({
   data: {
@@ -37,9 +38,11 @@ Page({
   submitCode() { this.verify(this.data.code, "SHORT_CODE"); },
   submitMember() { this.identifyMember(this.data.memberIdentifier); },
   async verify(credential, method) {
-    if (!this.data.current) return;
+    if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "", result: null });
     try {
+      requireText(credential, method === "SHORT_CODE" ? "6 位核销码" : "核销二维码");
+      if (method === "SHORT_CODE" && !/^\d{6}$/.test(credential.trim())) throw new Error("核销码必须是 6 位数字");
       const result = await request(`/staff/verifications/verify?venueId=${this.data.current.venueId}`, {
         method: "POST", data: { credential, method },
       });
@@ -48,9 +51,10 @@ Page({
     finally { this.setData({ loading: false }); }
   },
   async identifyMember(identifier) {
-    if (!this.data.current) return;
+    if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "", memberResult: null });
     try {
+      requireText(identifier, "会员码或完整手机号");
       const key = /^\d{11}$/.test(identifier) ? "phone" : "memberCode";
       const memberResult = await request(`/staff/members?venueId=${this.data.current.venueId}&${key}=${encodeURIComponent(identifier)}`);
       this.setData({ memberResult });

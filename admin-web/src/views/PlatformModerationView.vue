@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { Check, Eye, EyeOff, RefreshCw, ShieldCheck, Trash2, X } from "@lucide/vue";
 import { api, localDateTime, mediaObjectUrl } from "../api";
@@ -105,10 +106,11 @@ function openDecision(review: PendingReview, nextAction: Action) {
 }
 
 async function submitDecision() {
-  if (!selected.value || !reason.value.trim() || saving.value) return;
+  if (!selected.value || saving.value) return;
   saving.value = true;
   error.value = "";
   try {
+    requireText(reason.value, "处置原因", 255);
     const path = selected.value.contentType === "REVIEW_REPLY"
       ? `/platform/content-moderation/replies/${selected.value.replyId}`
       : selected.value.contentType === "COMMENT"
@@ -180,7 +182,7 @@ onMounted(load);
         <p v-if="selected?.publicBody && selected.publicBody !== selected.body" class="dialog-review">当前公开：{{ selected.publicBody }}</p>
         <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
         <label class="field"><span>处置原因</span><textarea v-model="reason" maxlength="255" required rows="3" /></label>
-        <footer><button class="button secondary" type="button" @click="decisionDialog?.close()">取消</button><button class="button primary" type="submit" :disabled="saving || !reason.trim()">{{ saving ? "提交中" : "确认" }}</button></footer>
+        <footer><button class="button secondary" type="button" @click="decisionDialog?.close()">取消</button><button class="button primary" type="submit" :disabled="saving">{{ saving ? "提交中" : "确认" }}</button></footer>
       </form>
     </dialog>
     <dialog ref="mediaDialog" class="modal decision-dialog" @close="clearPreviews" aria-labelledby="platformmoderationview-mediaDialog-title"><header class="media-head"><h2 id="platformmoderationview-mediaDialog-title">媒体预览</h2><button class="icon-button" aria-label="关闭" @click="mediaDialog?.close()"><X :size="18" /></button></header><div v-for="media in previews" :key="media.url" class="media-preview"><video v-if="media.mediaType === 'VIDEO'" :src="media.url" controls /><img v-else :src="media.url" alt="待审用户图片" /></div><p v-if="!previews.length">此版本没有媒体</p></dialog>

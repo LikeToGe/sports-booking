@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { requireText } from "../validation";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { Check, RefreshCw, ShieldAlert, Undo2, X } from "@lucide/vue";
 import { api, localDateTime, mediaObjectUrl } from "../api";
@@ -97,9 +98,10 @@ function decide(row: CaseRow, status: string) {
   selected.value = row; result.value = status; reason.value = ""; dialog.value?.showModal();
 }
 async function submit() {
-  if (!selected.value || !reason.value.trim() || saving.value) return;
+  if (!selected.value || saving.value) return;
   saving.value = true; error.value = "";
   try {
+    requireText(reason.value, "处置原因", 255);
     const suffix = props.kind === "reports" ? "resolve" : "decide";
     const field = props.kind === "reports" ? "resolution" : "reason";
     const query = new URLSearchParams({ status: result.value, [field]: reason.value.trim() });
@@ -156,7 +158,7 @@ watch(() => props.kind, () => { evidenceDialog.value?.close(); dialog.value?.clo
         <footer v-if="evidence.caseRecord.status === 'PENDING'"><button class="button secondary" @click="evidenceDialog?.close(); decide(evidence.caseRecord, kind === 'reports' ? 'RESOLVED' : 'UPHELD')">{{ kind === 'reports' ? '处理完成' : '维持处置' }}</button><button class="button secondary" @click="evidenceDialog?.close(); decide(evidence.caseRecord, kind === 'reports' ? 'REJECTED' : 'REVERSED')">{{ kind === 'reports' ? '驳回举报' : '撤销处置' }}</button></footer>
       </template>
     </dialog>
-    <dialog ref="dialog" class="modal case-dialog" @close="selected = null" aria-labelledby="contentgovernanceview-dialog-title"><form @submit.prevent="submit"><header><h2 id="contentgovernanceview-dialog-title">{{ statuses[result] }}</h2><button class="icon-button" type="button" aria-label="关闭" @click="dialog?.close()"><X :size="18" /></button></header><label class="field"><span>处理原因</span><textarea v-model="reason" rows="4" required maxlength="255" /></label><p v-if="error" class="error-banner">{{ error }}</p><footer><button class="button secondary" type="button" @click="dialog?.close()">取消</button><button class="button primary" :disabled="saving || !reason.trim()">保存结果</button></footer></form></dialog>
+    <dialog ref="dialog" class="modal case-dialog" @close="selected = null" aria-labelledby="contentgovernanceview-dialog-title"><form @submit.prevent="submit"><header><h2 id="contentgovernanceview-dialog-title">{{ statuses[result] }}</h2><button class="icon-button" type="button" aria-label="关闭" @click="dialog?.close()"><X :size="18" /></button></header><label class="field"><span>处理原因</span><textarea v-model="reason" rows="4" required maxlength="255" /></label><p v-if="error" class="error-banner">{{ error }}</p><footer><button class="button secondary" type="button" @click="dialog?.close()">取消</button><button class="button primary" :disabled="saving">保存结果</button></footer></form></dialog>
   </section>
 </template>
 <style scoped>
