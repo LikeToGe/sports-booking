@@ -81,8 +81,8 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
-    <header class="page-header"><div><h1>评价标签</h1></div><div class="toolbar"><button class="button secondary" type="button" :disabled="loading" @click="load"><RefreshCw :size="18" aria-hidden="true" />刷新</button><button class="button" type="button" :disabled="!availableSports.length" @click="openForm(null)"><Plus :size="18" aria-hidden="true" />新增标签</button></div></header>
+  <section class="page review-tags-page">
+    <header class="page-header"><div><h1>评价标签</h1><p>维护公开评价可选择的体验标签。</p></div><div class="toolbar"><button class="button secondary" type="button" :disabled="loading" @click="load"><RefreshCw :size="18" aria-hidden="true" />刷新</button><button class="button" type="button" :disabled="!availableSports.length" @click="openForm(null)"><Plus :size="18" aria-hidden="true" />新增标签</button></div></header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
     <p v-if="message" class="saved-message" aria-live="polite">{{ message }}</p>
     <div class="filter-bar" aria-label="评价标签筛选"><label class="field filter-search"><span>关键词</span><input v-model.trim="keyword" type="search" placeholder="标签名称"></label><label class="field"><span>状态</span><select v-model="statusFilter"><option value="">全部状态</option><option value="ACTIVE">启用</option><option value="DISABLED">停用</option></select></label><button class="button secondary" type="button" @click="keyword = ''; statusFilter = ''">重置筛选</button></div>
@@ -94,8 +94,8 @@ onMounted(load);
       <div v-else class="empty-state"><strong>{{ loading ? "正在加载" : tags.length ? "没有匹配的评价标签" : "暂无评价标签" }}</strong><span>{{ tags.length ? "调整筛选条件后重新查看。" : "新增标签后可用于评价分析。" }}</span></div>
     </section>
 
-    <dialog ref="dialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editing ? "编辑标签" : "新增标签" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="dialog" class="modal" aria-labelledby="reviewtagsview-dialog-title">
+      <form method="dialog" class="modal-head"><h2 id="reviewtagsview-dialog-title">{{ editing ? "编辑标签" : "新增标签" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}</p>
         <label class="field"><span>标签名称</span><input v-model.trim="name" maxlength="40" required></label>

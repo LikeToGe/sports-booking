@@ -1,14 +1,18 @@
+/* 场边工作台 · pages/staff-verify/index.wxss */
 .verify-page { display: grid; align-content: start; gap: 24rpx; }
 .venue-picker { display: flex; align-items: center; }
-.work-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6rpx; border: 2rpx solid var(--rule); border-radius: 12rpx; background: var(--surface); }
-.work-tabs button { min-height: 80rpx; border-radius: 8rpx; background: transparent; color: var(--muted); }
-.work-tabs button.is-active { background: var(--ink); color: var(--paper); }
-.scan-button { display: grid; align-content: center; justify-items: center; min-height: 260rpx; gap: 12rpx; background: var(--ink); color: var(--paper); }
-.scan-title { font-size: 36rpx; font-weight: 600; }
-.scan-hint { color: var(--rule); font-size: 24rpx; font-weight: 400; }
+.work-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; border-bottom: 1px solid var(--rule); background: transparent; }
+.work-tabs button { min-height: 44px; border-radius: 8rpx; background: transparent; color: var(--muted); }
+.work-tabs button.is-active { background: transparent; color: var(--color-primary); border: 0; border-bottom: 2px solid var(--color-primary); border-radius: 0; }
+.scan-button { display: grid; align-content: center; justify-items: center; min-height: 260rpx; gap: 12rpx; background: var(--surface); color: var(--color-primary); border: 1px solid var(--rule); }
+.scan-title { font-size: 15px; font-weight: 600; }
+.scan-hint { color: var(--muted); font-size: 12px; font-weight: 400; }
 .code-panel { display: grid; gap: 20rpx; padding: 28rpx; }
 .code-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14rpx; }
-.code-input { font-size: 38rpx; font-variant-numeric: tabular-nums; letter-spacing: 10rpx; text-align: center; }
+.code-input { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: 10rpx; text-align: center; }
 .member-input { min-width: 0; font-family: monospace; }
 .verify-result { display: grid; gap: 12rpx; padding: 28rpx; border-color: var(--accent); color: var(--accent-strong); }
-.staff-link { min-height: 88rpx; background: transparent; color: var(--signal-strong); }
+.staff-link { min-height: 44px; background: transparent; color: var(--signal-strong); }
+
+.scan-button { min-height: 180px; padding: 20px; white-space: normal; border-radius: var(--radius-card); }
+.scan-hint { font-size: 12px; }

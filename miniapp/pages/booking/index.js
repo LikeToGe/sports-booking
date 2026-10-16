@@ -99,8 +99,13 @@ Page({
     this.credentialTimer = null;
   },
   async cancel() {
-    const confirmed = await new Promise(resolve => wx.showModal({ title: "取消预约", content: "取消后会模拟原路退款，并重新开放场次。", confirmText: "确认取消", success: result => resolve(result.confirm) }));
-    if (!confirmed) return;
+    if (this.data.cancelling || !["PENDING_PAYMENT", "CONFIRMED"].includes(this.data.booking?.status)) return;
+    const confirmed = await new Promise(resolve => wx.showModal({ title: "取消预约",
+      content: this.data.booking.status === "PENDING_PAYMENT"
+        ? "系统先请求关闭未支付订单。结果未确认时保留占位，请稍后重试。"
+        : "取消后按原支付构成退款，并重新开放场次。",
+      confirmText: "确认取消", success: result => resolve(result.confirm) }));
+    if (!confirmed || this.data.cancelling) return;
     this.setData({ cancelling: true, error: "" });
     try { await request(`/mini/bookings/${this.data.id}/cancel`, { method: "POST" }); await this.load(); }
     catch (error) { this.setData({ error: error.message }); }

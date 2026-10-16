@@ -1,9 +1,9 @@
 <operation-toast />
 <view class="page posts-page">
-  <view class="section-head"><view class="screen-head"><text class="screen-title">运动动态</text><text class="muted">分享运动现场和约球想法</text></view><button wx:if="{{enabled}}" class="button-secondary editor-toggle" bindtap="toggleEditor" aria-expanded="{{showEditor}}">{{showEditor ? '收起' : '发布'}}</button></view>
+  <view class="section-head"><view class="screen-head"><text class="screen-title">运动动态</text><text class="muted">分享运动现场和约球想法</text></view><button wx:if="{{enabled}}" class="button-primary editor-toggle" bindtap="toggleEditor" aria-expanded="{{showEditor}}">{{showEditor ? '收起发布器' : '发布动态'}}</button></view>
   <view wx:if="{{enabled}}" class="mode-tabs"><button class="{{mode === 'posts' ? 'button-primary' : 'button-secondary'}}" data-mode="posts" bindtap="switchMode">动态</button><button class="{{mode === 'recruitments' ? 'button-primary' : 'button-secondary'}}" data-mode="recruitments" bindtap="switchMode">找搭子</button></view>
   <view wx:if="{{enabled && showEditor}}" class="post-editor surface">
-    <textarea class="post-body" maxlength="2000" value="{{body}}" placeholder="说说今天的运动体验" bindinput="editBody" />
+    <text class="field-label">动态正文</text><textarea class="post-body" maxlength="2000" value="{{body}}" placeholder="说说今天的运动体验" bindinput="editBody" />
     <picker wx:if="{{sports.length}}" disabled="{{bookingId}}" range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="sport-picker">运动类型：{{sports[sportIndex].name}}</view></picker>
     <picker wx:if="{{venues.length}}" disabled="{{bookingId}}" range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="sport-picker">场馆：{{venues[venueIndex].name}}</view></picker>
     <picker wx:if="{{bookings.length}}" range="{{bookings}}" range-key="label" value="{{bookingIndex}}" bindchange="selectBooking"><view class="sport-picker">{{bookings[bookingIndex].label}}</view></picker>
@@ -22,7 +22,7 @@
     <picker range="{{filterVenues}}" range-key="name" value="{{filterVenueIndex}}" bindchange="selectFilterVenue"><view>{{filterVenues[filterVenueIndex].name}}</view></picker>
   </view>
   <view wx:if="{{enabled && mode === 'recruitments'}}" class="filters surface">
-    <input type="date" value="{{recruitmentDate}}" data-field="recruitmentDate" bindinput="onRecruitmentFilter" />
+    <picker mode="date" value="{{recruitmentDate}}" data-field="recruitmentDate" bindchange="onRecruitmentFilter" aria-label="场次日期"><view>{{recruitmentDate || "选择场次日期"}}</view></picker>
     <picker range="{{filterSports}}" range-key="name" value="{{filterSportIndex}}" bindchange="selectFilterSport"><view>{{filterSports[filterSportIndex].name}}</view></picker>
     <picker range="{{filterVenues}}" range-key="name" value="{{filterVenueIndex}}" bindchange="selectFilterVenue"><view>{{filterVenues[filterVenueIndex].name}}</view></picker>
     <picker range="{{['不限水平','新手友好','休闲','进阶']}}" value="{{recruitmentLevelIndex}}" data-field="recruitmentLevel" bindchange="onRecruitmentFilter"><view>{{recruitmentLevelLabel}}</view></picker>
@@ -32,9 +32,9 @@
   <view wx:if="{{message}}" class="saved-message" role="status">{{message}}</view>
   <view wx:if="{{mode === 'posts'}}" class="post-list">
     <view wx:for="{{posts}}" wx:key="id" class="post-card surface" data-id="{{item.id}}" bindtap="openDetail">
-      <view class="post-meta"><text class="section-title">{{item.sportName}}</text><text class="muted">{{item.venueName || '运动动态'}}</text></view>
+      <view class="post-meta"><view class="post-author"><image class="author-avatar" src="/assets/icons/user.svg" aria-hidden="true" /><view><text class="section-title">{{item.authorName || (item.isOfficial ? '官方动态' : '球友')}}</text><text class="muted">{{item.sportName}} · {{item.venueName || '运动动态'}}</text></view></view></view>
       <text class="post-text">{{item.body}}</text>
-      <text wx:if="{{item.media.length}}" class="muted">{{item.media[0].mediaType === 'VIDEO' ? '视频' : '图片'}} · {{item.media.length}}</text>
+      <image wx:if="{{item.previewPath}}" class="post-preview" src="{{item.previewPath}}" mode="aspectFill" lazy-load aria-label="动态图片" /><text wx:if="{{item.previewError}}" class="muted">图片暂不可用，可进入详情重试。</text><text wx:if="{{item.media.length}}" class="muted">{{item.media[0].mediaType === 'VIDEO' ? '视频' : '图片'}} · {{item.media.length}}</text>
       <view class="post-foot"><text class="muted">{{item.isOfficial ? '官方动态' : '用户动态'}}</text><view wx:if="{{item.isMine}}" class="post-actions"><button class="inline-action" data-id="{{item.id}}" catchtap="edit">编辑</button><button class="inline-action" data-id="{{item.id}}" catchtap="remove">删除</button></view></view>
     </view>
   </view>
@@ -46,7 +46,7 @@
       <text>{{item.feeLabel}} · 已订场，预约有效</text>
     </view>
   </view>
-  <view wx:if="{{!enabled && !loading}}" class="empty"><text>动态功能暂未开放</text></view>
+  <view wx:if="{{loading}}" class="empty" role="status">正在加载{{mode === 'recruitments' ? '找搭子' : '运动动态'}}</view><view wx:if="{{!enabled && !loading}}" class="empty"><text>动态功能暂未开放</text></view>
   <view wx:if="{{enabled && mode === 'posts' && !loading && !posts.length && !error}}" class="empty"><text>还没有动态</text></view>
   <view wx:if="{{enabled && mode === 'recruitments' && !loading && !recruitments.length && !error}}" class="empty"><text>暂无符合条件的找搭子</text></view>
 </view>

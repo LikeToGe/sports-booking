@@ -16,7 +16,7 @@
       <view wx:if="{{preferenceNotice}}" class="preference-notice" role="status">{{preferenceNotice}}</view>
       <view class="view-switch"><button data-mode="list" bindtap="selectView" class="sport-chip {{viewMode === 'list' ? 'is-active' : ''}}" aria-label="按场地列表查看">列表</button><button data-mode="matrix" bindtap="selectView" class="sport-chip {{viewMode === 'matrix' ? 'is-active' : ''}}" aria-label="按时间和场地比较">时间 × 场地</button></view>
       <view wx:if="{{loading}}" class="muted" aria-live="polite">正在刷新场次，请稍候。</view>
-      <view class="public-rules"><text>当前价格和取消截止以所选具体场次显示为准；确认预约时重新校验库存和价格。</text><text>入场须知：{{venue.entryNotice || '请按预约时间到场，如需帮助请联系场馆。'}}</text></view>
+
       <view wx:if="{{viewMode === 'list'}}" class="court-groups"><view wx:for="{{groups}}" wx:key="id" class="court-group"><view class="court-head"><view class="court-title"><image wx:if="{{item.imagePath}}" class="court-image" src="{{item.imagePath}}" mode="aspectFill" aria-label="{{item.name}}场地图片" /><text>{{item.name}}</text></view><text class="muted">{{item.sportNames}}</text></view><view class="slot-list"><button wx:for="{{item.slots}}" wx:for-item="slot" wx:key="id" class="slot-row" data-id="{{slot.id}}" bindtap="book" disabled="{{loading || error || slot.status !== 'OPEN'}}" aria-label="{{item.name}} {{slot.time}} {{slot.price}} {{slot.statusLabel}}"><text class="slot-time">{{slot.time}}</text><text class="price">{{slot.price}}</text><text class="book-label">{{slot.statusLabel}}</text><text class="slot-rule">取消截止 {{slot.cancelText}}</text><text wx:if="{{slot.preferred}}" class="slot-rule">原预约偏好</text></button></view></view></view>
       <view wx:if="{{viewMode === 'matrix' && matrixRows.length}}" class="comparison">
         <text class="muted hint">左右滑动比较场地；每个按钮是一场完整具体场次。</text>
@@ -36,6 +36,7 @@
         </scroll-view>
       </view>
       <view wx:if="{{!loading && !error && !groups.length}}" class="empty"><text class="empty-title">当前条件下没有具体场次</text><text>可主动清除条件、更换日期或运动后再查看。</text></view>
+      <view class="public-rules"><text>当前价格和取消截止以所选具体场次显示为准；确认预约时重新校验库存和价格。</text><text>入场须知：{{venue.entryNotice || '请按预约时间到场，如需帮助请联系场馆。'}}</text></view>
     </view>
 
     <view wx:if="{{ugcEnabled}}" class="reviews-section">

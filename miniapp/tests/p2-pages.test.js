@@ -23,6 +23,7 @@ global.Page = page => { definition = page; };
 global.wx = {
   redirectTo: ({ url }) => redirects.push(url),
   removeStorageSync: () => {},
+  showModal: options => options.success({ confirm: true }),
 };
 
 function loadPage(relativePath) {
@@ -72,6 +73,23 @@ async function main() {
   await payment.pay();
   assert.equal(mockPayOptions.data, undefined, "客户端不得指定支付成功或失败");
 
+  const pendingPayment = {
+    booking: { id: 1, status: "PENDING_PAYMENT", paymentStatus: "PAYING", amountFen: 8000 },
+    composition: { giftBalanceAmountFen: 3000, paidBalanceAmountFen: 4000, externalAmountFen: 1000 },
+    payment: { status: "PENDING" },
+  };
+  requestHandler = async url => {
+    if (url.endsWith("/cancel")) throw new Error("操作处理中");
+    return pendingPayment;
+  };
+  await payment.load();
+  await payment.cancel();
+  assert.equal(payment.data.booking.status, "PENDING_PAYMENT", "未知闭单不能在客户端伪造取消");
+  assert.equal(payment.data.error, "操作处理中");
+  requestHandler = async url => url.endsWith("/cancel") ? { status: "CANCELLED" } : pendingPayment;
+  await payment.cancel();
+  assert.equal(redirects.pop(), "/pages/booking/index?id=1", "服务器取消成功后进入真实预约详情");
+
   requestHandler = async () => ({ booking: { id: 2, status: "CONFIRMED" } });
   payment.data.id = 2;
   await payment.load();
@@ -103,6 +121,41 @@ async function main() {
   await membership.createRecharge();
   await membership.createRecharge();
   assert.equal(keys[0], keys[1], "充值创建重试必须复用同一幂等键");
+
+  const reopened = loadPage("membership");
+  let storedRecharge = { id: 7, venueId: 5, status: "PENDING", planName: "本地 Mock 档位", paidAmountFen: 50000, giftAmountFen: 0 };
+  let canClose = false;
+  let closeCalls = 0;
+  requestHandler = async (url, options) => {
+    if (url === "/mini/memberships/list") return [{ venueId: 5 }];
+    if (url.endsWith("/balance-flows")) return { paidBalanceFen: 0, giftBalanceFen: 0, flows: [] };
+    if (url === "/mini/memberships/5") return { venueId: 5, status: "CUSTOMER" };
+    if (url === "/mini/recharges/plans?venueId=5") return [];
+    if (url === "/mini/recharges?venueId=5") return [storedRecharge];
+    if (url === "/mini/recharges/7/cancel") {
+      closeCalls += 1;
+      assert.equal(options.method, "POST");
+      assert.equal(options.data, undefined, "客户端不能决定渠道是否已关闭");
+      if (!canClose) throw new Error("渠道关闭结果未知");
+      storedRecharge = { ...storedRecharge, status: "CLOSED" };
+      return storedRecharge;
+    }
+    throw new Error(`unexpected request ${url}`);
+  };
+  await reopened.onShow();
+  assert.equal(reopened.data.recharge.id, 7, "重新进入会员页必须找到未付充值");
+  assert.equal(reopened.data.pendingRecharges.length, 1);
+  await reopened.cancelRecharge();
+  assert.equal(reopened.data.recharge.status, "PENDING", "未知关闭结果不得伪装为已关闭");
+  assert.match(reopened.data.actionError, /未知/);
+  canClose = true;
+  await reopened.cancelRecharge();
+  assert.equal(reopened.data.recharge.status, "CLOSED");
+  assert.equal(reopened.data.pendingRecharges.length, 0);
+  assert.match(reopened.data.actionMessage, /已关闭/);
+  await reopened.payRecharge();
+  await reopened.cancelRecharge();
+  assert.equal(closeCalls, 2, "关闭后不能再次支付或重复发起关闭");
 
   console.log("p2 miniapp behavior checks passed");
 }

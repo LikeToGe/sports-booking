@@ -9,6 +9,7 @@ function isDevelopment() {
 }
 
 Page({
+  onReady() { this.getTabBar?.()?.refresh(); },
   data: {
     profile: null, contactName: "", phone: "", staffVenues: [], staffActive: false,
     canVerify: false, canIdentifyMember: false, error: "", saved: false,
@@ -16,6 +17,7 @@ Page({
     ugcEnabled: false,closing: false,showProfileForm: false,
   },
   async onShow() {
+    this.getTabBar?.()?.refresh();
     const app = getApp();
     this.setData({ showLocalDebug: isDevelopment(), apiBase: app.globalData.apiBase });
     await this.load();

@@ -64,6 +64,16 @@ async function main() {
   await reminders.cancel({ currentTarget: { dataset: { id: 5 } } });
   assert.equal(reminders.data.rows[0].status, 'CANCELLED');
 
+  registrations = [{ ...registrations[0], startTime: '19:00:30', endTime: '21:00:00.001' }];
+  await reminders.load();
+  assert.equal(reminders.data.startTime, '19:00:30', '遗留非零秒不能截断到分钟');
+  assert.equal(reminders.data.endTime, '21:00:00.001', '遗留小数秒不能截断到分钟');
+  assert.match(calls.findLast(([url]) => url.startsWith('/public/venues/1/slot-comparison'))[0],
+    /startTime=19%3A00%3A30&endTime=21%3A00%3A00.001/);
+  reminders.openVenue({ currentTarget: { dataset: {} } });
+  assert.match(navigation.at(-1), /startTime=19:00:30&endTime=21:00:00.001/,
+    '消息回流保留原条件，不静默扩展可订范围');
+
   registrations = [{ ...registrations[0], venueId: 99, sportTypeId: 99 }];
   await reminders.load();
   assert.equal(reminders.data.venueIndex, -1, '停用馆不能错选成第一家活跃馆');

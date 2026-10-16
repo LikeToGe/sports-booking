@@ -10,6 +10,7 @@ function upcomingDates(today) {
 }
 
 Page({
+  onReady() { this.getTabBar?.()?.refresh(); },
   data: {
     sports: [],
     dateOptions: upcomingDates(dateInZhengzhou()),
@@ -23,8 +24,11 @@ Page({
     keyword: "",
     dateLabel: dateInZhengzhou().slice(5),
     loading: true,
+    showFilters: false,
     error: "",
   },
+
+  onShow() { this.getTabBar?.()?.refresh(); },
 
   async onLoad() {
     await this.load();
@@ -64,6 +68,8 @@ Page({
     if (prices[1] != null) params.push(`maxPriceFen=${prices[1]}`);
     return params;
   },
+
+  toggleFilters() { this.setData({ showFilters: !this.data.showFilters }); },
 
   onFilter(event) {
     this.setData({ [event.currentTarget.dataset.field]: event.detail.value, venues: [], slots: [], hasMore: false, loading: false, filtersDirty: true });

@@ -1,6 +1,7 @@
-const { request, uploadFile, dateTime, time } = require("../../utils/api");
+const { request, uploadFile, downloadMedia, dateTime, time } = require("../../utils/api");
 
 Page({
+  onReady() { this.getTabBar?.()?.refresh(); },
   data: { posts: [], recruitments: [], mode: "posts", body: "", sportTypeId: null, sportIndex: 0, venueId: null, venueIndex: 0,
     sports: [], venues: [], bookingId: null, bookingIndex: 0, bookings: [], filterSports: [], filterVenues: [],
     filterSportIndex: 0, filterVenueIndex: 0, filterSportId: null, filterVenueId: null,
@@ -24,6 +25,7 @@ Page({
   },
 
   async onShow() {
+    this.getTabBar?.()?.refresh();
     if (this.ready) await this.ready;
     const editId = getApp().globalData.editPostId;
     if (editId) {
@@ -39,14 +41,24 @@ Page({
   },
 
   async load() {
+    const requestId = this.postRequest = (this.postRequest || 0) + 1;
     this.setData({ loading: true, error: "" });
     try {
       const params = [];
       if (this.data.filterSportId) params.push(`sportTypeId=${this.data.filterSportId}`);
       if (this.data.filterVenueId) params.push(`venueId=${this.data.filterVenueId}`);
-      this.setData({ posts: await request(`/mini/posts/list${params.length ? `?${params.join("&")}` : ""}`), enabled: true });
-    } catch (error) { this.setData({ error: error.message, posts: [], enabled: !/暂未开放/.test(error.message) }); }
-    finally { this.setData({ loading: false }); }
+      const posts = await request(`/mini/posts/list${params.length ? `?${params.join("&")}` : ""}`);
+      if (requestId !== this.postRequest) return;
+      this.setData({ posts, enabled: true });
+      const previews = await Promise.all(posts.map(async post => {
+        const image = (post.media || []).find(item => item.mediaType === "IMAGE");
+        if (!image) return post;
+        try { return { ...post, previewPath: await downloadMedia(image.url) }; }
+        catch (_) { return { ...post, previewError: true }; }
+      }));
+      if (requestId === this.postRequest) this.setData({ posts: previews });
+    } catch (error) { if (requestId === this.postRequest) this.setData({ error: error.message, posts: [], enabled: !/暂未开放/.test(error.message) }); }
+    finally { if (requestId === this.postRequest) this.setData({ loading: false }); }
   },
   switchMode(event) {
     const mode = event.currentTarget.dataset.mode;

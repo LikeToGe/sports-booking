@@ -1,4 +1,7 @@
+/* 场边工作台 · pages/community/user.wxss */
 .user-page { display: grid; align-content: start; gap: 24rpx; }
 .avatar { width: 112rpx; height: 112rpx; border-radius: 50%; }
-.sport { margin-right: 20rpx; }
-.user-post { display: grid; gap: 12rpx; padding: 24rpx 0; border-bottom: 2rpx solid var(--rule); overflow-wrap: anywhere; }
+.sport { display: inline-flex; margin: 4px 8px 0 0; padding: 4px 8px; border-radius: var(--radius-sm); background: var(--color-primary-soft); color: var(--color-primary); font-size: 12px; }
+.user-post { display: grid; gap: 12rpx; padding: 20px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); overflow-wrap: anywhere; }
+
+.user-preview { width: 100%; height: calc((100vw - 76px) * .5625); border-radius: var(--radius-control); }

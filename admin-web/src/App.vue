@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import {
   Building2,
   CalendarDays,
+  PanelsTopLeft,
   ChartNoAxesCombined,
   CircleUserRound,
   ClipboardList,
@@ -24,6 +25,7 @@ import {
   X,
   CircleCheck,
   CircleX,
+  ChevronRight,
 } from "@lucide/vue";
 import { api } from "./api";
 import { auth, clearSession, hasPermission } from "./auth";
@@ -54,22 +56,18 @@ const platformGroups = [
 const venueGroups = [
   { label: "工作台", links: [
     { to: "/today", label: "今日运营", icon: CalendarDays, permission: "DASHBOARD_VIEW" },
-  ] },
-  { label: "预约运营", links: [
     { to: "/bookings", label: "预约管理", icon: ClipboardList, permission: "BOOKING_VIEW" },
   ] },
-  { label: "会员经营", links: [
+  { label: "顾客与经营", links: [
     { to: "/customers", label: "顾客与会员", icon: UserRoundSearch, permission: "CUSTOMER_VIEW" },
     { to: "/recharge-plans", label: "充值档位", icon: WalletCards, permission: "RECHARGE_PLAN_EDIT" },
-  ] },
-  { label: "财务报表", links: [
     { to: "/reports", label: "经营报表", icon: ChartNoAxesCombined, permission: "REPORT_VIEW" },
   ] },
   { label: "内容运营", links: [
     { to: "/venue-reviews", label: "场地评价", icon: MessageSquareReply, permission: "REVIEW_MANAGE" },
     { to: "/official-posts", label: "官方动态", icon: MessageSquareReply, permission: "POST_PUBLISH" },
   ] },
-  { label: "场馆设置", links: [
+  { label: "场馆管理", links: [
     { to: "/courts", label: "场地管理", icon: Dumbbell, permission: "COURT_VIEW" },
     { to: "/schedule", label: "固定排期", icon: Settings2, permission: "SCHEDULE_VIEW" },
     { to: "/sessions", label: "具体场次", icon: Clock3, permission: "SESSION_VIEW" },
@@ -105,7 +103,7 @@ async function logout() {
     <a class="skip-link" href="#main">跳到主要内容</a>
     <header class="mobile-header">
       <div><span class="wordmark">约场</span><span class="mobile-page-name">{{ currentLabel }}</span></div>
-      <button class="icon-button" type="button" :aria-label="menuOpen ? '关闭导航' : '打开导航'" @click="menuOpen = !menuOpen">
+      <button class="icon-button" type="button" :aria-label="menuOpen ? '关闭导航' : '打开导航'" :aria-expanded="menuOpen" aria-controls="primary-navigation" @click="menuOpen = !menuOpen">
         <X v-if="menuOpen" :size="20" aria-hidden="true" />
         <Menu v-else :size="20" aria-hidden="true" />
       </button>
@@ -113,10 +111,10 @@ async function logout() {
 
     <aside class="sidebar" :class="{ 'is-open': menuOpen }">
       <div class="brand-block">
-        <span class="brand-mark">约</span>
-        <div><span class="wordmark">约场</span><span class="brand-caption">运营管理后台</span></div>
+        <span class="brand-mark"><PanelsTopLeft :size="26" aria-hidden="true" /></span>
+        <div><span class="wordmark">约场</span><span class="brand-caption">场馆运营管理</span></div>
       </div>
-      <nav class="primary-nav" aria-label="主导航">
+      <nav id="primary-navigation" class="primary-nav" aria-label="主导航">
         <section v-for="group in navGroups" :key="group.label" class="nav-group">
           <h2>{{ group.label }}</h2>
           <RouterLink v-for="link in group.links" :key="link.to" :to="link.to" @click="menuOpen = false">
@@ -126,6 +124,7 @@ async function logout() {
         </section>
       </nav>
       <div class="account-block">
+        <span class="account-avatar" aria-hidden="true">{{ auth.principal?.displayName.slice(0, 1) || "管" }}</span>
         <div>
           <strong>{{ auth.principal?.displayName }}</strong>
           <span>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台管理员" : auth.principal?.role === "VENUE_EMPLOYEE" ? "场馆员工" : "场馆超级管理员" }}</span>
@@ -139,8 +138,8 @@ async function logout() {
 
     <div class="workspace" :inert="menuOpen">
       <header class="workspace-bar">
-        <div class="breadcrumb"><span>运营管理</span><strong>{{ currentLabel }}</strong></div>
-        <span class="workspace-role"><i aria-hidden="true"></i>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台端" : "场馆端" }}</span>
+        <div class="breadcrumb"><strong>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "约场平台" : "场馆工作台" }}</strong><ChevronRight :size="14" aria-hidden="true" /><span>{{ currentLabel }}</span></div>
+        <div class="workspace-context"><div class="workspace-account"><CircleUserRound :size="18" aria-hidden="true" /><span>{{ auth.principal?.displayName }}</span></div><span class="workspace-role">{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台端" : "场馆端" }}</span></div>
       </header>
       <main id="main" class="main-content"><RouterView /></main>
     </div>

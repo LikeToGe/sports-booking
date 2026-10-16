@@ -10,4 +10,5 @@
   <button class="filter" open-type="share">分享评价</button>
   <view wx:for="{{reviews}}" wx:key="id" class="review-row"><view class="review-meta"><strong>{{item.overallScore}} 星</strong><text class="muted">{{item.sportName}} · {{item.visitMonth}}</text></view><text>{{item.body}}</text><button class="filter" data-id="{{item.id}}" bindtap="report">举报</button><view wx:if="{{item.media.length}}" class="review-media"><image wx:for="{{item.media}}" wx:for-item="photo" wx:key="id" src="{{photo.fullUrl}}" mode="aspectFill" data-review-id="{{item.id}}" data-url="{{photo.fullUrl}}" bindtap="previewImage" /></view><view wx:if="{{item.reply}}" class="review-reply"><text class="muted">场馆回复</text><text>{{item.reply.body}}</text></view></view>
   <view wx:if="{{!loading && !reviews.length && !error}}" class="empty"><text>暂无符合条件的公开评价</text></view>
+<view wx:if="{{loading}}" class="empty" role="status">正在加载，请稍候。</view>
 </view>

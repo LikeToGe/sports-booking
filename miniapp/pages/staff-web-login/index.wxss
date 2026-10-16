@@ -1,8 +1,12 @@
+/* 场边工作台 · pages/staff-web-login/index.wxss */
 .web-login-page { display: grid; align-content: start; gap: 24rpx; }
 .venue-picker { display: flex; align-items: center; }
-.scan-button { display: grid; align-content: center; justify-items: center; min-height: 260rpx; gap: 12rpx; background: var(--ink); color: var(--paper); }
-.scan-title { font-size: 36rpx; font-weight: 600; }
-.scan-hint { color: var(--rule); font-size: 24rpx; font-weight: 400; }
+.scan-button { display: grid; align-content: center; justify-items: center; min-height: 260rpx; gap: 12rpx; background: var(--surface); color: var(--color-primary); border: 1px solid var(--rule); }
+.scan-title { font-size: 15px; font-weight: 600; }
+.scan-hint { color: var(--muted); font-size: 12px; font-weight: 400; }
 .ticket-panel { display: grid; gap: 24rpx; padding: 28rpx; }
-.ticket-input { width: 100%; min-height: 180rpx; padding: 20rpx; border: 2rpx solid var(--rule); overflow-wrap: anywhere; }
+.ticket-input { width: 100%; min-height: 180rpx; padding: 20rpx; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-control); overflow-wrap: anywhere; }
 .success { padding: 20rpx 24rpx; border: 2rpx solid var(--success); background: var(--success-soft); color: var(--success-strong); }
+
+.scan-button { min-height: 180px; padding: 20px; white-space: normal; border-radius: var(--radius-card); }
+.scan-hint { font-size: 12px; }

@@ -7,8 +7,8 @@ const app = { globalData: { apiBase: "http://127.0.0.1:8091/api",profile: { id: 
 const originalLoad = Module._load;
 const calls = [];
 Module._load = function (request,parent,isMain) {
-  if (["../../utils/api","../utils/api"].includes(request) && parent && parent.filename
-      && (parent.filename.includes("/pages/") || parent.filename.includes("/custom-tab-bar/"))) return {
+  if (["../../utils/api","../utils/api","./api"].includes(request) && parent && parent.filename
+      && (parent.filename.includes("/pages/") || parent.filename.includes("/custom-tab-bar/") || parent.filename.endsWith("/utils/content.js"))) return {
     request: (...args) => { calls.push(args); return requestHandler(...args); },
     uploadFile: async () => ({ id: 12 }),downloadMedia: async url => url,
     dateTime: value => value,money: value => String(value),assetUrl: value => value,
@@ -53,7 +53,7 @@ async function main() {
   const detail = load("pages/posts/detail.js");
   detail.data.id = 5;
   detail.data.post = { id: 5,bookingId: 6 };
-  detail.data.level = "基础";
+  detail.selectLevel({ detail: { value: 1 } });
   detail.data.feeMode = "AA";
   detail.data.aaAmount = "0.29";
   requestHandler = async url => {
@@ -65,6 +65,7 @@ async function main() {
   await detail.openRecruitment();
   const recruitment = calls.find(([url,options]) => url === "/mini/posts/5/recruitment" && options?.method === "POST");
   assert.equal(recruitment[1].data.aaAmountFen,29,"金额应精确转换为分");
+  assert.equal(recruitment[1].data.level,"CASUAL","选择中文水平后仍提交约定枚举");
   detail.data.aaAmount = "1.005";
   const previousCalls = calls.length;
   await detail.openRecruitment();
@@ -81,6 +82,32 @@ async function main() {
   await detail.submitComment();
   assert.deepEqual(detail.data.comments.map(row => row.id),[9],"待审评论不能被当成公开评论插入");
   assert.match(detail.data.message,/审核/);
+  requestHandler = async (url,options) => {
+    if (url === "/mini/posts/5/comments") return [{ id: 10,body: "待审错字",isMine: true,moderationStatus: "PENDING",contentStatus: "PENDING" }];
+    if (url === "/mini/posts/comments/10" && options?.method === "PUT") return { id: 10,moderationStatus: "PENDING" };
+    if (url === "/mini/posts/comments/10" && options?.method === "DELETE") return true;
+    if (url.endsWith("/recruitment")) return null;
+    return { id: 5,media: [] };
+  };
+  await detail.load();
+  assert.match(detail.data.comments[0].moderationLabel,/仅自己可见/);
+  detail.editComment({ currentTarget: { dataset: { id: 10 } } });
+  assert.equal(detail.data.body,"待审错字","作者可以加载当前待审正文进行修改");
+  detail.data.body = "已改错字";
+  await detail.submitComment();
+  assert.equal(calls.find(([url,options]) => url === "/mini/posts/comments/10" && options?.method === "PUT")[1].data.body,"已改错字");
+  wx.showModal = options => options.success({ confirm: true,content: "本地测试说明" });
+  await detail.removeComment({ currentTarget: { dataset: { id: 10 } } });
+  assert.ok(calls.some(([url,options]) => url === "/mini/posts/comments/10" && options?.method === "DELETE"));
+
+  const communityUser = load("pages/community/user.js");
+  requestHandler = async url => url.startsWith("/mini/posts/users/") ? { id: 12,nickname: "本地测试球友",posts: [] } : true;
+  await communityUser.onLoad({ id: 12 });
+  wx.showActionSheet = options => options.success({ tapIndex: 1 });
+  await communityUser.reportUser();
+  assert.ok(calls.some(([url,options]) => url.startsWith("/mini/content/reports?targetType=USER&targetId=12&reasonCode=ABUSE") && options?.method === "POST"));
+  assert.match(communityUser.data.message,/账号举报已提交/);
+
   detail.data.recruitment = { id: 2,members: [{ userId: 3 }] };
   requestHandler = async () => { throw new Error("数据不存在"); };
   await detail.load();

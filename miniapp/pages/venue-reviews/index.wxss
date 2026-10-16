@@ -1,12 +1,16 @@
+/* 场边工作台 · pages/venue-reviews/index.wxss */
 .reviews-page { display: grid; align-content: start; gap: 24rpx; }
-.summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10rpx 20rpx; }
-.summary strong { color: var(--signal-strong); font-size: 56rpx; }
-.summary text:last-child { width: 100%; color: var(--ink-2); font-size: 24rpx; }
+.summary { padding: 20px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); display: flex; align-items: baseline; flex-wrap: wrap; gap: 10rpx 20rpx; }
+.summary strong { color: var(--ink); font-size: 36px; }
+.summary text:last-child { width: 100%; color: var(--ink-2); font-size: 12px; }
 .filter-strip { white-space: nowrap; }
-.filter { display: inline-flex; min-height: 72rpx; margin-right: 12rpx; padding: 0 24rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); font-size: 24rpx; }
-.filter.is-active { border-color: var(--accent); color: var(--signal-strong); }
-.review-row { display: grid; gap: 14rpx; padding: 22rpx 0; border-top: 2rpx solid var(--rule-2); }
+.filter { display: inline-flex; min-height: 44px; margin-right: 12rpx; padding: 0 24rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); font-size: 12px; }
+.filter.is-active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.review-row { display: grid; gap: 14rpx; padding: 20px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); }
 .review-meta { display: flex; justify-content: space-between; gap: 20rpx; }
-.review-reply { display: grid; gap: 6rpx; padding: 16rpx; background: var(--surface-card); }
-.review-media { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
-.review-media image { width: 100%; aspect-ratio: 1; }
+.review-reply { display: grid; gap: 6rpx; padding: 16rpx; background: var(--paper); }
+.review-media { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12rpx; }
+.review-media image { width: 100%; height: calc((100vw - 84px) * .5625); border-radius: var(--radius-control); }
+
+.screen-head .screen-title { display: none; }
+.screen-head { padding: 0; font-size: 12px; }

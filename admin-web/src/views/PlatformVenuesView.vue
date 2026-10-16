@@ -198,9 +198,9 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page platform-venues-page">
     <header class="page-header">
-      <div><h1>场馆</h1><p>创建合作场馆、维护完整资料和管理员账号，并控制上架状态。</p></div>
+      <div><h1>场馆管理</h1><p>创建合作场馆、维护完整资料和管理员账号，并控制上架状态。</p></div>
       <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增场馆</button>
     </header>
 
@@ -214,15 +214,15 @@ onMounted(load);
       <header class="data-panel-head"><div><h2>合作场馆</h2><p>统一管理入驻资料、账号和上架状态</p></div><span class="record-count">{{ total }} 家</span></header>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>场馆</th><th>地址</th><th>预约规则</th><th>服务费率</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>场馆</th><th>地址</th><th>预约规则</th><th class="numeric-column">服务费率</th><th>状态</th><th>操作</th></tr></thead>
           <tbody>
           <tr v-for="item in pagedItems" :key="item.venue.id">
-            <td data-label="场馆"><strong>{{ item.venue.name }}</strong><br><span class="muted">{{ item.venue.phone }}</span></td>
+            <td data-label="场馆"><strong>{{ item.venue.name }}</strong><br><span class="muted contact-phone">{{ item.venue.phone }}</span></td>
             <td data-label="地址">{{ item.venue.city }} · {{ item.venue.district || "区县未设置" }} · {{ item.venue.address }}</td>
             <td data-label="预约规则">未来 {{ item.venue.bookingDaysAhead }} 天 · 提前 {{ item.venue.cancelCutoffMinutes }} 分钟截止取消</td>
-            <td data-label="服务费率"><strong class="rate-value">{{ percent(item.serviceFeeRateBasisPoints) }}</strong></td>
+            <td data-label="服务费率" class="numeric-column"><strong class="rate-value">{{ percent(item.serviceFeeRateBasisPoints) }}</strong></td>
             <td data-label="状态"><span class="status" :data-tone="statusTone(item.venue.status)">{{ statusLabel(item.venue.status) }}</span></td>
-            <td data-label="操作"><div class="row-actions">
+            <td data-label="操作"><div class="row-actions venue-actions">
               <button class="button secondary" type="button" @click="openDetail(item)">查看</button>
               <button class="button secondary" type="button" @click="openEdit(item)">编辑</button>
               <button class="button secondary" type="button" @click="openReset(item.venue)">重置密码</button>
@@ -237,8 +237,8 @@ onMounted(load);
       <PaginationBar v-if="filteredVenues.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="venueDialog" class="modal wide">
-      <form method="dialog" class="modal-head"><h2>{{ editingVenue ? "编辑场馆" : "新增场馆" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="venueDialog" class="modal wide" aria-labelledby="platformvenuesview-venueDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="platformvenuesview-venueDialog-title">{{ editingVenue ? "编辑场馆" : "新增场馆" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body venue-form" @submit.prevent="submitVenue">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}</p>
         <fieldset class="form-section"><legend>基本资料</legend><div class="form-grid">
@@ -266,8 +266,8 @@ onMounted(load);
       </form>
     </dialog>
 
-    <dialog ref="detailDialog" class="modal wide">
-      <form method="dialog" class="modal-head"><h2>{{ detailItem?.venue.name || "场馆详情" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="detailDialog" class="modal wide" aria-labelledby="platformvenuesview-detailDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="platformvenuesview-detailDialog-title">{{ detailItem?.venue.name || "场馆详情" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <div v-if="detailItem" class="modal-body">
         <dl class="detail-grid">
           <div><dt>状态</dt><dd><span class="status" :data-tone="statusTone(detailItem.venue.status)">{{ statusLabel(detailItem.venue.status) }}</span></dd></div>
@@ -287,8 +287,8 @@ onMounted(load);
       </div>
     </dialog>
 
-    <dialog ref="resetDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>重置管理员密码</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="resetDialog" class="modal" aria-labelledby="platformvenuesview-resetDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="platformvenuesview-resetDialog-title">重置管理员密码</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="resetAdminPassword">
         <p>为 <strong>{{ resetVenue?.name }}</strong> 设置新的后台登录密码。</p>
         <p v-if="resetError" class="error-banner" role="alert">{{ resetError }}</p>
@@ -300,22 +300,6 @@ onMounted(load);
 </template>
 
 <style scoped>
-.row-actions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2xs);
-}
-
-.row-actions {
-  flex-wrap: wrap;
-}
-
-.row-actions .button {
-  min-height: 2.25rem;
-  padding-inline: var(--space-sm);
-  font-size: var(--text-xs);
-}
-
 .rate-value {
   font-variant-numeric: tabular-nums;
 }
@@ -335,7 +319,7 @@ onMounted(load);
 
 .form-section legend {
   padding: 0;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .span-2 {

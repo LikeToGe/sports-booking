@@ -157,13 +157,13 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page employees-page">
     <header class="page-header">
-      <div><h1>员工</h1><p>员工在同一个小程序中绑定身份并完成核销。</p></div>
+      <div><h1>员工管理</h1><p>员工在同一个小程序中绑定身份并完成核销。</p></div>
       <button v-if="canEditEmployees" class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增员工</button>
     </header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
-    <div v-if="bindingCode" class="binding-result" aria-live="polite">
+    <div v-if="bindingCode" class="binding-result" role="status" aria-live="polite">
       <span>绑定码</span><strong>{{ bindingCode }}</strong><span>{{ localDateTime(bindingExpiry) }} 前有效</span>
     </div>
     <div class="filter-bar" aria-label="员工筛选">
@@ -191,8 +191,8 @@ onMounted(load);
       <PaginationBar v-if="filteredEmployees.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingEmployee ? "编辑员工" : "新增员工" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="createDialog" class="modal" aria-labelledby="employeesview-createDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="employeesview-createDialog-title">{{ editingEmployee ? "编辑员工" : "新增员工" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>员工姓名</span><input v-model.trim="name" required></label>
@@ -200,8 +200,8 @@ onMounted(load);
       </form>
     </dialog>
 
-    <dialog ref="roleDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>分配角色</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="roleDialog" class="modal" aria-labelledby="employeesview-roleDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="employeesview-roleDialog-title">分配角色</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="saveRoles">
         <p class="muted">{{ roleEmployee?.name }} · 多个角色的权限取并集</p>
         <p v-if="roleError" class="error-banner" role="alert">{{ roleError }}</p>
@@ -221,7 +221,7 @@ onMounted(load);
   align-items: baseline;
   gap: var(--space-sm);
   padding: var(--space-md);
-  border-block: 1px solid var(--color-accent);
+  border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-primary-soft);
   color: var(--color-accent-strong);
 }
 

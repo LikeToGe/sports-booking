@@ -1,1 +1,7 @@
-.favourites-page { max-width:640px; margin:0 auto; padding:var(--space-sm); }.target-favourite { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xs); padding:var(--space-xs); margin-bottom:var(--space-md); }.favourites-page .venue-list { display:flex; flex-direction:column; gap:var(--space-xs); margin-bottom:var(--space-md); }.venue-row { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-3xs); width:100%; padding:var(--space-xs); color:var(--color-ink); text-align:left; }.venue-row .inline-action { align-self:flex-end; }
+/* 场边工作台 · pages/favourites/index.wxss */
+.favourites-page { max-width:640px; margin:0 auto; padding:20px 18px calc(96px + env(safe-area-inset-bottom)); }.target-favourite { display:flex; align-items:center; justify-content:space-between; gap:var(--space-xs); padding:var(--space-xs); margin-bottom:var(--space-md); }.favourites-page .venue-list { display:flex; flex-direction:column; gap:var(--space-xs); margin-bottom:var(--space-md); }.venue-row { display:flex; flex-direction:row; align-items:center; gap:var(--space-3xs); width:100%; padding:var(--space-xs); color:var(--color-ink); text-align:left; white-space:normal; }.venue-row .inline-action { align-self:flex-end; }
+
+.favourite-cover { flex-shrink: 0; width: 90px; height: 80px; border-radius: var(--radius-control); }
+.favourite-copy { display: grid; gap: 6px; min-width: 0; font-size: 12px; }
+.favourite-copy .section-title { font-size: 15px; }
+.venue-row .inline-action { min-height: 44px; display: flex; align-items: center; color: var(--color-primary); }

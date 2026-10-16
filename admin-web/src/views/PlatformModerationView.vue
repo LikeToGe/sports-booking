@@ -134,14 +134,14 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page platform-moderation-page">
     <header class="page-header">
-      <div><h1>内容治理</h1></div>
+      <div><h1>内容审核与处置</h1></div>
       <button class="button secondary" type="button" :disabled="loading" @click="load"><RefreshCw :size="18" aria-hidden="true" />刷新列表</button>
     </header>
     <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
     <p v-if="message" class="saved-message" aria-live="polite"><ShieldCheck :size="17" aria-hidden="true" />{{ message }}</p>
-    <div class="moderation-filters" aria-label="内容审核筛选">
+    <div class="filter-bar moderation-filters" aria-label="内容审核筛选">
       <label class="field filter-search"><span>关键词</span><input v-model.trim="keyword" type="search" placeholder="场馆、正文或内容编号"></label>
       <label class="field"><span>内容类型</span><select v-model="contentTypeFilter"><option value="">全部类型</option><option value="REVIEW">评价</option><option value="REVIEW_REPLY">官方回复</option><option value="POST">动态</option><option value="COMMENT">评论</option></select></label>
       <label class="field"><span>审核状态</span><select v-model="moderationFilter"><option value="">全部状态</option><option value="PENDING">待审核</option><option value="APPROVED">已通过</option><option value="REJECTED">已拒绝</option></select></label>
@@ -173,9 +173,9 @@ onMounted(load);
       <div v-else class="empty-state" aria-live="polite"><ShieldCheck :size="26" aria-hidden="true" /><strong>{{ loading ? "正在加载" : reviews.length ? "没有匹配的内容" : "暂无内容" }}</strong><span>{{ reviews.length ? "调整筛选条件后重新查看。" : "新的待审核内容会显示在这里。" }}</span></div>
     </section>
 
-    <dialog ref="decisionDialog" class="decision-dialog" @close="selected = null">
+    <dialog ref="decisionDialog" class="modal decision-dialog" @close="selected = null" aria-labelledby="platformmoderationview-decisionDialog-title">
       <form method="dialog" @submit.prevent="submitDecision">
-        <header><h2>{{ actionLabels[action] }}{{ selected ? contentLabel(selected) : "内容" }}</h2><button class="icon-button" type="button" aria-label="关闭" @click="decisionDialog?.close()"><X :size="18" aria-hidden="true" /></button></header>
+        <header><h2 id="platformmoderationview-decisionDialog-title">{{ actionLabels[action] }}{{ selected ? contentLabel(selected) : "内容" }}</h2><button class="icon-button" type="button" aria-label="关闭" @click="decisionDialog?.close()"><X :size="18" aria-hidden="true" /></button></header>
         <p class="dialog-review">{{ selected?.body }}</p>
         <p v-if="selected?.publicBody && selected.publicBody !== selected.body" class="dialog-review">当前公开：{{ selected.publicBody }}</p>
         <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
@@ -183,24 +183,22 @@ onMounted(load);
         <footer><button class="button secondary" type="button" @click="decisionDialog?.close()">取消</button><button class="button primary" type="submit" :disabled="saving || !reason.trim()">{{ saving ? "提交中" : "确认" }}</button></footer>
       </form>
     </dialog>
-    <dialog ref="mediaDialog" class="decision-dialog" @close="clearPreviews"><header class="media-head"><h2>媒体预览</h2><button class="icon-button" aria-label="关闭" @click="mediaDialog?.close()"><X :size="18" /></button></header><div v-for="media in previews" :key="media.url" class="media-preview"><video v-if="media.mediaType === 'VIDEO'" :src="media.url" controls /><img v-else :src="media.url" alt="待审用户图片" /></div><p v-if="!previews.length">此版本没有媒体</p></dialog>
+    <dialog ref="mediaDialog" class="modal decision-dialog" @close="clearPreviews" aria-labelledby="platformmoderationview-mediaDialog-title"><header class="media-head"><h2 id="platformmoderationview-mediaDialog-title">媒体预览</h2><button class="icon-button" aria-label="关闭" @click="mediaDialog?.close()"><X :size="18" /></button></header><div v-for="media in previews" :key="media.url" class="media-preview"><video v-if="media.mediaType === 'VIDEO'" :src="media.url" controls /><img v-else :src="media.url" alt="待审用户图片" /></div><p v-if="!previews.length">此版本没有媒体</p></dialog>
   </section>
 </template>
 
 <style scoped>
-.moderation-filters { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-sm); padding: var(--space-md); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-surface); }
-.moderation-filters .field { flex: 1 1 12rem; min-width: 10rem; }
+.moderation-filters { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-sm); }
+.moderation-filters .field { flex: 1 1 12rem; min-width: min(100%, 10rem); }
 .moderation-filters .filter-search { flex: 2 1 20rem; }
 .review-body { min-width: 15rem; max-width: 32rem; white-space: normal; overflow-wrap: anywhere; }
-.row-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-.row-actions .button { width: auto; min-height: 2.25rem; }
-.decision-dialog { width: min(30rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: var(--space-lg); border: 1px solid var(--color-rule); background: var(--color-surface); color: var(--color-ink); }
-.decision-dialog::backdrop { background: rgb(0 0 0 / 55%); }
+.decision-dialog { width: min(30rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: var(--space-lg); border: 1px solid var(--color-rule); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-ink); box-shadow: var(--shadow-overlay); }
+.decision-dialog::backdrop { background: var(--color-scrim); }
 .decision-dialog form { display: grid; gap: var(--space-md); }
 .decision-dialog header, .decision-dialog footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
 .decision-dialog footer { justify-content: flex-end; }
 .dialog-review { max-height: 9rem; overflow: auto; overflow-wrap: anywhere; }
-.decision-dialog textarea { width: 100%; min-height: 6rem; resize: vertical; }
+.decision-dialog textarea { width: 100%; min-height: 6rem; padding: 12px; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-control); resize: vertical; }
 .media-head { display: flex; justify-content: space-between; align-items: center; }
 .media-preview img,.media-preview video { display: block; width: 100%; max-height: 24rem; object-fit: contain; margin-top: var(--space-md); }
 </style>

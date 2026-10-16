@@ -12,4 +12,5 @@
     <text class="muted">{{item.timeLabel}}</text>
   </view>
   <view wx:if="{{!rows.length && !loading && !error}}" class="empty">暂无记录</view>
+<view wx:if="{{loading}}" class="empty" role="status">正在加载，请稍候。</view>
 </view>

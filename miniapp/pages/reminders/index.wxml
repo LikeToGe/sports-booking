@@ -3,10 +3,10 @@
   <view wx:if="{{error}}" class="error" role="alert">{{error}}<button class="button-secondary" bindtap="load">重新加载</button></view>
   <view wx:if="{{message}}" class="saved" role="status">{{message}}</view>
   <view class="surface reminder-form"><text class="section-title">登记开售或空位提醒</text>
-    <picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="field-control">场馆：{{venues[venueIndex].name || '请选择场馆'}}</view></picker>
-    <picker range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="field-control">运动：{{sports[sportIndex].name || '请选择运动'}}</view></picker>
-    <picker range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="selectType"><view class="field-control">类型：{{typeOptions[typeIndex].label}}</view></picker>
-    <picker mode="date" value="{{targetDate}}" start="{{today}}" end="{{dateMax}}" bindchange="selectDate"><view class="field-control">日期：{{targetDate}}</view></picker>
+    <label class="field"><text>场馆</text><picker range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="field-control">场馆：{{venues[venueIndex].name || '请选择场馆'}}</view></picker></label>
+    <label class="field"><text>运动</text><picker range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="field-control">运动：{{sports[sportIndex].name || '请选择运动'}}</view></picker></label>
+    <label class="field"><text>提醒类型</text><picker range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="selectType"><view class="field-control">类型：{{typeOptions[typeIndex].label}}</view></picker></label>
+    <label class="field"><text>日期</text><picker mode="date" value="{{targetDate}}" start="{{today}}" end="{{dateMax}}" bindchange="selectDate"><view class="field-control">日期：{{targetDate}}</view></picker></label>
     <text class="muted">{{ruleText}}</text>
     <view class="time-row"><picker mode="time" value="{{startTime}}" bindchange="selectStart"><view class="field-control">{{startTime}}</view></picker><text>至</text><picker mode="time" value="{{endTime}}" bindchange="selectEnd"><view class="field-control">{{endTime}}</view></picker></view>
     <button class="button-primary" disabled="{{saving || loading}}" bindtap="save">{{saving ? '保存中' : '登记提醒'}}</button>

@@ -1,48 +1,55 @@
+/* 场边工作台 · pages/membership/index.wxss */
 .membership-page { display: grid; align-content: start; gap: 24rpx; }
+.pending-recharge { min-width: 0; width: 100%; height: auto; padding: 12px 16px; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; justify-content: flex-start; text-align: left; }
 .venue-picker { display: flex; align-items: center; }
-.member-wallet { display: grid; gap: 20px; padding: 22px; border: 0; border-radius: var(--radius-card); background: var(--ink); color: var(--on-dark); }
+.member-wallet { display: grid; gap: 20px; padding: 22px; border: 0; border-radius: var(--radius-card); background: var(--color-primary); color: var(--on-dark); }
 .member-wallet .section-head { align-items: start; }
 .member-wallet .section-head > view { display: grid; gap: 8px; min-width: 0; }
 .member-wallet .section-title { color: var(--on-dark); font-size: 15px; }
-.member-status { color: var(--on-dark-muted); font-size: 12px; }
-.member-code-toggle { min-height: 44px; padding: 0 8px; flex-shrink: 0; border: 1px solid var(--on-dark-muted); background: transparent; color: var(--on-dark); font-size: 12px; line-height: 42px; }
+.member-status { color: var(--on-dark); font-size: 12px; }
+.member-code-toggle { min-height: 44px; padding: 0 8px; flex-shrink: 0; border: 1px solid var(--on-dark); background: transparent; color: var(--on-dark); font-size: 12px; line-height: 42px; }
 .balance-band { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 20px; border-top: 1px solid var(--dark-rule); }
 .balance-band > view { display: grid; gap: 10px; min-width: 0; }
 .balance-band > view + view { padding-left: 16px; }
-.balance-band text { color: var(--on-dark-muted); font-size: 12px; }
+.balance-band text { color: var(--on-dark); font-size: 12px; }
 .balance-band .balance-value { color: var(--on-dark); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .member-identity { display: grid; justify-items: center; gap: 16px; padding: 20px; text-align: center; }
 .member-code { color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; }
 .member-qr { width: 180px; height: 180px; padding: 8px; background: var(--surface); }
-.expiry-notice { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 16rpx; padding: 20rpx 22rpx; border: 1rpx solid var(--warning); border-radius: 16rpx; background: var(--warning-soft); color: var(--warning-strong); }
+.expiry-notice { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 16rpx; padding: 20rpx 22rpx; border: 1px solid var(--warning-soft); border-radius: var(--radius-card); background: var(--warning-soft); color: var(--warning-strong); }
 .expiry-notice strong { font-variant-numeric: tabular-nums; }
 .recharge-section, .flow-section { display: grid; gap: 18rpx; }
 .plan-list, .flow-list { display: grid; gap: 10rpx; }
-.plan-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; width: 100%; min-height: 112rpx; padding: 20rpx 22rpx; border-radius: 18rpx; color: var(--ink); text-align: left; line-height: 1.4; box-shadow: none; }
+.plan-row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; width: 100%; min-height: 112rpx; padding: 20rpx 22rpx; border-radius: var(--radius-card); color: var(--ink); text-align: left; line-height: 1.4; box-shadow: none; }
 .plan-row > view { display: grid; gap: 6rpx; min-width: 0; }
 .plan-row.is-selected { border-color: var(--color-primary); background: var(--accent-soft); color: var(--ink); }
 .plan-row.is-selected .muted { color: var(--muted); }
 .plan-name { font-weight: 700; overflow-wrap: anywhere; }
-.plan-validity { font-size: 24rpx; }
+.plan-validity { font-size: 12px; }
 .plan-money { justify-items: end; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
-.plan-money strong { font-size: 34rpx; }
-.plan-gift { color: var(--signal-strong); font-size: 24rpx; }
+.plan-money strong { font-size: 18px; }
+.plan-gift { color: var(--signal-strong); font-size: 12px; }
 .plan-row.is-selected .plan-gift { color: var(--color-primary); }
 .recharge-result { display: grid; gap: 20rpx; padding: 24rpx; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); color: var(--ink); box-shadow: none; }
 .recharge-result .section-title { color: var(--ink); }
 .recharge-result .muted { color: var(--muted); }
 .recharge-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; font-variant-numeric: tabular-nums; }
-.recharge-facts .muted { grid-column: 1 / -1; font-size: 24rpx; }
-.recharge-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16rpx; }
-.recharge-result .button-primary { background: var(--accent-soft); color: var(--ink); }
+.recharge-facts .muted { grid-column: 1 / -1; font-size: 12px; }
+.recharge-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.recharge-result .button-primary { background: var(--color-primary); color: var(--color-primary-ink); }
 .recharge-result .button-secondary { border-color: var(--color-rule-strong); color: var(--ink); }
-.action-message { padding: 20rpx 24rpx; border: 1rpx solid; border-radius: 16rpx; }
+.action-message { padding: 20rpx 24rpx; border: 1rpx solid; border-radius: var(--radius-card); }
 .message-info { border-color: var(--signal); background: var(--signal-soft); color: var(--signal-strong); }
 .message-success { border-color: var(--success); background: var(--success-soft); color: var(--success-strong); }
 .flow-list { border-top: 1rpx solid var(--rule); }
 .flow-row { display: flex; align-items: center; justify-content: space-between; gap: 18rpx; padding: 18rpx 0; border-bottom: 1rpx solid var(--rule-2); }
 .flow-title { font-weight: 600; }
-.flow-meta { display: block; margin-top: 6rpx; font-size: 22rpx; }
+.flow-meta { display: block; margin-top: 6rpx; font-size: 12px; }
 .flow-amount { font-variant-numeric: tabular-nums; font-weight: 700; }
 .flow-credit { color: var(--success-strong); }
 .flow-debit { color: var(--danger-strong); }
+
+.plan-row { white-space: normal; min-height: 76px; padding: 15px; }
+.plan-money { flex: 0 1 45%; }
+.expiry-notice { display: flex; flex-wrap: wrap; font-size: 12px; }
+.member-wallet .balance-value { font-size: 25px; }

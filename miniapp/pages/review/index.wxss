@@ -1,16 +1,23 @@
+/* 场边工作台 · pages/review/index.wxss */
 .review-page { display: grid; align-content: start; gap: 24rpx; }
 .score-list { display: grid; padding: 8rpx 24rpx; }
 .score-row { display: flex; align-items: center; justify-content: space-between; min-height: 92rpx; border-bottom: 2rpx solid var(--rule-2); }
 .score-row:last-child { border-bottom: 0; }
 .score-row > view { display: flex; align-items: center; gap: 12rpx; }
-.score-row button { width: 64rpx; height: 64rpx; min-height: 64rpx; padding: 0; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink); line-height: 60rpx; }
+.score-row button { width: 44px; height: 44px; min-height: 44px; padding: 0; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink); line-height: 42px; }
 .score-row strong { width: 44rpx; text-align: center; font-variant-numeric: tabular-nums; }
 .review-body { width: 100%; min-height: 240rpx; padding: 20rpx; box-sizing: border-box; }
 .tag-section { display: grid; gap: 12rpx; }
 .tag-section > view { display: flex; flex-wrap: wrap; gap: 12rpx; }
-.tag-button { width: auto; min-height: 64rpx; padding: 0 20rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); font-size: 24rpx; }
-.tag-button.is-selected { border-color: var(--accent); color: var(--signal-strong); }
+.tag-button { width: auto; min-height: 44px; padding: 0 20rpx; border: 2rpx solid var(--rule); background: var(--surface); color: var(--ink-2); font-size: 12px; }
+.tag-button.is-selected { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
 .anonymous-row { display: flex; align-items: center; justify-content: space-between; }
 .review-images { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
 .review-images image { width: 100%; aspect-ratio: 1; }
 .image-actions { display: flex; flex-wrap: wrap; gap: 16rpx; }
+
+.review-page > .screen-head .screen-title { display: none; }
+.review-page > .screen-head { padding: 0; border: 0; font-size: 12px; }
+
+.review-page { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
+.tag-section, .anonymous-row { padding: 18px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); }

@@ -7,9 +7,12 @@
 - calendar.svg：CalendarDays
 - membership.svg：CreditCard
 - user.svg：UserRound
+- scan.svg：ScanLine
 - search.svg：Search
 - location.svg：MapPin
 - chevron-down.svg：ChevronDown
 - arrow-up-right.svg：ArrowUpRight
 
-统一 24 × 24 画布、1.8 线宽；描边取根 `tokens.css` 的 `--color-ink`（#233c31）。SVG 图片不能继承页面变量，修改该 Token 时同步重新导出；选中背景由 WXSS 控制。许可见同目录 LICENSE。
+统一 24 × 24 画布、1.8 线宽；描边取根 `tokens.css` 的 `--color-ink`（#243936）。SVG 图片不能继承页面变量，修改该 Token 时同步重新导出；选中背景由 WXSS 控制。许可见同目录 LICENSE。
+
+`scan.svg` 使用主操作色 #087F72；其余图标使用正文色。2026-10-14 随场边工作台同步。

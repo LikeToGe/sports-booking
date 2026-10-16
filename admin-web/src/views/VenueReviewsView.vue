@@ -55,7 +55,7 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page venue-reviews-page">
     <header class="page-header">
       <div><h1>场地评价</h1><p>回复提交后由平台审核，通过后展示在公开评价中。</p></div>
       <button class="button secondary" type="button" :disabled="loading" @click="load"><RefreshCw :size="18" aria-hidden="true" />刷新</button>
@@ -84,8 +84,8 @@ onMounted(load);
 </template>
 
 <style scoped>
-.review-body { min-width: 15rem; max-width: 30rem; white-space: normal; overflow-wrap: anywhere; }
-.reply-cell { min-width: 18rem; }
-.reply-cell textarea { width: 100%; min-height: 4.5rem; resize: vertical; }
+.review-body { min-width: min(100%, 15rem); max-width: 30rem; white-space: normal; overflow-wrap: anywhere; }
+.reply-cell { min-width: min(100%, 18rem); }
+.reply-cell textarea { width: 100%; min-height: 4.5rem; resize: vertical; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-control); padding: 12px; background: var(--color-surface); font: inherit; }
 .reply-cell .muted { display: block; margin-top: var(--space-xs); }
 </style>

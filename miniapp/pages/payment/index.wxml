@@ -20,9 +20,10 @@
 
     <view wx:if="{{message}}" class="info-message" aria-live="polite">{{message}}</view>
     <view class="payment-actions">
-      <button wx:if="{{canPay}}" class="button-primary" disabled="{{paying || querying}}" bindtap="pay">{{paying ? '正在确认支付' : '完成 Mock 支付'}}</button>
-      <button wx:if="{{canQuery}}" class="button-secondary" disabled="{{paying || querying}}" bindtap="queryPayment">{{querying ? '正在查询' : '查询支付结果'}}</button>
-      <button class="button-secondary" disabled="{{paying || querying}}" bindtap="openBooking">查看预约详情</button>
+      <button wx:if="{{canPay}}" class="button-primary" disabled="{{paying || querying || cancelling}}" bindtap="pay">{{paying ? '正在确认支付' : '完成 Mock 支付'}}</button>
+      <button wx:if="{{canQuery}}" class="button-secondary" disabled="{{paying || querying || cancelling}}" bindtap="queryPayment">{{querying ? '正在查询' : '查询支付结果'}}</button>
+      <button wx:if="{{canCancel}}" class="button-danger" disabled="{{paying || querying || cancelling}}" bindtap="cancel">{{cancelling ? '正在确认关闭' : '取消待支付预约'}}</button>
+      <button class="button-secondary" disabled="{{paying || querying || cancelling}}" bindtap="openBooking">查看预约详情</button>
     </view>
   </block>
   <view wx:elif="{{loading}}" class="empty" aria-live="polite"><text>正在加载支付信息...</text></view>

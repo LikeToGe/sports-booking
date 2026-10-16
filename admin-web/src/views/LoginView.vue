@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Clipboard, LogIn, RefreshCw, ScanLine } from "@lucide/vue";
+import { PanelsTopLeft, Clipboard, LogIn, RefreshCw, ScanLine } from "@lucide/vue";
 import { api } from "../api";
 import { defaultRoute, setSession } from "../auth";
 import type { AdminPrincipal } from "../types";
@@ -105,8 +105,8 @@ onUnmounted(stopPolling);
 <template>
   <main class="login-page">
     <section class="login-copy">
-      <span class="wordmark">约场</span>
-      <h1>场次就绪，直接开打。</h1>
+      <div class="login-brand"><span class="brand-mark"><PanelsTopLeft :size="26" aria-hidden="true" /></span><div><span class="wordmark">约场</span><span>场馆运营管理</span></div></div>
+      <h1>每一场，都安排妥当。</h1>
       <p>场馆、排期、预约与核销集中在一处。</p>
     </section>
     <section class="login-form" aria-labelledby="login-title">
@@ -140,115 +140,25 @@ onUnmounted(stopPolling);
 </template>
 
 <style scoped>
-.login-page {
-  display: grid;
-  min-height: 100dvh;
-  background: var(--color-paper);
-}
-
-.login-copy,
-.login-form {
-  display: grid;
-  align-content: center;
-  gap: var(--space-lg);
-  padding: var(--space-xl) var(--space-lg);
-}
-
-.login-fields,
-.scan-login {
-  display: grid;
-  gap: var(--space-md);
-}
-
-.login-modes {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: var(--space-2xs);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-control);
-}
-
-.login-modes button {
-  min-height: var(--control-height);
-  border: 0;
-  border-radius: var(--radius-control);
-  background: transparent;
-  cursor: pointer;
-}
-
-.login-modes button[aria-selected="true"] {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-
-.scan-login {
-  justify-items: center;
-  min-height: 18rem;
-  align-content: center;
-  text-align: center;
-}
-
-.scan-login code {
-  width: 100%;
-  max-height: 8rem;
-  padding: var(--space-md);
-  overflow: auto;
-  border: 1px solid var(--color-rule);
-  background: var(--color-paper-2);
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-  user-select: all;
-}
-
-.scan-qr { width: min(15rem, 72vw); aspect-ratio: 1; object-fit: contain; }
-
-.login-copy {
-  position: relative;
-  isolation: isolate;
-  min-height: 18rem;
-  overflow: hidden;
-  border-block-start: var(--space-xs) solid var(--color-success);
-  background: var(--color-ink) url("/venue-1.jpg") center / cover no-repeat;
-  color: var(--color-paper);
-}
-
-.login-copy::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--color-scrim);
-  content: "";
-}
-
-.login-copy h1 {
-  max-width: 10ch;
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1.05;
-}
-
-.login-copy p {
-  color: var(--color-paper);
-}
-
-.login-form {
-  width: min(100%, 28rem);
-  margin-inline: auto;
-}
-
-@media (min-width: 52rem) {
-  .login-page {
-    grid-template-columns: minmax(20rem, 0.85fr) minmax(28rem, 1.15fr);
-  }
-
-  .login-copy,
-  .login-form {
-    padding: var(--space-2xl);
-  }
-
-  .login-copy h1 {
-    max-width: 9ch;
-    font-size: 3.5rem;
-  }
-}
+.login-page { display: grid; min-height: 100dvh; background: var(--color-surface); }
+.login-copy { position: relative; display: grid; align-content: end; gap: 16px; min-height: 300px; margin: 20px; padding: 36px; overflow: hidden; border-radius: 16px; isolation: isolate; background: var(--color-ink) url("/venue-1.jpg") center / cover no-repeat; color: var(--color-on-dark); }
+.login-copy::before { position: absolute; inset: 0; z-index: -1; content: ""; background: linear-gradient(180deg, rgb(14 43 46 / 45%), rgb(14 43 46 / 88%)); }
+.login-brand { position: absolute; top: 36px; left: 36px; display: flex; align-items: center; gap: 12px; }
+.login-brand > div { display: grid; gap: 5px; }
+.login-brand > div > span:last-child { font-size: 12px; }
+.login-copy h1 { font-size: 36px; line-height: 1.4; font-weight: 600; }
+.login-copy p { font-size: 13px; }
+.login-form { display: grid; align-content: center; gap: 24px; width: min(100%, 408px); margin: 0 auto; padding: 36px 24px; }
+.login-form h2 { font-size: 24px; }
+.login-form > div:first-child p { margin-top: 12px; font-size: 13px; line-height: 1.8; }
+.login-fields, .scan-login { display: grid; gap: 20px; }
+.login-modes { display: flex; gap: 28px; border-bottom: 1px solid var(--color-rule); }
+.login-modes button { min-height: 44px; padding: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--color-muted); font-size: 13px; }
+.login-modes button[aria-selected="true"] { border-bottom-color: var(--color-primary); color: var(--color-primary); }
+.scan-login { justify-items: center; min-height: 18rem; align-content: center; text-align: center; }
+.scan-login code { width: 100%; max-height: 6rem; padding: 12px; overflow: auto; border: 1px solid var(--color-rule); border-radius: var(--radius-control); background: var(--color-paper); overflow-wrap: anywhere; white-space: pre-wrap; user-select: all; font-size: 12px; }
+.scan-qr { width: 180px; aspect-ratio: 1; object-fit: contain; }
+.scan-login .muted { font-size: 12px; }
+@media (min-width: 52rem) { .login-page { grid-template-columns: minmax(0, .46fr) minmax(0, .54fr); } }
+@media (max-width: 40rem) { .login-copy { min-height: 240px; margin: 12px; padding: 24px; } .login-brand { top: 24px; left: 24px; } .login-copy h1 { font-size: 27px; } .login-form { padding-top: 24px; } }
 </style>

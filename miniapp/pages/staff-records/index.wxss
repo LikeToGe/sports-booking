@@ -1,7 +1,12 @@
+/* 场边工作台 · pages/staff-records/index.wxss */
 .records-page { display: grid; align-content: start; gap: 24rpx; }
 .venue-picker { display: flex; align-items: center; }
 .records { display: grid; gap: 20rpx; }
-.record-card { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; padding: 24rpx; }
+.record-card { display: grid; align-items: start; gap: 20rpx; padding: 24rpx; }
 .record-title { font-weight: 600; }
-.record-card .block { margin-top: 8rpx; font-size: 24rpx; }
-.record-time { flex: 0 0 auto; color: var(--muted); font-size: 22rpx; font-variant-numeric: tabular-nums; text-align: right; }
+.record-card .block { margin-top: 8rpx; font-size: 12px; }
+.record-time {  color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: left; }
+
+.record-head, .record-fact { display: flex; justify-content: space-between; gap: 16px; min-width: 0; }
+.record-fact > text:last-child { min-width: 0; text-align: right; }
+.record-fact { font-size: 12px; }

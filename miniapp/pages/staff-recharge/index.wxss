@@ -1,6 +1,12 @@
+/* 场边工作台 · pages/staff-recharge/index.wxss */
 .staff-recharge-page, .plan-section { display: grid; align-content: start; gap: 24rpx; }
 .plan-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: 100%; min-height: 104rpx; gap: 20rpx; padding: 20rpx 24rpx; color: var(--ink); text-align: left; }
-.plan-row.is-selected { border-color: var(--signal); background: var(--signal-soft); }
-.plan-row strong { font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.plan-row.is-selected { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.plan-row strong { font-size: 12px; font-variant-numeric: tabular-nums; }
 .channel-picker { display: flex; align-items: center; }
 .recharge-result { display: grid; gap: 12rpx; padding: 28rpx; border-color: var(--success); background: var(--success-soft); color: var(--success-strong); }
+
+.recharge-customer { display: grid; gap: 16px; padding: 20px; }
+.recharge-customer > view { display: flex; justify-content: space-between; gap: 16px; }
+.plan-section { padding: 20px; }
+.plan-row { grid-template-columns: minmax(0, 1fr); white-space: normal; border-radius: var(--radius-control); }

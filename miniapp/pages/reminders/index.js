@@ -2,6 +2,8 @@ const { request, dateInZhengzhou, time } = require("../../utils/api");
 
 const typeOptions = [{ value: "OPENING", label: "开售提醒" }, { value: "RELEASED", label: "空位提醒" }];
 const statusLabels = { OPEN: "可预约", HELD: "支付占位", BOOKED: "已预约", CLOSED: "不开放", UNAVAILABLE: "当前不可预约" };
+// 仅省略全零秒；遗留的非零秒保持原条件，由检索拒绝，不能静默扩大范围。
+function minuteTime(value) { return value.replace(/^(\d{2}:\d{2}):00(?:\.0+)?$/, "$1"); }
 function addDays(day, days) {
   const date = new Date(`${day}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + days);
@@ -45,7 +47,7 @@ Page({
           venueIndex: venues.findIndex(venue => venue.id === focus.venueId),
           sportIndex: sports.findIndex(sport => sport.id === focus.sportTypeId),
           typeIndex: focus.type === "RELEASED" ? 1 : 0,
-          targetDate: focus.targetDate, startTime: focus.startTime.slice(0, 5), endTime: focus.endTime.slice(0, 5),
+          targetDate: focus.targetDate, startTime: minuteTime(focus.startTime), endTime: minuteTime(focus.endTime),
         });
         await this.checkSupply();
       }
@@ -110,8 +112,8 @@ Page({
     this.setData({ checking: true, error: "" });
     try {
       const params = `date=${focus.targetDate}&sportTypeId=${focus.sportTypeId}`
-        + `&startTime=${encodeURIComponent(focus.startTime.slice(0, 5))}`
-        + `&endTime=${encodeURIComponent(focus.endTime.slice(0, 5))}`;
+        + `&startTime=${encodeURIComponent(minuteTime(focus.startTime))}`
+        + `&endTime=${encodeURIComponent(minuteTime(focus.endTime))}`;
       const rows = await request(`/public/venues/${focus.venueId}/slot-comparison?${params}`);
       const supply = rows.map(row => ({ ...row, statusLabel: statusLabels[row.status] || "当前不可预约",
         timeLabel: `${time(row.startAt)}–${time(row.endAt)}` }));
@@ -129,7 +131,7 @@ Page({
     if (!focus) return;
     const relaxed = Boolean(event.currentTarget.dataset.relaxed);
     const params = `id=${focus.venueId}&date=${focus.targetDate}&sportTypeId=${focus.sportTypeId}`
-      + (relaxed ? "" : `&startTime=${focus.startTime.slice(0, 5)}&endTime=${focus.endTime.slice(0, 5)}`)
+      + (relaxed ? "" : `&startTime=${minuteTime(focus.startTime)}&endTime=${minuteTime(focus.endTime)}`)
       + "&entryType=REMINDER_ENTRY";
     wx.navigateTo({ url: `/pages/venue/index?${params}` });
   },

@@ -1,35 +1,36 @@
+/* 场边工作台 · pages/venue/index.wxss */
 .venue-page { min-height: 100vh; background: var(--paper); }
-.hero-image { width: 100%; height: 430rpx; background: var(--paper-2); }
+.hero-image { width: 100%; height: 56.25vw; max-height: 360px; background: var(--paper-2); }
 .detail-body { display: grid; align-content: start; gap: 28rpx; padding-top: 0; }
-.venue-summary { display: grid; gap: 22rpx; margin-top: 0; padding: 28rpx; border: 1px solid var(--rule); border-radius: 0; background: var(--surface); color: var(--ink); box-shadow: none; }
-.venue-summary .screen-title { color: var(--ink); font-size: 46rpx; }
+.venue-summary { display: grid; gap: 22rpx; margin-top: 0; padding: 28rpx; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); color: var(--ink); box-shadow: none; }
+.venue-summary .screen-title { color: var(--ink); font-size: 22px; }
 .venue-summary .muted { color: var(--muted); }
 .venue-head, .booking-head, .court-head { display: flex; align-items: start; justify-content: space-between; gap: 20rpx; }
 .venue-head > view, .booking-head > view { display: grid; gap: 8rpx; min-width: 0; }
-.address, .hint { font-size: 24rpx; }
+.address, .hint { font-size: 12px; }
 .map-button { flex: 0 0 auto; min-width: 112rpx; border-color: var(--color-primary); color: var(--color-primary); }
 .facility-line { padding-top: 20rpx; border-top: 1rpx solid var(--rule); color: var(--ink-2); }
-.booking-panel { display: grid; gap: 22rpx; padding: 26rpx 22rpx 30rpx; border: 1rpx solid var(--rule); border-radius: 28rpx; background: var(--surface); box-shadow: var(--shadow); }
+.booking-panel { display: grid; gap: 22rpx; padding: 26rpx 22rpx 30rpx; border: 1rpx solid var(--rule); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow); }
 .booking-head { position: sticky; top: 0; z-index: 2; margin: -26rpx -22rpx 0; padding: 26rpx 22rpx 16rpx; background: var(--surface); }
-.date-button { min-height: 82rpx; padding: 12rpx 18rpx; border: 1rpx solid var(--ink); border-radius: 14rpx; background: var(--color-primary); color: var(--color-primary-ink); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.date-button { min-height: 44px; padding: 12rpx 18rpx; border: 1rpx solid var(--ink); border-radius: var(--radius-card); background: var(--surface); color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 .sport-strip { width: 100%; white-space: nowrap; }
-.sport-chip { display: inline-flex; min-height: 78rpx; margin-right: 10rpx; padding: 0 20rpx; border: 1rpx solid var(--rule); border-radius: 14rpx; background: transparent; color: var(--ink-2); line-height: 76rpx; }
-.sport-chip.is-active { border-color: var(--ink); background: var(--color-primary); color: var(--color-primary-ink); }
+.sport-chip { display: inline-flex; min-height: 44px; margin-right: 10rpx; padding: 0 20rpx; border: 1rpx solid var(--rule); border-radius: var(--radius-card); background: transparent; color: var(--ink-2); line-height: 76rpx; }
+.sport-chip.is-active { border-color: var(--color-primary-soft); background: var(--color-primary-soft); color: var(--color-primary); }
 .court-groups { display: grid; gap: 14rpx; }
-.court-group { display: grid; gap: 14rpx; padding: 20rpx; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.court-group { display: grid; gap: 14rpx; padding: 8px 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .court-head { align-items: baseline; padding-bottom: 14rpx; border-bottom: 1rpx solid var(--rule-2); font-weight: 700; }
 .court-title { display: flex; align-items: center; gap: 14rpx; min-width: 0; }
 .court-image { width: 72rpx; height: 56rpx; border-radius: 10rpx; background: var(--paper-2); }
-.court-head .muted { font-size: 22rpx; font-weight: 400; }
+.court-head .muted { font-size: 12px; font-weight: 400; }
 .slot-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10rpx; }
-.slot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8rpx; width: 100%; min-height: 86rpx; padding: 0 16rpx; border: 1rpx solid var(--rule); border-radius: 14rpx; background: var(--surface-card); color: var(--ink); text-align: left; }
+.slot-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8rpx; width: 100%; min-height: 44px; padding: 0 16rpx; border: 1rpx solid var(--rule); border-radius: var(--radius-card); background: var(--surface-card); color: var(--ink); text-align: left; }
 .slot-time { grid-column: 1 / -1; padding-top: 12rpx; font-variant-numeric: tabular-nums; font-weight: 700; }
-.book-label { color: var(--signal-strong); font-size: 21rpx; font-weight: 700; }
-.slot-row .price { font-size: 23rpx; }
+.book-label { color: var(--signal-strong); font-size: 12px; font-weight: 700; }
+.slot-row .price { font-size: 12px; }
 .notice { display: grid; gap: 12rpx; padding: 26rpx 0; border: 0; border-top: 1rpx solid var(--rule); border-radius: 0; background: transparent; box-shadow: none; }
 .reviews-section { display: grid; gap: 18rpx; padding: 28rpx 0; }
 .review-score { display: flex; align-items: baseline; gap: 16rpx; }
-.review-score strong { color: var(--signal-strong); font-size: 52rpx; }
+.review-score strong { color: var(--signal-strong); font-size: 28px; }
 .review-preview { display: grid; gap: 8rpx; padding: 20rpx 0; border-top: 1rpx solid var(--rule-2); }
 .review-preview > view { display: flex; justify-content: space-between; gap: 20rpx; }
 .venue-load-error { display: grid; align-content: start; gap: 20rpx; }
@@ -40,8 +41,8 @@
 .venue-actions, .view-switch { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); }
 .venue-actions button { margin: 0; }
 .public-rules { display: grid; gap: var(--space-xs); color: var(--ink-2); font-size: var(--text-sm); }
-.preference-notice { padding: var(--space-sm); border-left: var(--rule-standard); background: var(--paper-2); color: var(--ink); }
-.slot-rule { grid-column: 1 / -1; padding-bottom: 12rpx; color: var(--muted); font-size: 22rpx; white-space: normal; }
+.preference-notice { padding: var(--space-sm); border-left: 3px solid var(--color-primary); background: var(--paper-2); color: var(--ink); }
+.slot-rule { grid-column: 1 / -1; padding-bottom: 12rpx; color: var(--muted); font-size: 12px; white-space: normal; }
 .slot-row[disabled], .matrix-slot[disabled] { background: var(--paper-2); color: var(--muted); }
 .slot-row[disabled] .book-label, .matrix-slot[disabled] .book-label { color: var(--muted); }
 .comparison { display: grid; gap: var(--space-xs); min-width: 0; }
@@ -49,6 +50,14 @@
 .matrix-table { display: inline-block; min-width: 100%; vertical-align: top; }
 .matrix-line { display: flex; align-items: stretch; border-bottom: 1rpx solid var(--rule); }
 .matrix-header { background: var(--paper-2); font-weight: 700; }
-.matrix-time { position: sticky; left: 0; z-index: 1; flex: 0 0 190rpx; width: 190rpx; box-sizing: border-box; padding: 18rpx 12rpx; background: var(--surface); color: var(--ink); font-size: 24rpx; font-variant-numeric: tabular-nums; }
+.matrix-time { position: sticky; left: 0; z-index: 1; flex: 0 0 190rpx; width: 190rpx; box-sizing: border-box; padding: 18rpx 12rpx; background: var(--surface); color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 .matrix-cell { flex: 0 0 250rpx; width: 250rpx; box-sizing: border-box; padding: 12rpx; border-left: 1rpx solid var(--rule); white-space: normal; }
-.matrix-slot { display: grid; gap: 8rpx; min-height: var(--touch-target); width: 100%; margin: 0 0 10rpx; padding: 12rpx; border: 1rpx solid var(--rule); background: var(--surface-card); color: var(--ink); text-align: left; line-height: 1.5; font-size: 24rpx; }
+.matrix-slot { display: grid; gap: 8rpx; min-height: var(--touch-target); width: 100%; margin: 0 0 10rpx; padding: 12rpx; border: 1rpx solid var(--rule); background: var(--surface-card); color: var(--ink); text-align: left; line-height: 1.5; font-size: 12px; }
+
+.slot-row { white-space: normal; min-height: 96px; padding: 10px; }
+.slot-time { font-size: 13px; padding-top: 0; }
+.slot-row:not([disabled]) { border-color: var(--color-primary); background: var(--color-primary-soft); }
+.public-rules { font-size: 12px; padding: 12px; border-radius: var(--radius-control); background: var(--paper); }
+.booking-head { position: static; }
+.venue-head .map-button { min-width: 44px; padding: 0 10px; }
+.venue-head, .booking-head { flex-wrap: wrap; }

@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref } from "vue";
 import { CalendarPlus, Plus, X } from "@lucide/vue";
 import { ApiError, api, localDateTime, money, today } from "../api";
-import { hasPermission } from "../auth";
+import { auth, hasPermission } from "../auth";
 import { statusLabel, statusTone } from "../labels";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
@@ -12,6 +12,7 @@ const selectedDate = ref(today());
 const bookings = ref<BookingView[]>([]);
 const sessions = ref<SessionView[]>([]);
 const customers = ref<VenueCustomer[]>([]);
+const loading = ref(false);
 const error = ref("");
 const formError = ref("");
 const conflictDates = ref<string[]>([]);
@@ -56,6 +57,7 @@ const filteredBookings = computed(() => {
 const { page, pageSize, total, pagedItems } = usePagination(filteredBookings);
 
 async function load() {
+  loading.value = true;
   error.value = "";
   try {
     [bookings.value, sessions.value, customers.value] = await Promise.all([
@@ -66,6 +68,8 @@ async function load() {
     offlineSlotId.value ||= openSessions.value[0]?.id || 0;
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "预约加载失败";
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -194,7 +198,7 @@ async function submit(dialog: typeof cancelDialog, action: () => Promise<unknown
 
 function paymentOptions(booking?: BookingView) {
   if (!booking) return [];
-  if (booking.paymentStatus === "UNRECORDED") return ["UNPAID", "PAID"];
+  if (booking.paymentStatus === "UNRECORDED") return auth.principal?.role === "VENUE_ADMIN" ? ["UNPAID", "PAID"] : [];
   if (booking.paymentStatus === "UNPAID") return ["PAID"];
   if (booking.paymentStatus === "PAID" && booking.status === "CANCELLED") return ["REFUNDED"];
   return [];
@@ -204,32 +208,32 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page bookings-page">
     <header class="page-header">
-      <div><h1>预约</h1><p>线上收款与线下登记分开处理，批量创建保持整批原子。</p></div>
+      <div><h1>预约管理</h1><p>线上收款与线下登记分开处理，批量创建保持整批原子。</p></div>
       <div v-if="canEdit" class="toolbar">
         <button class="button secondary" type="button" @click="resetCreate('batch')"><CalendarPlus :size="18" aria-hidden="true" />批量预约</button>
         <button class="button" type="button" @click="resetCreate('single')"><Plus :size="18" aria-hidden="true" />线下预约</button>
       </div>
     </header>
-    <p v-if="error" class="error-banner" role="alert">{{ error }}</p>
+    <p v-if="error" class="error-banner" role="alert">{{ error }} <button class="inline-command" type="button" @click="load">重新加载</button></p>
     <div class="filter-bar" aria-label="预约筛选">
       <label class="field"><span>日期</span><input v-model="selectedDate" type="date" @change="load"></label>
       <label class="field filter-search"><span>搜索</span><input v-model="keyword" type="search" placeholder="预约号、场地或联系人"></label>
       <label class="field"><span>来源</span><select v-model="source"><option value="">全部来源</option><option value="ONLINE">小程序</option><option value="OFFLINE">线下</option></select></label>
       <label class="field"><span>履约状态</span><select v-model="status"><option value="">全部状态</option><option value="PENDING_PAYMENT">待支付</option><option value="CONFIRMED">待履约</option><option value="COMPLETED">已完成</option><option value="CANCELLED">已取消</option><option value="NO_SHOW">未到场</option><option value="ENDED_UNTRACKED">履约未跟踪</option></select></label>
     </div>
-    <section class="data-panel" aria-label="预约记录">
+    <section class="data-panel" aria-label="预约记录" :aria-busy="loading">
       <header class="data-panel-head"><div><h2>预约记录</h2><p>{{ selectedDate }} 的线上与线下预约</p></div><span class="record-count">{{ total }} 条</span></header>
-      <div class="table-wrap">
+      <div v-if="!loading || bookings.length" class="table-wrap">
         <table>
-          <thead><tr><th>时间</th><th>场地</th><th>联系人</th><th>金额</th><th>来源</th><th>履约</th><th>收款</th><th>操作</th></tr></thead>
+          <thead><tr><th>时间</th><th>场地</th><th>联系人</th><th class="numeric-column">金额</th><th>来源</th><th>履约</th><th>收款</th><th>操作</th></tr></thead>
           <tbody><tr v-for="booking in pagedItems" :key="booking.id">
-            <td data-label="时间">{{ localDateTime(booking.startAt) }}</td>
+            <td data-label="时间"><strong>{{ localDateTime(booking.startAt) }}</strong><span class="subline">{{ booking.bookingNo }}</span></td>
             <td data-label="场地"><strong>{{ booking.courtName }}</strong><br><span class="muted">{{ booking.sportName }}</span></td>
-            <td data-label="联系人">{{ booking.contactName }}<br><span class="muted">{{ booking.contactPhone }}</span></td>
-            <td data-label="金额">{{ money(booking.amountFen) }}</td>
-            <td data-label="来源">{{ booking.source === "ONLINE" ? "小程序" : "线下" }}</td>
+            <td data-label="联系人">{{ booking.contactName }}<br><span class="muted contact-phone">{{ booking.contactPhone }}</span></td>
+            <td data-label="金额" class="numeric-column">{{ money(booking.amountFen) }}</td>
+            <td data-label="来源"><span class="status" :data-tone="booking.source === 'ONLINE' ? 'active' : 'info'">{{ booking.source === "ONLINE" ? "小程序" : "线下" }}</span></td>
             <td data-label="履约"><span class="status" :data-tone="statusTone(booking.status)">{{ statusLabel(booking.status) }}</span></td>
             <td data-label="收款"><span class="status" :data-tone="statusTone(booking.paymentStatus || '')">{{ statusLabel(booking.paymentStatus || "") }}</span></td>
             <td data-label="操作"><div class="toolbar">
@@ -241,12 +245,13 @@ onMounted(load);
           </tr></tbody>
         </table>
       </div>
-      <div v-if="!filteredBookings.length" class="empty-state"><strong>{{ bookings.length ? "没有匹配的预约" : "这一天没有预约" }}</strong><span>{{ bookings.length ? "调整筛选后重试。" : "用户或场馆创建预约后会显示在这里。" }}</span></div>
+      <div v-if="loading && !bookings.length" class="empty-state" role="status"><strong>正在加载预约记录</strong><span>日期与筛选条件保持不变。</span></div>
+      <div v-else-if="!error && !filteredBookings.length" class="empty-state"><strong>{{ bookings.length ? "没有匹配的预约" : "这一天没有预约" }}</strong><span>{{ bookings.length ? "调整筛选后重试。" : "用户或场馆创建预约后会显示在这里。" }}</span></div>
       <PaginationBar v-if="filteredBookings.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingBooking ? "编辑线下预约联系人" : createMode === "batch" ? "批量线下预约" : "创建线下预约" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="createDialog" class="modal" aria-labelledby="bookingsview-createDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="bookingsview-createDialog-title">{{ editingBooking ? "编辑线下预约联系人" : createMode === "batch" ? "批量线下预约" : "创建线下预约" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="saveOffline">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}<span v-if="conflictDates.length" class="block">冲突日期：{{ conflictDates.join("、") }}</span></p>
         <label v-if="!editingBooking" class="field"><span>模板场次</span><select v-model.number="offlineSlotId" required><option v-for="session in openSessions" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }} · {{ money(session.priceFen) }}</option></select></label>
@@ -264,18 +269,18 @@ onMounted(load);
       </form>
     </dialog>
 
-    <dialog ref="paymentDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>保存收款状态</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="paymentDialog" class="modal" aria-labelledby="bookingsview-paymentDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="bookingsview-paymentDialog-title">保存收款状态</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="savePayment"><p v-if="formError" class="error-banner" role="alert">{{ formError }}</p><label class="field"><span>新状态</span><select v-model="paymentStatus"><option v-for="option in paymentOptions(selectedPaymentBooking)" :key="option" :value="option">{{ statusLabel(option) }}</option></select></label><label class="field"><span>修改原因</span><textarea v-model.trim="paymentReason" required></textarea></label><button class="button" type="submit">保存收款状态</button></form>
     </dialog>
 
-    <dialog ref="rescheduleDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>同价改期</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="rescheduleDialog" class="modal" aria-labelledby="bookingsview-rescheduleDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="bookingsview-rescheduleDialog-title">同价改期</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="saveReschedule"><p v-if="formError" class="error-banner" role="alert">{{ formError }}</p><label class="field"><span>目标日期</span><input v-model="rescheduleDate" type="date" @change="loadRescheduleSessions"></label><label class="field"><span>同价场次</span><select v-model.number="rescheduleSlotId" required><option v-for="session in openSessions.filter(item => item.priceFen === rescheduling?.amountFen)" :key="session.id" :value="session.id">{{ localDateTime(session.startAt) }} · {{ session.courtName }}</option></select></label><label class="field"><span>改期原因</span><textarea v-model.trim="rescheduleReason" required></textarea></label><button class="button" type="submit" :disabled="!rescheduleSlotId">保存改期</button></form>
     </dialog>
 
-    <dialog ref="cancelDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>取消预约</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="cancelDialog" class="modal" aria-labelledby="bookingsview-cancelDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="bookingsview-cancelDialog-title">取消预约</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="cancelBooking"><p v-if="formError" class="error-banner" role="alert">{{ formError }}</p><p>线下预约只释放场次，登记收款状态需按实际情况另行修改。</p><label class="field"><span>取消原因</span><textarea v-model.trim="cancelReason" required></textarea></label><button class="button danger" type="submit">确认取消</button></form>
     </dialog>
   </section>

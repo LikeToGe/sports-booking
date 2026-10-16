@@ -457,7 +457,7 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
 </script>
 
 <template>
-  <section class="page">
+  <section class="page customers-page">
     <header class="page-header">
       <div><h1>顾客与会员</h1><p>顾客档案、场馆内标签、分组和回访待办仅限当前场馆查看。</p></div>
     </header>
@@ -470,6 +470,19 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
       <button class="button" type="submit" :disabled="loading"><Search :size="18" aria-hidden="true" />搜索顾客</button>
       <button class="icon-button filter-action" type="button" aria-label="刷新顾客" title="刷新顾客" :disabled="loading" @click="load"><RefreshCw :size="19" aria-hidden="true" /></button>
     </form>
+
+    <section class="data-panel" aria-label="顾客列表">
+      <header class="data-panel-head"><div><h2>{{ segment ? "30 天未再预约" : "场馆顾客" }}</h2><p>预约与核销来自本场馆线上预约事实；线下履约未跟踪不视为到场。</p></div><span class="record-count">{{ filtered.length }} 条</span></header>
+      <div v-if="filtered.length" class="table-wrap">
+        <table>
+          <thead><tr><th>顾客</th><th>手机号</th><th>有效预约</th><th>最近有效预约</th><th>最近线上完成</th><th>最近线上核销</th><th>常约时段</th><th>会员码</th><th>身份</th><th>操作</th></tr></thead>
+          <tbody><tr v-for="customer in filtered" :key="customer.customerId"><td data-label="顾客"><strong>{{ customer.contactName || "未填写" }}</strong><span v-if="operationFor(customer.customerId)?.tags.length" class="subline">{{ operationFor(customer.customerId)?.tags.join("、") }}</span></td><td data-label="手机号">{{ customer.phone || "未填写" }}</td><td data-label="有效预约">{{ operationFor(customer.customerId)?.validBookingCount ?? 0 }}</td><td data-label="最近有效预约">{{ operationFor(customer.customerId)?.lastValidBookingAt ? `${localDateTime(operationFor(customer.customerId)!.lastValidBookingAt!)} · ${bookingSourceText(operationFor(customer.customerId)?.lastValidBookingSource)}` : "暂无" }}</td><td data-label="最近线上完成">{{ operationFor(customer.customerId)?.lastCompletedAt ? localDateTime(operationFor(customer.customerId)!.lastCompletedAt!) : "暂无" }}</td><td data-label="最近线上核销">{{ operationFor(customer.customerId)?.latestVerifiedAt ? localDateTime(operationFor(customer.customerId)!.latestVerifiedAt!) : "暂无" }}</td><td data-label="常约时段">{{ usualHoursText(operationFor(customer.customerId)?.usualHours || null) }}</td><td data-label="会员码"><span class="numeric">{{ customer.memberCode }}</span></td><td data-label="身份"><span class="status" :data-tone="statusTone(customer.status)">{{ statusLabel(customer.status) }}</span></td><td data-label="操作"><div class="row-actions"><button class="button secondary" type="button" @click="open(customer)">查看与标签</button><button v-if="canEditCustomerOperations && operationFor(customer.customerId)?.segment === '30_DAY_NO_REBOOK'" class="button secondary" type="button" @click="createFollowup(customer.customerId)">创建回访</button></div></td></tr></tbody>
+        </table>
+      </div>
+      <div v-else-if="!loading" class="empty-state"><UsersRound :size="28" aria-hidden="true" /><strong>暂无匹配顾客</strong><span>线上用户完成首次预约后会显示在这里。</span></div>
+      <div v-else class="empty-state" aria-live="polite"><span>正在加载顾客...</span></div>
+    </section>
+
     <section class="customer-ops-grid">
       <section class="data-panel" aria-label="场馆顾客标签"><header class="data-panel-head"><div><h2>顾客标签</h2><p>标签仅在当前场馆内使用，不改变会员身份或计价。</p></div><span class="record-count">{{ tags.length }} 个</span></header>
         <p v-if="tagsError" class="error-banner" role="alert">{{ tagsError }} <button class="inline-command" type="button" @click="loadTags">重试</button></p>
@@ -485,20 +498,9 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
       </section>
     </section>
 
-    <section class="data-panel" aria-label="顾客列表">
-      <header class="data-panel-head"><div><h2>{{ segment ? "30 天未再预约" : "场馆顾客" }}</h2><p>预约与核销来自本场馆线上预约事实；线下履约未跟踪不视为到场。</p></div><span class="record-count">{{ filtered.length }} 条</span></header>
-      <div v-if="filtered.length" class="table-wrap">
-        <table>
-          <thead><tr><th>顾客</th><th>手机号</th><th>有效预约</th><th>最近有效预约</th><th>最近线上完成</th><th>最近线上核销</th><th>常约时段</th><th>会员码</th><th>身份</th><th>操作</th></tr></thead>
-          <tbody><tr v-for="customer in filtered" :key="customer.customerId"><td data-label="顾客"><strong>{{ customer.contactName || "未填写" }}</strong><span v-if="operationFor(customer.customerId)?.tags.length" class="subline">{{ operationFor(customer.customerId)?.tags.join("、") }}</span></td><td data-label="手机号">{{ customer.phone || "未填写" }}</td><td data-label="有效预约">{{ operationFor(customer.customerId)?.validBookingCount ?? 0 }}</td><td data-label="最近有效预约">{{ operationFor(customer.customerId)?.lastValidBookingAt ? `${localDateTime(operationFor(customer.customerId)!.lastValidBookingAt!)} · ${bookingSourceText(operationFor(customer.customerId)?.lastValidBookingSource)}` : "暂无" }}</td><td data-label="最近线上完成">{{ operationFor(customer.customerId)?.lastCompletedAt ? localDateTime(operationFor(customer.customerId)!.lastCompletedAt!) : "暂无" }}</td><td data-label="最近线上核销">{{ operationFor(customer.customerId)?.latestVerifiedAt ? localDateTime(operationFor(customer.customerId)!.latestVerifiedAt!) : "暂无" }}</td><td data-label="常约时段">{{ usualHoursText(operationFor(customer.customerId)?.usualHours || null) }}</td><td data-label="会员码"><span class="numeric">{{ customer.memberCode }}</span></td><td data-label="身份"><span class="status" :data-tone="statusTone(customer.status)">{{ statusLabel(customer.status) }}</span></td><td data-label="操作"><div class="row-actions"><button class="button secondary" type="button" @click="open(customer)">查看与标签</button><button v-if="canEditCustomerOperations && operationFor(customer.customerId)?.segment === '30_DAY_NO_REBOOK'" class="button secondary" type="button" @click="createFollowup(customer.customerId)">创建回访</button></div></td></tr></tbody>
-        </table>
-      </div>
-      <div v-else-if="!loading" class="empty-state"><UsersRound :size="28" aria-hidden="true" /><strong>暂无匹配顾客</strong><span>线上用户完成首次预约后会显示在这里。</span></div>
-      <div v-else class="empty-state" aria-live="polite"><span>正在加载顾客...</span></div>
-    </section>
 
-    <dialog ref="drawer" class="drawer">
-      <form method="dialog" class="modal-head"><h2>顾客详情</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="drawer" class="drawer" aria-labelledby="customersview-drawer-title">
+      <form method="dialog" class="modal-head"><h2 id="customersview-drawer-title">顾客详情</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <div v-if="selected" class="drawer-body customer-detail">
         <p v-if="detailError" class="error-banner" role="alert">{{ detailError }} <button class="inline-command" type="button" @click="loadDetail">重新加载</button></p>
         <p v-if="detailMessage" class="saved-message" aria-live="polite"><CircleCheck :size="17" aria-hidden="true" />{{ detailMessage }}</p>
@@ -556,11 +558,11 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
             <div class="section-heading"><div><h3 id="recharge-history-heading">充值记录</h3><p>撤销仅适用于从未发生消费的整笔充值。</p></div><span class="record-count">{{ recharges.length }} 条</span></div>
             <div v-if="recharges.length" class="table-wrap">
               <table>
-                <thead><tr><th>充值</th><th>金额</th><th>渠道</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+                <thead><tr><th>充值</th><th class="numeric-column">金额</th><th>渠道</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
                 <tbody>
                   <tr v-for="record in recharges" :key="record.id">
                     <td data-label="充值"><strong>{{ record.planName }}</strong><span class="subline numeric">{{ record.rechargeNo }}</span></td>
-                    <td data-label="金额"><strong class="numeric">{{ money(record.paidAmountFen) }}</strong><span class="subline">赠送 {{ money(record.giftAmountFen) }}</span></td>
+                    <td data-label="金额" class="numeric-column"><strong class="numeric">{{ money(record.paidAmountFen) }}</strong><span class="subline">赠送 {{ money(record.giftAmountFen) }}</span></td>
                     <td data-label="渠道">{{ channelText(record.channel) }}</td>
                     <td data-label="状态"><span class="status status-with-icon" :data-tone="rechargeStatusTone(record.status)"><CircleCheck v-if="record.status === 'SUCCESS'" :size="15" aria-hidden="true" /><Clock3 v-else-if="record.status === 'PENDING'" :size="15" aria-hidden="true" /><CircleX v-else :size="15" aria-hidden="true" />{{ rechargeStatusText(record.status) }}</span></td>
                     <td data-label="时间">{{ localDateTime(record.succeededAt || record.createdAt) }}</td>
@@ -594,8 +596,8 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
       </div>
     </dialog>
 
-    <dialog ref="followupDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ followupNextStatus === "COMPLETED" ? "完成回访" : "无需处理" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="followupDialog" class="modal" aria-labelledby="customersview-followupDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="customersview-followupDialog-title">{{ followupNextStatus === "COMPLETED" ? "完成回访" : "无需处理" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="updateFollowup">
         <p>{{ updatingFollowup?.contactName || "当前顾客" }} · {{ followupNextStatus === "COMPLETED" ? "确认已完成回访" : "确认无需处理" }}</p>
         <label class="field"><span>{{ followupNextStatus === "COMPLETED" ? "处理备注" : "无需处理原因" }}</span><textarea v-model="followupNote" maxlength="255" :disabled="updatingFollowupBusy"></textarea></label>
@@ -603,8 +605,8 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
       </form>
     </dialog>
 
-    <dialog ref="reverseDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>确认整笔撤销</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="reverseDialog" class="modal" aria-labelledby="customersview-reverseDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="customersview-reverseDialog-title">确认整笔撤销</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="reverseRecharge">
         <div v-if="reversingRecharge" class="destructive-summary">
           <TriangleAlert :size="22" aria-hidden="true" />

@@ -1,9 +1,10 @@
+/* 场边工作台 · pages/posts/index.wxss */
 .posts-page { display: grid; align-content: start; gap: 22rpx; }
 .posts-page .screen-head { padding-bottom: 0; }
-.post-editor { display: grid; gap: 18rpx; padding: 24rpx; border: 1px solid var(--rule); border-radius: 28rpx; background: var(--surface); color: var(--ink); box-shadow: none; }
+.post-editor { display: grid; gap: 18rpx; padding: 24rpx; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); color: var(--ink); box-shadow: none; }
 .post-body { width: 100%; min-height: 190rpx; padding: 0; color: var(--ink); }
 .post-body::placeholder { color: var(--muted); }
-.sport-picker { min-height: 68rpx; padding: 18rpx 0; border-top: 1rpx solid var(--rule); color: var(--ink-2); }
+.sport-picker { min-height: 44px; padding: 18rpx 0; border-top: 1rpx solid var(--rule); color: var(--ink-2); }
 .filters { display: flex; gap: 18rpx; padding: 0 4rpx; border: 0; background: transparent; box-shadow: none; color: var(--muted); }
 .filters picker { min-width: 0; padding: 12rpx 0; border-bottom: 1rpx solid var(--ink); }
 .editor-actions, .post-meta, .post-foot { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
@@ -12,10 +13,10 @@
 .post-actions { display: flex; gap: 12rpx; }
 .post-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
 .post-list { display: grid; gap: 14rpx; }
-.post-card { display: grid; gap: 16rpx; padding: 24rpx; border: 1px solid var(--rule); border-radius: 18rpx; box-shadow: none; }
+.post-card { display: grid; gap: 16rpx; padding: 24rpx; border: 1px solid var(--rule); border-radius: var(--radius-card); box-shadow: none; }
 .post-card + .post-card { margin-top: 0; }
-.post-card .section-title { font-size: 27rpx; }
-.post-card .muted { font-size: 23rpx; }
+.post-card .section-title { font-size: 14px; }
+.post-card .muted { font-size: 12px; }
 .saved-message { color: var(--success-strong); }
 .media-actions { display: flex; flex-wrap: wrap; gap: 12rpx; }
 .media-preview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; }
@@ -23,3 +24,17 @@
 .media-preview video { grid-column: 1 / -1; width: 100%; aspect-ratio: 16 / 9; border-radius: 12rpx; }
 
 .editor-toggle { flex-shrink: 0; }
+
+.posts-page > .section-head { flex-direction: column; align-items: stretch; }
+.editor-toggle { width: 100%; }
+.mode-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--rule); }
+.mode-tabs button { min-height: 44px; padding: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); font-size: 13px; }
+.mode-tabs .button-primary { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.filters { flex-wrap: wrap; gap: 10px; }
+.filters picker { min-height: 44px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius-control); background: var(--surface); font-size: 12px; }
+.filters input { width: 100%; height: 44px; padding: 8px 12px; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-control); background: var(--surface); }
+.post-author { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.post-author > view { display: grid; gap: 4px; min-width: 0; }
+.author-avatar { width: 32px; height: 32px; flex-shrink: 0; padding: 8px; border-radius: 50%; background: var(--paper-2); }
+.post-preview { width: 100%; height: calc((100vw - 84px) * .5625); border-radius: var(--radius-control); }
+.post-editor textarea { min-height: 120px; }

@@ -16,13 +16,15 @@ function amount(value) {
 }
 
 Page({
+  onReady() { this.getTabBar?.()?.refresh(); },
   data: {
     memberships: [], selectedIndex: 0, current: null, plans: [], flows: [], selectedPlanId: null, rechargeIdempotencyKey: "",
-    recharge: null, loading: true, switching: false, creatingRecharge: false, payingRecharge: false,
+    recharge: null, pendingRecharges: [], cancellingRecharge: false, loading: true, switching: false, creatingRecharge: false, payingRecharge: false,
     error: "", actionError: "", actionMessage: "", actionMessageTone: "info", showMemberCode: false,
   },
 
   async onShow() {
+    this.getTabBar?.()?.refresh();
     await this.load();
   },
 
@@ -61,12 +63,17 @@ Page({
   },
 
   async loadVenue(venueId) {
-    const [membership, account, plans] = await Promise.all([
+    const [membership, account, plans, recharges] = await Promise.all([
       request(`/mini/memberships/${venueId}`),
       request(`/mini/memberships/${venueId}/balance-flows`),
       request(`/mini/recharges/plans?venueId=${venueId}`),
+      request(`/mini/recharges?venueId=${venueId}`),
     ]);
+    const existing = this.data.recharge && recharges.find(row => row.id === this.data.recharge.id);
+    const recharge = existing || recharges.find(row => row.status === "PENDING");
     this.setData({
+      recharge: recharge ? this.presentRecharge(recharge) : null,
+      pendingRecharges: recharges.filter(row => row.status === "PENDING").map(row => this.presentRecharge(row)),
       current: {
         ...membership,
         statusLabel: membership.status === "MEMBER" ? "储值会员" : "普通顾客",
@@ -96,12 +103,12 @@ Page({
   },
 
   selectPlan(event) {
-    if (this.data.creatingRecharge || this.data.payingRecharge) return;
+    if (this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ selectedPlanId: Number(event.currentTarget.dataset.id), rechargeIdempotencyKey: "", actionError: "", actionMessage: "" });
   },
 
   async createRecharge() {
-    if (!this.data.selectedPlanId || !this.data.current) return;
+    if (!this.data.selectedPlanId || !this.data.current || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     const idempotencyKey = this.data.rechargeIdempotencyKey
       || `mini-recharge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     this.setData({ creatingRecharge: true, rechargeIdempotencyKey: idempotencyKey, actionError: "", actionMessage: "" });
@@ -114,7 +121,7 @@ Page({
           idempotencyKey,
         },
       });
-      this.setData({ recharge: this.presentRecharge(recharge), rechargeIdempotencyKey: "", actionMessage: "充值单已创建，请继续完成 Mock 支付。", actionMessageTone: "info" });
+      this.setData({ recharge: this.presentRecharge(recharge), pendingRecharges: [...this.data.pendingRecharges.filter(row => row.id !== recharge.id), ...(recharge.status === "PENDING" ? [this.presentRecharge(recharge)] : [])], rechargeIdempotencyKey: "", actionMessage: "充值单已创建，请继续完成 Mock 支付。", actionMessageTone: "info" });
     } catch (error) {
       this.setData({ actionError: error.message });
     } finally {
@@ -123,7 +130,7 @@ Page({
   },
 
   async payRecharge() {
-    if (!this.data.recharge || this.data.recharge.status !== "PENDING") return;
+    if (!this.data.recharge || this.data.recharge.status !== "PENDING" || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ payingRecharge: true, actionError: "", actionMessage: "" });
     try {
       await request(`/mini/recharges/${this.data.recharge.id}/mock-pay`, { method: "POST" });
@@ -133,6 +140,27 @@ Page({
     } finally {
       this.setData({ payingRecharge: false });
     }
+  },
+
+  resumeRecharge(event) {
+    if (this.data.payingRecharge || this.data.cancellingRecharge || this.data.creatingRecharge) return;
+    const recharge = this.data.pendingRecharges.find(row => row.id === Number(event.currentTarget.dataset.id));
+    if (recharge) this.setData({ recharge, actionError: "", actionMessage: "" });
+  },
+
+  async cancelRecharge() {
+    if (!this.data.recharge || this.data.recharge.status !== "PENDING" || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    this.setData({ cancellingRecharge: true, actionError: "", actionMessage: "" });
+    try {
+      const recharge = await request(`/mini/recharges/${this.data.recharge.id}/cancel`, { method: "POST" });
+      this.setData({ recharge: this.presentRecharge(recharge), pendingRecharges: this.data.pendingRecharges.filter(row => row.id !== recharge.id) });
+      await this.loadVenue(this.data.current.venueId);
+      this.setData({
+        actionMessage: recharge.status === "CLOSED" ? "未支付充值已关闭。" : recharge.status === "SUCCESS" ? "该充值已支付成功，余额已更新。" : "充值状态已更新。",
+        actionMessageTone: recharge.status === "SUCCESS" ? "success" : "info",
+      });
+    } catch (error) { this.setData({ actionError: error.message }); }
+    finally { this.setData({ cancellingRecharge: false }); }
   },
 
   async refreshRecharge() {

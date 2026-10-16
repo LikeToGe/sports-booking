@@ -15,11 +15,11 @@
     </view>
     <view class="image-actions"><button class="button-secondary" disabled="{{saving}}" bindtap="chooseImages">选择图片</button><button wx:if="{{selectedImages.length || existingImages.length}}" class="button-secondary" disabled="{{saving}}" bindtap="clearImages">移除图片</button></view>
     <view wx:if="{{tags.length}}" class="tag-section"><text class="field-label">体验标签</text><view><button wx:for="{{tags}}" wx:key="id" class="tag-button {{item.selected ? 'is-selected' : ''}}" data-id="{{item.id}}" bindtap="toggleTag">{{item.name}}</button></view></view>
-    <view class="anonymous-row"><text>匿名公开</text><switch checked="{{anonymous}}" color="#2f855a" bindchange="toggleAnonymous" /></view>
+    <view class="anonymous-row"><text>匿名公开</text><switch checked="{{anonymous}}" color="#087F72" bindchange="toggleAnonymous" /></view>
     <view wx:if="{{review}}" class="status status-warning">{{review.moderationStatus === 'PENDING' ? '审核中' : review.moderationStatus === 'REJECTED' ? '未通过审核' : '已公开'}}</view>
     <view wx:if="{{error}}" class="error" role="alert">{{error}}</view>
     <view wx:if="{{message}}" class="status status-active" aria-live="polite">{{message}}</view>
-    <button class="button-primary" disabled="{{saving}}" bindtap="save">{{saving ? '正在提交' : review ? '提交修改' : '发布评价'}}</button>
+    <view class="task-footer"><button class="button-primary" disabled="{{saving}}" bindtap="save">{{saving ? '正在提交' : review ? '提交修改' : '发布评价'}}</button></view>
     <button wx:if="{{review}}" class="button-danger" disabled="{{saving}}" bindtap="remove">删除评价</button>
   </block>
 </view>

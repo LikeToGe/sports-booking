@@ -75,7 +75,7 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page platform-refunds-page">
     <header class="page-header">
       <div><h1>退款异常</h1><p>查看外部退款处理中与失败记录，并复用原退款业务号重试。</p></div>
       <button class="button secondary" type="button" :disabled="loading" @click="load"><RefreshCw :size="18" aria-hidden="true" />{{ loading ? "正在刷新" : "刷新列表" }}</button>
@@ -93,12 +93,12 @@ onMounted(load);
       <header class="data-panel-head"><div><h2>外部退款记录</h2><p>重试不会创建新的退款业务号</p></div><span class="record-count">{{ filtered.length }} 条</span></header>
       <div v-if="filtered.length" class="table-wrap">
         <table>
-          <thead><tr><th>退款业务号</th><th>预约 / 场馆</th><th>金额</th><th>状态</th><th>重试</th><th>失败原因 / 下次重试</th><th>操作</th></tr></thead>
+          <thead><tr><th>退款业务号</th><th>预约 / 场馆</th><th class="numeric-column">金额</th><th>状态</th><th>重试</th><th>失败原因 / 下次重试</th><th>操作</th></tr></thead>
           <tbody>
             <tr v-for="refund in filtered" :key="refund.id">
               <td data-label="退款业务号"><strong class="business-no">{{ refund.businessNo }}</strong><span class="subline">更新 {{ localDateTime(refund.updatedAt) }}</span></td>
               <td data-label="预约 / 场馆"><strong>{{ refund.bookingNo }}</strong><span class="subline">{{ refund.venueName }}</span></td>
-              <td data-label="金额" class="numeric">{{ money(refund.amountFen) }}</td>
+              <td data-label="金额" class="numeric-column numeric">{{ money(refund.amountFen) }}</td>
               <td data-label="状态"><span class="status status-with-icon" :data-tone="statusTone(refund.status)"><CircleCheck v-if="refund.status === 'SUCCESS'" :size="15" aria-hidden="true" /><Clock3 v-else-if="refund.status === 'PROCESSING'" :size="15" aria-hidden="true" /><TriangleAlert v-else :size="15" aria-hidden="true" />{{ statusText(refund.status) }}</span></td>
               <td data-label="重试" class="numeric">{{ refund.retryCount }} 次</td>
               <td data-label="失败原因 / 下次重试"><span>{{ refund.lastFailureReason || "暂无失败原因" }}</span><span class="subline">{{ refund.nextRetryAt ? `下次 ${localDateTime(refund.nextRetryAt)}` : "暂无自动重试时间" }}</span></td>
@@ -124,7 +124,7 @@ onMounted(load);
 }
 
 .business-no {
-  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }

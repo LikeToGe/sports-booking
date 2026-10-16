@@ -127,9 +127,9 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page schedule-page">
     <header class="page-header">
-      <div><h1>排期</h1><p>按星期维护固定场次，已预约场次不会被后续修改覆盖。</p></div>
+      <div><h1>固定排期</h1><p>按星期维护固定场次，已预约场次不会被后续修改覆盖。</p></div>
       <div v-if="canEdit" class="toolbar">
         <button class="button secondary" type="button" @click="copyToWeekdays"><Copy :size="18" aria-hidden="true" />复制排期</button>
         <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增排期</button>
@@ -147,13 +147,13 @@ onMounted(load);
       <header class="data-panel-head"><div><h2>{{ dayNames[activeDay - 1] }}排期</h2><p>启用中的固定场次模板</p></div><span class="record-count">{{ total }} 条</span></header>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>时间</th><th>场地</th><th>运动</th><th>价格</th><th>操作</th></tr></thead>
+          <thead><tr><th>时间</th><th>场地</th><th>运动</th><th class="numeric-column">价格</th><th>操作</th></tr></thead>
           <tbody>
           <tr v-for="slot in pagedItems" :key="slot.id">
             <td data-label="时间"><strong>{{ slot.startTime.slice(0, 5) }}–{{ slot.endTime.slice(0, 5) }}</strong></td>
             <td data-label="场地">{{ nameOf(courts, slot.courtId) }}</td>
             <td data-label="运动">{{ sportName(slot.sportTypeId) }}</td>
-            <td data-label="价格">{{ money(slot.priceFen) }}</td>
+            <td data-label="价格" class="numeric-column">{{ money(slot.priceFen) }}</td>
             <td data-label="操作"><div v-if="canEdit" class="toolbar"><button class="button secondary" type="button" @click="openEdit(slot)">编辑</button><button class="button secondary" type="button" @click="remove(slot)">停用</button></div></td>
           </tr>
           </tbody>
@@ -163,8 +163,8 @@ onMounted(load);
       <PaginationBar v-if="filteredDaySlots.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingSlot ? "编辑排期" : "新增排期" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="createDialog" class="modal" aria-labelledby="scheduleview-createDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="scheduleview-createDialog-title">{{ editingSlot ? "编辑排期" : "新增排期" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>星期</span><input :value="dayNames[activeDay - 1]" disabled></label>

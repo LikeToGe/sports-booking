@@ -18,7 +18,7 @@ Page({
   data: {
     id: 0, detail: null, booking: null, composition: null, amount: "", seconds: null,
     countdown: "--:--", paymentLabel: "", paymentTone: "warning", canPay: false,
-    canQuery: false, loading: true, paying: false, querying: false, error: "", message: "",
+    canQuery: false, canCancel: false, loading: true, paying: false, querying: false, cancelling: false, error: "", message: "",
   },
 
   async onLoad(options) {
@@ -63,6 +63,7 @@ Page({
         paymentTone: detail.payment?.status === "SUCCESS" ? "active" : ["FAILED", "CLOSED"].includes(detail.payment?.status) || ["PAYMENT_FAILED", "REFUND_FAILED"].includes(paymentStatus) ? "danger" : "warning",
         canPay: pendingBooking && externalAmountFen > 0 && paymentPending && (seconds === null || seconds > 0),
         canQuery: pendingBooking && externalAmountFen > 0 && paymentPending,
+        canCancel: pendingBooking,
       });
     } catch (error) {
       this.setData({ error: error.message });
@@ -81,7 +82,7 @@ Page({
   },
 
   async pay() {
-    if (!this.data.canPay) return;
+    if (!this.data.canPay || this.data.paying || this.data.querying || this.data.cancelling) return;
     this.setData({ paying: true, error: "", message: "" });
     try {
       await request(`/mini/bookings/${this.data.id}/mock-pay`, { method: "POST" });
@@ -95,7 +96,7 @@ Page({
   },
 
   async queryPayment() {
-    if (!this.data.canQuery) return;
+    if (!this.data.canQuery || this.data.paying || this.data.querying || this.data.cancelling) return;
     this.setData({ querying: true, error: "", message: "" });
     try {
       await request(`/mini/bookings/${this.data.id}/payment-query`, { method: "POST" });
@@ -106,6 +107,21 @@ Page({
     } finally {
       this.setData({ querying: false });
     }
+  },
+
+  async cancel() {
+    if (!this.data.canCancel || this.data.paying || this.data.querying || this.data.cancelling) return;
+    const confirmed = await new Promise(resolve => wx.showModal({ title: "取消待支付预约",
+      content: "系统会先请求关闭未支付订单。结果未确认时保留占位，请稍后重试。",
+      confirmText: "确认取消", success: result => resolve(result.confirm) }));
+    if (!confirmed || this.data.paying || this.data.querying || this.data.cancelling) return;
+    this.setData({ cancelling: true, error: "", message: "" });
+    try {
+      const booking = await request(`/mini/bookings/${this.data.id}/cancel`, { method: "POST" });
+      if (booking.status === "CANCELLED") wx.redirectTo({ url: `/pages/booking/index?id=${this.data.id}` });
+      else await this.load();
+    } catch (error) { this.setData({ error: error.message }); }
+    finally { this.setData({ cancelling: false }); }
   },
 
   openBooking() { wx.redirectTo({ url: `/pages/booking/index?id=${this.data.id}` }); },

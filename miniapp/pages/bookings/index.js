@@ -4,8 +4,10 @@ const labels = { PENDING_PAYMENT: "待支付", CONFIRMED: "待核销", COMPLETED
 const paymentLabels = { PAYING: "待支付", PAID: "已支付", PAYMENT_FAILED: "支付失败", REFUNDING: "退款处理中", REFUNDED: "已退款", REFUND_FAILED: "退款异常" };
 
 Page({
+  onReady() { this.getTabBar?.()?.refresh(); },
   data: { bookings: [], loading: true, error: "" },
-  async onShow() { await this.load(); },
+  async onShow() {
+    this.getTabBar?.()?.refresh(); await this.load(); },
   async onPullDownRefresh() { await this.load(); wx.stopPullDownRefresh(); },
   async load() {
     this.setData({ loading: true, error: "" });

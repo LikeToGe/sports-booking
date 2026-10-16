@@ -25,7 +25,10 @@ Page({
       const [comments, recruitment] = await Promise.all([
         request(`/mini/posts/${this.data.id}/comments`), request(`/mini/posts/${this.data.id}/recruitment`),
       ]);
-      this.setData({ post: { ...post, media }, comments,
+      this.setData({ post: { ...post, media }, comments: comments.map(comment => ({
+        ...comment, moderationLabel: comment.isMine
+          ? ({ PENDING: "待审核（仅自己可见）", REJECTED: "审核未通过（仅自己可见）" }[comment.moderationStatus] || "") : "",
+      })),
         recruitment: recruitment ? { ...recruitment, levelLabel: recruitment.levelTag
           ? recruitmentLevels[recruitment.levelTag] : `其他说明：${recruitment.level || "历史水平"}`,
           statusLabel: recruitmentLabels[recruitment.status], myStatusLabel: memberLabels[recruitment.myStatus] || "",

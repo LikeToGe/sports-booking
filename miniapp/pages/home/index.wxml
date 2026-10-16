@@ -22,8 +22,9 @@
     <button wx:for="{{dateOptions}}" wx:key="date" class="quick-date {{date === item.date ? 'is-selected' : ''}}" data-date="{{item.date}}" bindtap="selectDate" aria-label="{{item.date}}" aria-pressed="{{date === item.date}}"><text>{{item.label}}</text><text class="date-number">{{item.day}}</text></button>
   </view></scroll-view>
 
-  <view class="time-filters">
-    <picker mode="selector" range="{{districtOptions}}" value="{{districtIndex}}" bindchange="selectDistrict" aria-label="郑州区县"><view class="filter-control"><text>区县</text><text>{{district || "全部区县"}}</text></view></picker>
+  <view class="home-filter-bar">    <picker mode="selector" range="{{districtOptions}}" value="{{districtIndex}}" bindchange="selectDistrict" aria-label="郑州区县"><view class="filter-control"><text>区县</text><text>{{district || "全部区县"}}</text></view></picker><button class="filter-toggle" bindtap="toggleFilters" aria-expanded="{{showFilters}}">{{startTime || endTime || minPrice || maxPrice ? '时间与价格 · 已筛选' : '时间与价格'}}<image src="/assets/icons/chevron-down.svg" aria-hidden="true" /></button></view>
+  <view wx:if="{{showFilters}}" class="time-filters surface">
+
     <text class="section-title">我有空的时间</text>
     <view class="filter-row">
       <picker mode="time" value="{{startTime}}" data-field="startTime" bindchange="onFilter" aria-label="可用开始时间"><view class="filter-control"><text>开始</text><text>{{startTime || '不限'}}</text></view></picker>
@@ -64,7 +65,7 @@
         <text class="venue-sports">{{item.sportNames}}</text>
         <text class="venue-address">{{item.district || "区县未设置"}} · {{item.address}}</text>
         <view class="venue-price-row"><text class="venue-price {{item.startingPriceFen == null ? 'price-unavailable' : ''}}">{{item.price}}</text><image class="venue-arrow" src="/assets/icons/arrow-up-right.svg" aria-hidden="true" /></view>
-        <text class="next-time {{item.nextAvailableAt ? 'is-available' : ''}}">{{item.nextTime}}</text>
+        <text class="next-time {{item.nextAvailableAt ? 'is-available' : ''}}">{{item.nextTime}}</text><text class="venue-primary-action">查看场次</text>
       </view>
     </button>
   </view>

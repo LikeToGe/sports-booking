@@ -81,7 +81,7 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page roles-page">
     <header class="page-header">
       <div><h1>角色权限</h1><p>角色可组合固定权限，员工获得所分配角色的权限并集。</p></div>
       <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增角色</button>
@@ -106,8 +106,8 @@ onMounted(load);
       <div v-if="!roles.length" class="empty-state"><strong>还没有角色</strong><span>新增角色后即可分配给员工。</span></div>
     </section>
 
-    <dialog ref="dialog" class="modal wide">
-      <form method="dialog" class="modal-head"><h2>{{ editing ? "编辑角色" : "新增角色" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="dialog" class="modal wide" aria-labelledby="rolesview-dialog-title">
+      <form method="dialog" class="modal-head"><h2 id="rolesview-dialog-title">{{ editing ? "编辑角色" : "新增角色" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}</p>
         <div class="form-grid">
@@ -127,11 +127,11 @@ onMounted(load);
 <style scoped>
 .permission-group {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   gap: var(--space-sm);
   margin: 0;
   padding: var(--space-md);
-  border: 1px solid var(--color-rule-2);
+  border: 1px solid var(--color-rule); border-radius: var(--radius-control);
 }
 
 .permission-group legend { padding-inline: var(--space-xs); font-weight: 600; }

@@ -1,4 +1,7 @@
+/* 场边工作台 · pages/staff-bind/index.wxss */
 .bind-page { display: grid; align-content: start; gap: 24rpx; }
 .bind-panel { display: grid; gap: 20rpx; padding: 28rpx; }
-.code-input { font-size: 42rpx; font-variant-numeric: tabular-nums; letter-spacing: 12rpx; text-align: center; }
-.helper { font-size: 24rpx; line-height: 1.6; }
+.code-input { font-size: 22px; font-variant-numeric: tabular-nums; letter-spacing: 4px; text-align: center; }
+.helper { font-size: 12px; line-height: 1.6; }
+
+.bind-symbol { width: 48px; height: 48px; justify-self: center; margin: 12px 0; }

@@ -88,11 +88,11 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page platform-sports-page">
     <header class="page-header">
       <div>
         <h1>运动类型</h1>
-        <p>首页筛选只使用平台运动类型。</p>
+        <p>平台运动类型用于首页找场与场馆配置。</p>
       </div>
       <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增类型</button>
     </header>
@@ -120,8 +120,8 @@ onMounted(load);
       <PaginationBar v-if="filteredSports.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="createDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingSport ? "编辑运动类型" : "新增运动类型" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="createDialog" class="modal" aria-labelledby="platformsportsview-createDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="platformsportsview-createDialog-title">{{ editingSport ? "编辑运动类型" : "新增运动类型" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>类型名称</span><input v-model.trim="name" required></label>

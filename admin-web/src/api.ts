@@ -1,7 +1,7 @@
 import { auth, clearSession } from "./auth";
 import { showOperationFeedback } from "./feedback";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8089/api";
+export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8089/api";
 
 export async function mediaObjectUrl(path: string): Promise<string> {
   const response = await fetch(`${API_BASE}${path}`, { headers: { "X-Admin-Token": auth.token || "" } });

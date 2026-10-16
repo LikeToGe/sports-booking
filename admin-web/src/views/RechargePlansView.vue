@@ -109,7 +109,7 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page recharge-plans-page">
     <header class="page-header">
       <div><h1>充值档位</h1><p>档位修改只影响后续充值，历史充值保留原快照。</p></div>
       <button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增档位</button>
@@ -120,17 +120,17 @@ onMounted(load);
 
     <section class="data-panel" aria-label="充值档位列表" :aria-busy="loading">
       <header class="data-panel-head">
-        <div><h2>全部档位</h2><p>金额以整数分保存，页面同时显示人民币金额。</p></div>
+        <div><h2>全部档位</h2><p>实付与赠送分别列示，历史充值保留原档位快照。</p></div>
         <span class="record-count">{{ plans.length }} 项</span>
       </header>
       <div v-if="plans.length" class="table-wrap">
         <table>
-          <thead><tr><th>档位</th><th>实付</th><th>赠送</th><th>赠送有效期</th><th>状态</th><th>操作</th></tr></thead>
+          <thead><tr><th>档位</th><th class="numeric-column">实付</th><th class="numeric-column">赠送</th><th>赠送有效期</th><th>状态</th><th>操作</th></tr></thead>
           <tbody>
             <tr v-for="plan in plans" :key="plan.id">
               <td data-label="档位"><strong>{{ plan.name }}</strong></td>
-              <td data-label="实付" class="numeric">{{ money(plan.paidAmountFen) }}</td>
-              <td data-label="赠送" class="numeric">{{ money(plan.giftAmountFen) }}</td>
+              <td data-label="实付" class="numeric-column numeric">{{ money(plan.paidAmountFen) }}</td>
+              <td data-label="赠送" class="numeric-column numeric">{{ money(plan.giftAmountFen) }}</td>
               <td data-label="赠送有效期">{{ plan.giftValidDays ? `${plan.giftValidDays} 天` : "无赠送有效期" }}</td>
               <td data-label="状态">
                 <span class="status status-with-icon" :data-tone="plan.status === 'ACTIVE' ? 'active' : 'danger'">
@@ -155,8 +155,8 @@ onMounted(load);
       <div v-else class="empty-state"><WalletCards :size="28" aria-hidden="true" /><strong>还没有充值档位</strong><span>新增后，会员可按档位完成充值。</span><button class="button" type="button" @click="openCreate"><Plus :size="18" aria-hidden="true" />新增档位</button></div>
     </section>
 
-    <dialog ref="dialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingPlan ? "编辑充值档位" : "新增充值档位" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="dialog" class="modal" aria-labelledby="rechargeplansview-dialog-title">
+      <form method="dialog" class="modal-head"><h2 id="rechargeplansview-dialog-title">{{ editingPlan ? "编辑充值档位" : "新增充值档位" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="save">
         <p v-if="formError" class="error-banner" role="alert">{{ formError }}</p>
         <label class="field"><span>档位名称</span><input v-model.trim="form.name" required :disabled="saving"></label>

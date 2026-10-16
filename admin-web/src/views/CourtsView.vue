@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { ImageUp, Plus, X } from "@lucide/vue";
-import { api } from "../api";
+import { api, API_BASE } from "../api";
 import { hasPermission } from "../auth";
 import PaginationBar from "../components/PaginationBar.vue";
 import { usePagination } from "../pagination";
@@ -157,9 +157,9 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="page">
+  <section class="page courts-page">
     <header class="page-header">
-      <div><h1>场地</h1><p>一个场地可以支持多种运动，同一时间仍只接受一个预约。</p></div>
+      <div><h1>场地管理</h1><p>一个场地可以支持多种运动，同一时间仍只接受一个预约。</p></div>
       <div v-if="canEdit" class="toolbar">
         <button class="button secondary" type="button" @click="openSportDialog">管理运动类型</button>
         <button class="button" type="button" @click="openCourtDialog"><Plus :size="18" aria-hidden="true" />新增场地</button>
@@ -180,7 +180,7 @@ onMounted(load);
           <tr v-for="court in pagedItems" :key="court.id">
             <td data-label="场地"><strong>{{ court.name }}</strong></td>
             <td data-label="图片">
-              <img v-if="court.imagePath" class="court-image" :src="court.imagePath" :alt="`${court.name}场地图片`">
+              <img v-if="court.imagePath" class="court-image" :src="court.imagePath.startsWith('/') ? API_BASE + court.imagePath : court.imagePath" :alt="`${court.name}场地图片`">
               <span v-else class="muted">未上传</span>
             </td>
             <td data-label="运动">{{ court.sportNames }}</td>
@@ -200,8 +200,8 @@ onMounted(load);
       <PaginationBar v-if="filteredCourts.length" v-model="page" :total="total" :page-size="pageSize" />
     </section>
 
-    <dialog ref="courtDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>{{ editingCourt ? "编辑场地" : "新增场地" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="courtDialog" class="modal" aria-labelledby="courtsview-courtDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="courtsview-courtDialog-title">{{ editingCourt ? "编辑场地" : "新增场地" }}</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="saveCourt">
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
         <label class="field"><span>场地名称</span><input v-model.trim="name" required></label>
@@ -214,8 +214,8 @@ onMounted(load);
       </form>
     </dialog>
 
-    <dialog ref="sportDialog" class="modal">
-      <form method="dialog" class="modal-head"><h2>本场馆运动类型</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+    <dialog ref="sportDialog" class="modal" aria-labelledby="courtsview-sportDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="courtsview-sportDialog-title">本场馆运动类型</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
       <form class="modal-body" @submit.prevent="saveCustomSport">
         <p class="muted">只在本场馆内使用，不进入首页全局筛选。</p>
         <p v-if="createError" class="error-banner" role="alert">{{ createError }}</p>
@@ -259,9 +259,9 @@ onMounted(load);
 
 .court-image {
   display: block;
-  width: 4rem;
-  height: 3rem;
-  border-radius: var(--radius-md);
+  width: 66px;
+  height: 45px;
+  border-radius: 5px;
   object-fit: cover;
 }
 
