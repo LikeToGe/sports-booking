@@ -161,6 +161,7 @@ public class MemberFundsServiceImpl implements MemberFundsService {
         return convergeRecharge(customer.userId, recharge.id, result);
     }
 
+    /** 成功、失败与关闭终态不倒退；渠道确认闭单后的矛盾成功不允许重新入账。 */
     private MemberRechargeVO convergeRecharge(long userId, long rechargeId, PaymentResult result) {
         MemberRecharge candidate = requiredOwnedRecharge(userId, rechargeId);
         return lockService.execute(List.of(RedisLockType.RECHARGE.key(rechargeId),
@@ -169,6 +170,10 @@ public class MemberFundsServiceImpl implements MemberFundsService {
             VenueCustomer customer = requiredCustomer(recharge.venueCustomerId);
             if (recharge.status == RechargeStatus.SUCCESS) {
                 return toRecharge(recharge, customer.venueId);
+            }
+            // 已确认未付关闭后，矛盾的成功通知必须拒绝，不能恢复会员余额或掩盖异常。
+            if (recharge.status == RechargeStatus.CLOSED && result == PaymentResult.SUCCESS) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
             }
             if (recharge.status == RechargeStatus.FAILED || recharge.status == RechargeStatus.CLOSED
                     || recharge.status == RechargeStatus.REVERSED) {
@@ -220,6 +225,43 @@ public class MemberFundsServiceImpl implements MemberFundsService {
             }
             return toRecharge(locked, venueId);
         });
+    }
+
+    @Override
+    public MemberRechargeVO cancelRecharge(long userId, long rechargeId) {
+        MemberRecharge candidate = requiredOwnedRecharge(userId, rechargeId);
+        if (candidate.status != RechargeStatus.PENDING) {
+            return toRecharge(candidate, requiredCustomer(candidate.venueCustomerId).venueId);
+        }
+        if (candidate.channel != RechargeChannel.MOCK) throw invalid();
+        // 外部关闭不持有业务锁或事务，返回后必须复核并发通知已写入的终态。
+        PaymentResult result = channelAdapter.closeRecharge(candidate);
+        return lockService.execute(List.of(RedisLockType.RECHARGE.key(rechargeId),
+                RedisLockType.MEMBER_BALANCE.key(candidate.venueCustomerId)), () -> {
+            MemberRecharge recharge = rechargeMapper.selectForUpdate(rechargeId);
+            if (recharge == null) throw notFound();
+            VenueCustomer customer = requiredCustomer(recharge.venueCustomerId);
+            if (customer.userId != userId) throw notFound();
+            if (recharge.status != RechargeStatus.PENDING) return toRecharge(recharge, customer.venueId);
+            if (result == null || result == PaymentResult.UNKNOWN) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+            }
+            if (result == PaymentResult.SUCCESS) {
+                recharge.providerNo = "MOCK-RECHARGE-" + recharge.rechargeNo;
+                completeRecharge(recharge, customer, Instant.now());
+            } else {
+                recharge.status = RechargeStatus.CLOSED;
+                recharge.updatedAt = LocalDateTime.now();
+                rechargeMapper.updateById(recharge);
+            }
+            return toRecharge(recharge, customer.venueId);
+        });
+    }
+
+    @Override
+    public List<MemberRechargeVO> listOwnRecharges(long userId, long venueId) {
+        VenueCustomer customer = requiredCustomer(userId, venueId);
+        return rechargeMapper.selectByCustomer(customer.id).stream().map(row -> toRecharge(row, venueId)).toList();
     }
 
     @Override

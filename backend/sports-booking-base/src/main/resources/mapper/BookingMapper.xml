@@ -5,6 +5,26 @@
         SELECT * FROM s_booking WHERE id = #{id} FOR UPDATE
     </select>
 
+    <!-- 快照独立于可人工编辑的库存，半开区间跨运动共同保护同一物理场地。 -->
+    <select id="selectOverlappingActiveForUpdate" resultType="long">
+        SELECT id FROM s_booking
+        WHERE court_id = #{courtId}
+          AND status IN ('PENDING_PAYMENT', 'CONFIRMED', 'COMPLETED', 'NO_SHOW', 'ENDED_UNTRACKED')
+          AND start_at &lt; #{endAt} AND end_at &gt; #{startAt}
+        <if test="excludedBookingId != null">AND id != #{excludedBookingId}</if>
+        <if test="excludedSessionSlotId != null">AND session_slot_id != #{excludedSessionSlotId}</if>
+        ORDER BY id
+        FOR UPDATE
+    </select>
+    <select id="selectActiveSnapshotsForUpdate" resultType="com.sportsbooking.admin.base.po.Booking">
+        SELECT * FROM s_booking
+        WHERE court_id IN
+        <foreach collection="courtIds" item="courtId" open="(" separator="," close=")">#{courtId}</foreach>
+          AND status IN ('PENDING_PAYMENT', 'CONFIRMED', 'COMPLETED', 'NO_SHOW', 'ENDED_UNTRACKED')
+          AND start_at &lt; #{endAt} AND end_at &gt; #{startAt}
+        ORDER BY id FOR UPDATE
+    </select>
+
     <select id="selectTemplateSlots" resultType="com.sportsbooking.admin.base.po.SessionSlot">
         SELECT ss.*
         FROM s_session_slot ss

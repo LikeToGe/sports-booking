@@ -18,7 +18,8 @@ public interface PermissionService {
     void deleteRole(long venueId, long roleId);
     List<Long> listEmployeeRoleIds(long venueId, long employeeId);
     void replaceEmployeeRoles(long venueId, long employeeId, List<Long> roleIds);
-    AdminPrincipal resolveEmployee(long employeeId, long venueId);
+    /** 复核会话原用户仍绑定当前员工，并实时解析权限。 */
+    AdminPrincipal resolveEmployee(long employeeId, long venueId, long userId);
     Employee requireEmployee(long userId, long venueId, VenuePermission permission);
     List<StaffVenueVO> listStaffVenues(long userId);
 }

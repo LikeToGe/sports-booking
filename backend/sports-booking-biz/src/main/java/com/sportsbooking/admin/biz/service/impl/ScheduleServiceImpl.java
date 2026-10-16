@@ -10,8 +10,10 @@ import com.sportsbooking.admin.base.enums.VenueStatus;
 import com.sportsbooking.admin.biz.pojo.request.ExtraSlotCreateRequest;
 import com.sportsbooking.admin.biz.pojo.request.WeeklySlotSaveRequest;
 import com.sportsbooking.admin.base.po.SessionSlot;
+import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.po.WeeklySlot;
 import com.sportsbooking.admin.base.mapper.SessionSlotMapper;
+import com.sportsbooking.admin.base.mapper.BookingMapper;
 import com.sportsbooking.admin.base.mapper.WeeklySlotMapper;
 import com.sportsbooking.admin.biz.service.ScheduleService;
 import com.sportsbooking.admin.biz.service.RedisLockService;
@@ -51,17 +53,18 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final VenueService venueService;
     private final RedisLockService redisLockService;
     private final ReminderService reminderService;
+    private final BookingMapper bookingMapper;
 
     public ScheduleServiceImpl(WeeklySlotMapper weeklySlotMapper, SessionSlotMapper sessionSlotMapper,
                            CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService,
-                           RedisLockService redisLockService) {
-        this(weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, redisLockService, null);
+                           RedisLockService redisLockService, BookingMapper bookingMapper) {
+        this(weeklySlotMapper, sessionSlotMapper, courtMapper, sportTypeMapper, venueService, redisLockService, null, bookingMapper);
     }
 
     @org.springframework.beans.factory.annotation.Autowired
     public ScheduleServiceImpl(WeeklySlotMapper weeklySlotMapper, SessionSlotMapper sessionSlotMapper,
                            CourtMapper courtMapper, SportTypeMapper sportTypeMapper, VenueService venueService,
-                           RedisLockService redisLockService, ReminderService reminderService) {
+                           RedisLockService redisLockService, ReminderService reminderService, BookingMapper bookingMapper) {
         this.weeklySlotMapper = weeklySlotMapper;
         this.sessionSlotMapper = sessionSlotMapper;
         this.courtMapper = courtMapper;
@@ -69,6 +72,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         this.venueService = venueService;
         this.redisLockService = redisLockService;
         this.reminderService = reminderService;
+        this.bookingMapper = bookingMapper;
     }
 
     /**
@@ -92,6 +96,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @Override
     public WeeklySlot saveWeekly(long venueId, Long weeklySlotId, WeeklySlotSaveRequest body) {
+        courtMapper.selectVenueForUpdate(venueId);
         WeeklySlot weekly = weeklySlotId == null ? new WeeklySlot() : requiredWeekly(venueId, weeklySlotId);
         Court court = requiredCourt(venueId, body.getCourtId());
         SportType sport = requiredSport(venueId, body.getSportTypeId(), weeklySlotId == null ? null : weekly.sportTypeId);
@@ -127,7 +132,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         } else {
             weeklySlotMapper.updateById(weekly);
         }
-        syncTemplate(venueService.getVenue(venueId), weekly);
+        Venue venue = venueService.getVenue(venueId);
+        LocalDate firstDate = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
+        List<Booking> snapshots = loadWindowSnapshots(venue, List.of(weekly), firstDate);
+        syncTemplate(venue, weekly, firstDate, snapshots);
         return weekly;
     }
 
@@ -140,6 +148,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @Override
     public void disableWeekly(long venueId, long weeklySlotId) {
+        courtMapper.selectVenueForUpdate(venueId);
         WeeklySlot weekly = requiredWeekly(venueId, weeklySlotId);
         weekly.status = EnableStatus.DISABLED;
         weeklySlotMapper.updateById(weekly);
@@ -158,12 +167,16 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (sourceDay < 1 || sourceDay > 7 || targetDays == null || targetDays.isEmpty()) {
             throw badRequest();
         }
+        courtMapper.selectVenueForUpdate(venueId);
         List<WeeklySlot> source = weeklySlotMapper.selectByVenue(venueId, EnableStatus.ACTIVE).stream()
                 .filter(slot -> slot.dayOfWeek == sourceDay)
                 .toList();
         if (source.isEmpty()) {
             throw badRequest();
         }
+        Venue venue = venueService.getVenue(venueId);
+        LocalDate firstDate = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
+        List<Booking> snapshots = loadWindowSnapshots(venue, source, firstDate);
         for (Integer targetDay : targetDays.stream().distinct().toList()) {
             if (targetDay == null || targetDay < 1 || targetDay > 7 || targetDay == sourceDay) {
                 continue;
@@ -206,7 +219,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
             // 先停用被替换模板再同步新模板；已有占位或预约仍会阻止重叠库存生成。
             for (WeeklySlot copiedSlot : copiedSlots) {
-                syncTemplate(venueService.getVenue(venueId), copiedSlot);
+                syncTemplate(venue, copiedSlot, firstDate, snapshots);
             }
         }
         return listWeekly(venueId);
@@ -219,6 +232,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @author gjm
      */
     @Override
+    @Transactional
     public List<SessionSlotVO> listDay(long venueId, LocalDate date) {
         return listDay(venueId, date, null);
     }
@@ -233,6 +247,7 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @author gjm
      */
     @Override
+    @Transactional
     public List<SessionSlotVO> listDay(long venueId, LocalDate date, Long sportTypeId) {
         syncVenue(venueId);
         return sessionSlotMapper.selectVenueDay(venueId, date, sportTypeId).stream().map(SessionSlotVO::from).toList();
@@ -275,8 +290,11 @@ public class ScheduleServiceImpl implements ScheduleService {
      */
     @Override
     public SessionSlot updateSession(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
+        if (body == null || body.getCourtId() == null) throw badRequest();
+        SessionSlot candidate = sessionSlotMapper.selectById(sessionSlotId);
+        if (candidate == null || candidate.venueId != venueId) throw notFound();
         return redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)),
-                () -> updateSessionLocked(venueId, sessionSlotId, body));
+                () -> updateSessionLocked(venueId, sessionSlotId, candidate.courtId, body));
     }
 
     /**
@@ -288,10 +306,17 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @return 更新后的具体场次
      * @author gjm
      */
-    private SessionSlot updateSessionLocked(long venueId, long sessionSlotId, ExtraSlotCreateRequest body) {
+    private SessionSlot updateSessionLocked(long venueId, long sessionSlotId, long originalCourtId,
+                                            ExtraSlotCreateRequest body) {
+        // 场地先按 ID 加锁，再锁具体场次，与预约及同价改期保持同一顺序。
+        courtMapper.selectIdsForUpdate(new ArrayList<>(
+                new java.util.TreeSet<>(List.of(originalCourtId, body.getCourtId()))));
         SessionSlot slot = sessionSlotMapper.selectForUpdate(sessionSlotId);
         if (slot == null || slot.venueId != venueId) {
             throw notFound();
+        }
+        if (slot.courtId != originalCourtId) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
         }
         Court court = courtMapper.selectById(body.getCourtId());
         if (court == null || court.venueId != venueId
@@ -305,7 +330,6 @@ public class ScheduleServiceImpl implements ScheduleService {
                 || !courtMapper.selectSportIds(court.id).contains(sport.id)) {
             throw badRequest();
         }
-        courtMapper.selectForUpdate(court.id);
         Instant startAt = body.getDate().atTime(body.getStartTime())
                 .atZone(BusinessConstants.BUSINESS_ZONE).toInstant();
         Instant endAt = body.getDate().atTime(body.getEndTime())
@@ -313,6 +337,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (sessionSlotMapper.countOverlappingExcludingSlot(court.id, startAt, endAt, slot.id) > 0) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
         }
+        requireNoBookingOverlap(court.id, startAt, endAt, slot.id);
         // 人工编辑保留库存状态和预约关联，但不再允许后续周模板同步覆盖。
         slot.courtId = court.id;
         slot.sportTypeId = sport.id;
@@ -392,6 +417,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (slot == null || slot.venueId != venueId) {
             throw notFound();
         }
+        if (!slot.courtId.equals(existing.courtId)) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+        }
         if (slot.status != SessionSlotStatus.CLOSED) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_BUSY);
         }
@@ -408,6 +436,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 slot.courtId, slot.startAt, slot.endAt, slot.id) > 0) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
         }
+        requireNoBookingOverlap(slot.courtId, slot.startAt, slot.endAt, null);
         slot.status = SessionSlotStatus.OPEN;
         slot.updatedAt = LocalDateTime.now();
         sessionSlotMapper.updateById(slot);
@@ -439,9 +468,14 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Transactional
     @Override
     public void syncVenue(long venueId) {
+        // 先锁定本馆物理场地再建立查询视图，防止等待期间继续使用旧模板或旧快照。
+        courtMapper.selectVenueForUpdate(venueId);
         Venue venue = venueService.getVenue(venueId);
-        for (WeeklySlot weekly : weeklySlotMapper.selectByVenue(venueId, EnableStatus.ACTIVE)) {
-            syncTemplate(venue, weekly);
+        List<WeeklySlot> weeklies = weeklySlotMapper.selectByVenue(venueId, EnableStatus.ACTIVE);
+        LocalDate firstDate = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
+        List<Booking> snapshots = loadWindowSnapshots(venue, weeklies, firstDate);
+        for (WeeklySlot weekly : weeklies) {
+            syncTemplate(venue, weekly, firstDate, snapshots);
         }
     }
 
@@ -457,7 +491,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         // 只同步已上架场馆；单机场景下按日生成未来窗口足够稳定。
         for (Venue venue : venueService.listPlatformVenues()) {
             if (venue.status == VenueStatus.ACTIVE) {
-                syncVenue(venue.id);
+                redisLockService.execute(List.of(), () -> {
+                    syncVenue(venue.id);
+                    return null;
+                });
             }
         }
     }
@@ -487,7 +524,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         slot.holdBookingId = null;
         slot.holdExpiresAt = null;
         slot.updatedAt = LocalDateTime.now();
-        sessionSlotMapper.updateById(slot);
+        sessionSlotMapper.clearBookingHold(slot);
         if (reminderService != null && previousStatus != SessionSlotStatus.OPEN
                 && slot.status == SessionSlotStatus.OPEN) reminderService.onSlotReleased(slot.id,
                         "release:" + java.util.UUID.randomUUID());
@@ -499,23 +536,50 @@ public class ScheduleServiceImpl implements ScheduleService {
      *
      * @author gjm
      */
-    private void syncTemplate(Venue venue, WeeklySlot weekly) {
-        LocalDate firstDate = LocalDate.now(BusinessConstants.BUSINESS_ZONE);
+    private void syncTemplate(Venue venue, WeeklySlot weekly, LocalDate firstDate, List<Booking> snapshots) {
         LocalDate lastDate = firstDate.plusDays(venue.bookingDaysAhead - 1L);
         for (LocalDate date = firstDate; !date.isAfter(lastDate); date = date.plusDays(1)) {
             if (date.getDayOfWeek().getValue() != weekly.dayOfWeek) {
                 continue;
             }
-            if (sessionSlotMapper.countManualOverride(weekly.id, date) > 0) {
+            SessionSlot existing = sessionSlotMapper.selectTemplateForUpdate(weekly.id, date);
+            // 原生成日已有人工覆盖或被占用/关闭的场次时，不能复制第二份同模板库存。
+            if (existing != null && (Boolean.TRUE.equals(existing.manualOverride)
+                    || existing.status != SessionSlotStatus.OPEN)) {
                 continue;
             }
             SessionSlot slot = session(venue.id, weekly.id, weekly.courtId, weekly.sportTypeId, date,
                     weekly.startTime, weekly.endTime, weekly.priceFen);
-            requireNoOverlap(slot);
+            // 已持有场地锁，使用窗口内一次当前读取的快照；日期循环不重复查询预约。
+            boolean snapshotOverlap = snapshots.stream().anyMatch(booking -> booking.courtId.equals(slot.courtId)
+                    && booking.startAt.isBefore(slot.endAt) && booking.endAt.isAfter(slot.startAt));
+            if (snapshotOverlap) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+            }
+            if (existing == null) {
+                if (sessionSlotMapper.countOverlapping(slot.courtId, slot.startAt, slot.endAt, null) > 0) {
+                    throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+                }
+            } else {
+                if (sessionSlotMapper.countOverlappingExcludingSlot(
+                        slot.courtId, slot.startAt, slot.endAt, existing.id) > 0) {
+                    throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+                }
+            }
             if (sessionSlotMapper.updateOpenForTemplate(slot) == 0) {
                 sessionSlotMapper.insertIgnore(slot);
             }
         }
+    }
+
+    /** 持有物理场地锁后一次当前读取生成窗口，起止日期与模板循环共用以避免跨午夜偏移。 */
+    private List<Booking> loadWindowSnapshots(Venue venue, List<WeeklySlot> weeklies, LocalDate firstDate) {
+        if (weeklies.isEmpty() || venue.bookingDaysAhead <= 0) return List.of();
+        List<Long> courtIds = weeklies.stream().map(weekly -> weekly.courtId).distinct().sorted().toList();
+        Instant startAt = firstDate.atStartOfDay(BusinessConstants.BUSINESS_ZONE).toInstant();
+        Instant endAt = firstDate.plusDays(venue.bookingDaysAhead)
+                .atStartOfDay(BusinessConstants.BUSINESS_ZONE).toInstant();
+        return bookingMapper.selectActiveSnapshotsForUpdate(courtIds, startAt, endAt);
     }
 
     /**
@@ -526,8 +590,17 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @author gjm
      */
     private void requireNoOverlap(SessionSlot slot) {
+        requireNoBookingOverlap(slot.courtId, slot.startAt, slot.endAt, null);
         if (sessionSlotMapper.countOverlapping(
-                slot.courtId, slot.startAt, slot.endAt, slot.weeklySlotId) > 0) {
+                slot.courtId, slot.startAt, slot.endAt, null) > 0) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+        }
+    }
+
+    /** 已有预约快照继续保护原时段；编辑自身场次仅排除其关联快照，不改变该快照。 */
+    private void requireNoBookingOverlap(long courtId, Instant startAt, Instant endAt, Long excludedSessionSlotId) {
+        if (!bookingMapper.selectOverlappingActiveForUpdate(
+                courtId, startAt, endAt, null, excludedSessionSlotId).isEmpty()) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
         }
     }

@@ -79,6 +79,9 @@ public class ReminderServiceImpl implements ReminderService {
         if (request == null || request.getVenueId() == null || request.getSportTypeId() == null
                 || request.getTargetDate() == null || request.getStartTime() == null || request.getEndTime() == null
                 || request.getType() == null || !request.getStartTime().isBefore(request.getEndTime())
+                // 与场次检索保持分钟精度，落地时不能截秒改变登记范围。
+                || request.getStartTime().getSecond() != 0 || request.getEndTime().getSecond() != 0
+                || request.getStartTime().getNano() != 0 || request.getEndTime().getNano() != 0
                 || !List.of("OPENING", "RELEASED").contains(request.getType())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
         }

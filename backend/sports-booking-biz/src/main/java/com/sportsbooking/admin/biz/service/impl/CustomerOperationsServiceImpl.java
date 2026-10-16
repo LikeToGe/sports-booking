@@ -198,6 +198,7 @@ public class CustomerOperationsServiceImpl implements CustomerOperationsService 
         return CustomerFollowupVO.from(updated);
     }
 
+    /** 顾客与标签必须同属当前场馆，缺失和越馆统一按不存在处理。 */
     private VenueCustomerTagBO ensureOwned(long venueId, long customerId, long tagId) {
         if (mapper.countCustomer(venueId, customerId) == 0) {
             throw notFound();
@@ -209,6 +210,7 @@ public class CustomerOperationsServiceImpl implements CustomerOperationsService 
         return tag;
     }
 
+    /** 经营文本去首尾空白后必须非空且不超限，不静默截断用户输入。 */
     private String text(String value, int maxLength) {
         if (value == null || value.isBlank() || value.trim().length() > maxLength) {
             throw invalid();
@@ -216,10 +218,12 @@ public class CustomerOperationsServiceImpl implements CustomerOperationsService 
         return value.trim();
     }
 
+    /** 留痕名称与经营文本使用相同必填边界，限制在持久化字段长度内。 */
     private String actorName(String value) {
         return text(value, 80);
     }
 
+    /** 管理员和员工留痕身份必须且只能有一个，避免来源不明或身份混用。 */
     private void validateActor(Long adminId, Long employeeId) {
         if ((adminId == null) == (employeeId == null)) {
             throw invalid();

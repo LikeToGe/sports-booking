@@ -223,7 +223,7 @@ public class PostRecruitmentServiceImpl implements PostRecruitmentService {
 
     @Scheduled(fixedDelay = 60000)
     public void closeExpiredRecruitments() {
-        for (PostRecruitment row : mapper.selectActive()) {
+        for (PostRecruitment row : mapper.selectExpired(Instant.now())) {
             mutate(row.id, current -> { });
         }
     }

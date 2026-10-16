@@ -138,14 +138,41 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public Booking closeUnpaid(long userId, long bookingId, CancelledBy cancelledBy, String reason) {
+        Booking booking = requiredBooking(bookingId);
+        requireOwner(booking, userId);
+        if ((cancelledBy != CancelledBy.USER && cancelledBy != CancelledBy.VENUE)
+                || reason == null || reason.isBlank() || reason.trim().length() > 255) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_ARGUMENT);
+        }
+        if (booking.status != BookingStatus.PENDING_PAYMENT) return booking;
+        Payment payment = findPayment(bookingId);
+        if (payment == null) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.PAYMENT_MISSING);
+        }
+        // 渠道闭单与查单一样发生在业务锁外；FAILED 在这里必须是确认未付已关闭。
+        PaymentResult result = payment.status == PaymentStatus.SUCCESS ? PaymentResult.SUCCESS
+                : payment.status == PaymentStatus.FAILED || payment.status == PaymentStatus.CLOSED
+                ? PaymentResult.FAILED : channelAdapter.closePayment(payment);
+        return handlePaymentResult(userId, bookingId, result == null ? PaymentResult.UNKNOWN : result,
+                cancelledBy, reason.trim());
+    }
+
+    @Override
     public Booking handleMockPaymentResult(long userId, long bookingId, PaymentResult result) {
+        return handlePaymentResult(userId, bookingId, result, null, null);
+    }
+
+    /** 同一支付资源锁下收敛通知或主动闭单，外部退款仍在提交后执行。 */
+    private Booking handlePaymentResult(long userId, long bookingId, PaymentResult result,
+                                        CancelledBy closingActor, String closingReason) {
         Booking candidate = requiredBooking(bookingId);
         requireOwner(candidate, userId);
         List<String> keys = List.of(RedisLockType.BOOKING.key(bookingId),
                 RedisLockType.SESSION_SLOT.key(candidate.sessionSlotId),
                 RedisLockType.MEMBER_BALANCE.key(candidate.venueCustomerId));
         Booking converged = redisLockService.execute(keys,
-                () -> convergePayment(bookingId, userId, result, Instant.now()));
+                () -> convergePayment(bookingId, userId, result, Instant.now(), closingActor, closingReason));
         if (converged.paymentStatus == BookingPaymentStatus.REFUNDING) {
             processRefund(bookingId);
             return bookingMapper.selectById(bookingId);
@@ -166,16 +193,21 @@ public class PaymentServiceImpl implements PaymentService {
         return handleMockPaymentResult(booking.userId, booking.id, result);
     }
 
-    private Booking convergePayment(long bookingId, long userId, PaymentResult result, Instant now) {
+    /** 支付结果只推进待支付状态，履约终态及首次成功时间不能被渠道重放覆写。 */
+    private Booking convergePayment(long bookingId, long userId, PaymentResult result, Instant now,
+                                    CancelledBy closingActor, String closingReason) {
         Booking booking = requiredLockedBooking(bookingId);
         requireOwner(booking, userId);
-        if (booking.status == BookingStatus.CONFIRMED) {
+        if (booking.status == BookingStatus.CONFIRMED || booking.status == BookingStatus.COMPLETED
+                || booking.status == BookingStatus.NO_SHOW) {
             return booking;
         }
         Payment payment = paymentMapper.selectByBookingForUpdate(bookingId);
         if (payment == null) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.PAYMENT_MISSING);
         }
+        // 闭单请求和成功回调可能交错；已有成功事实始终优先，不能被未付关闭覆盖。
+        if (payment.status == PaymentStatus.SUCCESS && result == PaymentResult.FAILED) result = PaymentResult.SUCCESS;
         if (result == PaymentResult.UNKNOWN) {
             payment.lastQueryAt = now;
             payment.updatedAt = LocalDateTime.now();
@@ -187,7 +219,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (result == PaymentResult.SUCCESS) {
                 payment.status = PaymentStatus.SUCCESS;
                 payment.providerNo = payment.providerNo == null ? "MOCK-" + payment.paymentNo : payment.providerNo;
-                payment.paidAt = now;
+                if (payment.paidAt == null) payment.paidAt = now;
                 payment.updatedAt = LocalDateTime.now();
                 paymentMapper.updateById(payment);
                 Refund existing = refundMapper.selectByBookingForUpdate(bookingId);
@@ -210,7 +242,7 @@ public class PaymentServiceImpl implements PaymentService {
             memberFundsService.consume(booking.id, now);
             payment.status = PaymentStatus.SUCCESS;
             payment.providerNo = payment.providerNo == null ? "MOCK-" + payment.paymentNo : payment.providerNo;
-            payment.paidAt = now;
+            if (payment.paidAt == null) payment.paidAt = now;
             payment.lastQueryAt = now;
             booking.status = BookingStatus.CONFIRMED;
             booking.paymentStatus = BookingPaymentStatus.PAID;
@@ -221,12 +253,13 @@ public class PaymentServiceImpl implements PaymentService {
             notificationService.record(booking, NotificationType.BOOKING_CONFIRMED);
         } else {
             memberFundsService.release(booking.id, now);
-            payment.status = PaymentStatus.FAILED;
+            payment.status = closingActor != null ? PaymentStatus.CLOSED : PaymentStatus.FAILED;
+            if (closingActor != null) payment.closedAt = now;
             payment.lastQueryAt = now;
             booking.status = BookingStatus.CANCELLED;
             booking.paymentStatus = BookingPaymentStatus.PAYMENT_FAILED;
-            booking.cancelledBy = CancelledBy.SYSTEM;
-            booking.cancelReason = "支付失败";
+            booking.cancelledBy = closingActor == null ? CancelledBy.SYSTEM : closingActor;
+            booking.cancelReason = closingActor == null ? "支付失败" : closingReason;
             booking.cancelledAt = now;
             releaseSlot(slot, booking.id);
         }
@@ -355,7 +388,7 @@ public class PaymentServiceImpl implements PaymentService {
             slot.status = SessionSlotStatus.OPEN;
             slot.holdBookingId = null;
             slot.holdExpiresAt = null;
-            sessionSlotMapper.updateById(slot);
+            sessionSlotMapper.clearBookingHold(slot);
             if (reminderService != null) reminderService.onSlotReleased(slot.id, "booking:" + bookingId);
         }
     }

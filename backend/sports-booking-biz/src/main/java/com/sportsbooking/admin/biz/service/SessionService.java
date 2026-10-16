@@ -17,8 +17,8 @@ public interface SessionService {
      * @author gjm
      */
     String createAdminSession(AdminPrincipal principal);
-    /** 创建只保存员工和场馆标识的后台会话。 */
-    default String createEmployeeAdminSession(long employeeId, long venueId) {
+    /** 创建保存员工、场馆及原绑定用户标识的后台会话。 */
+    default String createEmployeeAdminSession(long employeeId, long venueId, long userId) {
         throw new UnsupportedOperationException();
     }
     /**

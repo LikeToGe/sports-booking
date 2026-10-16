@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sportsbooking.admin.base.mapper.EmployeeMapper">
+    <select id="lockActiveBindingUser" resultType="long">
+        SELECT id FROM s_user_account
+        WHERE id = #{userId} AND status = 'ACTIVE' AND deleted_at IS NULL
+        FOR UPDATE
+    </select>
+    <select id="selectActiveSessionBinding" resultType="com.sportsbooking.admin.base.po.Employee">
+        SELECT e.* FROM s_employee e
+        JOIN s_user_account u ON u.id = e.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
+        WHERE e.user_id = #{userId} AND e.status = 'ACTIVE'
+        <if test="employeeId != null">AND e.id = #{employeeId}</if>
+        <if test="venueId != null">AND e.venue_id = #{venueId}</if>
+        ORDER BY e.id LIMIT 1
+    </select>
+    <!-- 按仍有效的原摘要消费，数据库条件更新保证并发使用同一码只会成功一次。 -->
+    <update id="consumeBindingCode">
+        UPDATE s_employee
+        SET user_id = #{userId}, binding_code_hash = NULL, binding_expires_at = NULL, updated_at = #{now}
+        WHERE id = #{employeeId} AND binding_code_hash = #{codeHash}
+          AND binding_expires_at &gt; #{now} AND status = 'ACTIVE'
+    </update>
+    <update id="clearBinding">
+        UPDATE s_employee
+        SET user_id = NULL, binding_code_hash = NULL, binding_expires_at = NULL, updated_at = #{now}
+        WHERE id = #{employeeId} AND venue_id = #{venueId}
+    </update>
     <select id="selectStaffVenues" resultType="com.sportsbooking.admin.base.bo.StaffVenueBO">
         SELECT e.id AS employee_id,
                e.venue_id,
@@ -8,6 +33,7 @@
                e.name AS employee_name,
                GROUP_CONCAT(DISTINCT rp.permission_code ORDER BY rp.permission_code) AS permissions
         FROM s_employee e
+        JOIN s_user_account u ON u.id = e.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
         JOIN s_venue v ON v.id = e.venue_id
         LEFT JOIN s_employee_role er ON er.employee_id = e.id
         LEFT JOIN s_venue_role r ON r.id = er.role_id AND r.venue_id = e.venue_id AND r.status = 'ACTIVE'

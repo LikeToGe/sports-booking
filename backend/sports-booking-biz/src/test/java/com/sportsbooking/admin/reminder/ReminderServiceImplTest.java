@@ -22,12 +22,37 @@ import com.sportsbooking.admin.base.enums.SessionSlotStatus;
 import com.sportsbooking.admin.biz.service.ContentMessageService;
 import com.sportsbooking.admin.biz.service.VenueService;
 import com.sportsbooking.admin.biz.service.impl.ReminderServiceImpl;
+import com.sportsbooking.admin.biz.exception.ApiException;
+import com.sportsbooking.admin.biz.pojo.request.ReminderSubscriptionRequest;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** 到场提醒使用预约状态查询并复用消息幂等入口。 */
 class ReminderServiceImplTest {
+    @Test
+    void rejectsSecondsAndNanosBeforeReadingOrWritingSubscriptionFacts() {
+        UserAccountMapper users = mock(UserAccountMapper.class);
+        ReminderSubscriptionMapper subscriptions = mock(ReminderSubscriptionMapper.class);
+        SessionSlotMapper slots = mock(SessionSlotMapper.class);
+        ReminderServiceImpl service = new ReminderServiceImpl(subscriptions, mock(SlotReleaseEventMapper.class),
+                slots, mock(NotificationMapper.class), mock(BookingMapper.class), mock(ContentMessageService.class),
+                mock(VenueService.class), mock(VenueMapper.class), users);
+        LocalTime start = LocalTime.of(19, 0), end = LocalTime.of(21, 0);
+        for (LocalTime[] times : List.of(new LocalTime[]{start.plusSeconds(30), end},
+                new LocalTime[]{start, end.plusSeconds(30)}, new LocalTime[]{start.plusNanos(1), end},
+                new LocalTime[]{start, end.plusNanos(1)})) {
+            ReminderSubscriptionRequest request = new ReminderSubscriptionRequest(
+                    1L, 1L, LocalDate.now().plusDays(1), times[0], times[1], "OPENING");
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.subscribe(8L, request))
+                    .isInstanceOfSatisfying(ApiException.class, exception ->
+                            org.assertj.core.api.Assertions.assertThat(exception.getStatus().value()).isEqualTo(400));
+        }
+        org.mockito.Mockito.verifyNoInteractions(users, subscriptions, slots);
+    }
+
     @Test
     void runJobsGenerateMessagesForCommittedEventBatch() {
         NotificationMapper notifications = mock(NotificationMapper.class);

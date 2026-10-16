@@ -312,6 +312,7 @@ public class VenueReviewServiceImpl implements VenueReviewService {
                 if (!"HIDDEN".equals(review.contentStatus) || review.publicRevisionId == null) {
                     throw new ApiException(HttpStatus.CONFLICT, ErrorCode.INVALID_ARGUMENT);
                 }
+                // 恢复写入同时校验活跃作者，注销隐藏不能被平台处置重新公开。
                 if (reviewMapper.setContentStatus(reviewId, "PUBLISHED") != 1) {
                     throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
                 }

@@ -41,6 +41,77 @@ import org.junit.jupiter.api.Test;
 class PaymentServiceImplTest {
 
     @Test
+    void onlyConfirmedUnpaidClosureReleasesHoldAndKeepsUnknownPaymentPending() {
+        BookingMapper bookings = mock(BookingMapper.class);
+        PaymentMapper payments = mock(PaymentMapper.class);
+        SessionSlotMapper slots = mock(SessionSlotMapper.class);
+        MemberFundsService funds = mock(MemberFundsService.class);
+        RedisLockService locks = mock(RedisLockService.class);
+        PaymentChannelAdapter adapter = mock(PaymentChannelAdapter.class);
+        doAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get()).when(locks)
+                .execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+        PaymentServiceImpl service = new PaymentServiceImpl(bookings, payments, mock(RefundMapper.class), slots,
+                mock(NotificationService.class), funds, locks, adapter);
+        Booking booking = new Booking();
+        booking.id = 10L; booking.userId = 20L; booking.venueCustomerId = 50L;
+        booking.sessionSlotId = 30L; booking.status = BookingStatus.PENDING_PAYMENT;
+        booking.paymentStatus = BookingPaymentStatus.PAYING;
+        Payment payment = new Payment();
+        payment.status = PaymentStatus.PENDING;
+        SessionSlot slot = new SessionSlot();
+        slot.id = 30L; slot.status = SessionSlotStatus.HELD; slot.holdBookingId = 10L;
+        when(bookings.selectById(10L)).thenReturn(booking);
+        when(bookings.selectForUpdate(10L)).thenReturn(booking);
+        when(payments.selectOne(org.mockito.ArgumentMatchers.any())).thenReturn(payment);
+        when(payments.selectByBookingForUpdate(10L)).thenReturn(payment);
+        when(slots.selectForUpdate(30L)).thenReturn(slot);
+        when(adapter.closePayment(payment)).thenReturn(PaymentResult.UNKNOWN, PaymentResult.FAILED);
+
+        assertThat(service.closeUnpaid(20L, 10L).status).isEqualTo(BookingStatus.PENDING_PAYMENT);
+        assertThat(slot.status).isEqualTo(SessionSlotStatus.HELD);
+        org.mockito.Mockito.verifyNoInteractions(funds);
+        assertThat(service.closeUnpaid(20L, 10L).status).isEqualTo(BookingStatus.CANCELLED);
+        assertThat(payment.status).isEqualTo(PaymentStatus.CLOSED);
+        assertThat(payment.closedAt).isNotNull();
+        assertThat(booking.cancelledBy).isEqualTo(com.sportsbooking.admin.base.enums.CancelledBy.USER);
+        assertThat(booking.cancelReason).isEqualTo("用户取消待支付预约");
+        assertThat(slot.holdBookingId).isNull();
+        verify(slots).clearBookingHold(slot);
+        verify(funds).release(org.mockito.ArgumentMatchers.eq(10L), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void replayedSuccessOrFailureCannotChangeCompletedFulfillmentOrFunds() {
+        for (BookingStatus terminal : new BookingStatus[]{BookingStatus.COMPLETED, BookingStatus.NO_SHOW}) {
+            for (PaymentResult result : new PaymentResult[]{PaymentResult.SUCCESS, PaymentResult.FAILED}) {
+                BookingMapper bookings = mock(BookingMapper.class);
+                PaymentMapper payments = mock(PaymentMapper.class);
+                RefundMapper refunds = mock(RefundMapper.class);
+                SessionSlotMapper slots = mock(SessionSlotMapper.class);
+                MemberFundsService funds = mock(MemberFundsService.class);
+                RedisLockService locks = mock(RedisLockService.class);
+                doAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get()).when(locks)
+                        .execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+                PaymentServiceImpl service = new PaymentServiceImpl(bookings, payments, refunds, slots,
+                        mock(NotificationService.class), funds, locks, mock(PaymentChannelAdapter.class));
+                Booking booking = new Booking();
+                booking.id = 10L; booking.userId = 20L; booking.venueCustomerId = 50L;
+                booking.sessionSlotId = 30L; booking.status = terminal;
+                booking.paymentStatus = BookingPaymentStatus.PAID;
+                when(bookings.selectById(10L)).thenReturn(booking);
+                when(bookings.selectForUpdate(10L)).thenReturn(booking);
+
+                Booking replayed = service.handleMockPaymentResult(20L, 10L, result);
+
+                assertThat(replayed.status).isEqualTo(terminal);
+                assertThat(replayed.paymentStatus).isEqualTo(BookingPaymentStatus.PAID);
+                org.mockito.Mockito.verifyNoInteractions(payments, refunds, slots, funds);
+                verify(bookings, never()).updateById(org.mockito.ArgumentMatchers.any(Booking.class));
+            }
+        }
+    }
+
+    @Test
     void unknownQueryKeepsPendingAndExplicitFailureReleasesBalance() {
         BookingMapper bookingMapper = mock(BookingMapper.class);
         PaymentMapper paymentMapper = mock(PaymentMapper.class);
@@ -158,10 +229,12 @@ class PaymentServiceImplTest {
         when(adapter.refund(org.mockito.ArgumentMatchers.any(Refund.class))).thenReturn(PaymentResult.UNKNOWN);
 
         service.handleMockPaymentResult(20L, 10L, PaymentResult.SUCCESS);
+        Instant firstPaidAt = payment.paidAt;
         service.handleMockPaymentResult(20L, 10L, PaymentResult.SUCCESS);
 
         assertThat(booking.status).isEqualTo(BookingStatus.CANCELLED);
         assertThat(payment.status).isEqualTo(PaymentStatus.SUCCESS);
+        assertThat(payment.paidAt).isEqualTo(firstPaidAt);
         assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.REFUNDING);
         verify(refundMapper, org.mockito.Mockito.times(1)).insert(
                 org.mockito.ArgumentMatchers.any(Refund.class));

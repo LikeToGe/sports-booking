@@ -4,6 +4,7 @@ import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.po.Payment;
 import com.sportsbooking.admin.base.po.Refund;
 import com.sportsbooking.admin.base.enums.PaymentResult;
+import com.sportsbooking.admin.base.enums.CancelledBy;
 import com.sportsbooking.admin.biz.pojo.vo.PlatformRefundVO;
 import com.sportsbooking.admin.biz.pojo.vo.RefundVO;
 import java.time.Instant;
@@ -46,6 +47,14 @@ public interface PaymentService {
 
     /** 供场馆取消和超时任务在外部查单后收敛。 */
     Booking queryPayment(long bookingId);
+
+    /** 主动取消先在事务外请求渠道关闭未付订单；结果未知不释放占位或余额。 */
+    default Booking closeUnpaid(long userId, long bookingId) {
+        return closeUnpaid(userId, bookingId, CancelledBy.USER, "用户取消待支付预约");
+    }
+
+    /** 场馆闭单保留可信操作者来源和必填原因，与用户取消共用支付资源锁。 */
+    Booking closeUnpaid(long userId, long bookingId, CancelledBy cancelledBy, String reason);
 
     /** 受控 Mock 渠道结果入口，供专项测试覆盖失败和未知。 */
     Booking handleMockPaymentResult(long userId, long bookingId, PaymentResult result);

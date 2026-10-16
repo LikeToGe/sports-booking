@@ -28,7 +28,8 @@ public interface PostInteractionMapper {
 
     int deleteComment(@Param("commentId") long commentId, @Param("userId") long userId);
 
-    List<PostCommentBO> selectPublicComments(@Param("postId") long postId, @Param("userId") long userId);
+    /** 本人读取当前版本，其他人仅读取审核通过的公开版本。 */
+    List<PostCommentBO> selectVisibleComments(@Param("postId") long postId, @Param("userId") long userId);
 
     int insertLike(@Param("postId") long postId, @Param("userId") long userId);
 

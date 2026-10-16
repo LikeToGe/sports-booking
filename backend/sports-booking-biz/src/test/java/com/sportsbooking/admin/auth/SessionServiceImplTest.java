@@ -43,20 +43,43 @@ class SessionServiceImplTest {
     }
 
     @Test
-    void storesOnlyEmployeeAndVenueAndResolvesPermissionsOnEveryRequest() throws Exception {
-        service.createEmployeeAdminSession(1L, 2L);
+    void storesBindingIdentityAndResolvesPermissionsOnEveryRequest() throws Exception {
+        service.createEmployeeAdminSession(1L, 2L, 3L);
         ArgumentCaptor<String> json = ArgumentCaptor.forClass(String.class);
         verify(values).set(any(), json.capture(), any(Duration.class));
-        assertThat(objectMapper.readTree(json.getValue()).size()).isEqualTo(2);
+        assertThat(objectMapper.readTree(json.getValue()).size()).isEqualTo(3);
         assertThat(objectMapper.readTree(json.getValue()).get("employeeId").asLong()).isEqualTo(1L);
         assertThat(objectMapper.readTree(json.getValue()).get("venueId").asLong()).isEqualTo(2L);
+        assertThat(objectMapper.readTree(json.getValue()).get("userId").asLong()).isEqualTo(3L);
 
         when(values.get(any())).thenReturn(json.getValue());
-        when(permissionService.resolveEmployee(1L, 2L)).thenReturn(
+        when(permissionService.resolveEmployee(1L, 2L, 3L)).thenReturn(
                 new AdminPrincipal(0L, AdminRole.VENUE_EMPLOYEE, 2L, "员工"));
         service.requireAdmin("token");
         service.requireAdmin("token");
-        verify(permissionService, times(2)).resolveEmployee(1L, 2L);
+        verify(permissionService, times(2)).resolveEmployee(1L, 2L, 3L);
+    }
+
+    @Test
+    void rejectsLegacyEmployeeSessionWithoutOriginalUser() {
+        when(values.get(any())).thenReturn("{\"employeeId\":1,\"venueId\":2}");
+
+        assertThatThrownBy(() -> service.requireAdmin("token"))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
+    }
+
+    @Test
+    void preservesRevocationWhenExistingTokenIsCheckedAgain() {
+        when(values.get(any())).thenReturn("{\"employeeId\":1,\"venueId\":2,\"userId\":3}");
+        when(permissionService.resolveEmployee(1L, 2L, 3L))
+                .thenReturn(new AdminPrincipal(0L, AdminRole.VENUE_EMPLOYEE, 2L, "员工"))
+                .thenThrow(new com.sportsbooking.admin.biz.exception.ApiException(
+                        org.springframework.http.HttpStatus.FORBIDDEN,
+                        com.sportsbooking.admin.base.enums.ErrorCode.FORBIDDEN));
+
+        assertThat(service.requireAdmin("token").getVenueId()).isEqualTo(2L);
+        assertThatThrownBy(() -> service.requireAdmin("token"))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
     }
 
     @Test

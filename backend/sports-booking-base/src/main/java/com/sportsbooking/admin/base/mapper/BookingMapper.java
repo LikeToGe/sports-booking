@@ -29,6 +29,18 @@ public interface BookingMapper extends BaseMapper<Booking> {
      */
     Booking selectForUpdate(long id);
 
+    /** 在物理场地锁内当前读取有效预约快照；排除项仅用于编辑自身或同价改期。 */
+    List<Long> selectOverlappingActiveForUpdate(@Param("courtId") long courtId,
+                                                @Param("startAt") Instant startAt,
+                                                @Param("endAt") Instant endAt,
+                                                @Param("excludedBookingId") Long excludedBookingId,
+                                                @Param("excludedSessionSlotId") Long excludedSessionSlotId);
+
+    /** 批量预约在场地锁内一次当前读取区间内快照，再逐日期在内存计算冲突。 */
+    List<Booking> selectActiveSnapshotsForUpdate(@Param("courtIds") List<Long> courtIds,
+                                                @Param("startAt") Instant startAt,
+                                                @Param("endAt") Instant endAt);
+
     /**
      * 功能描述: 按模板场次批量解析相同场地、运动和时段的具体日期场次。
      *

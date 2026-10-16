@@ -1,8 +1,8 @@
 package com.sportsbooking.admin.base.mapper;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import com.sportsbooking.admin.base.bo.ContentGovernanceBO;
+import com.sportsbooking.admin.base.bo.ContentEvidenceRevisionBO;
 import com.sportsbooking.admin.base.bo.ContentTargetBO;
 import com.sportsbooking.admin.base.po.ContentRestriction;
 import org.apache.ibatis.annotations.Param;
@@ -10,9 +10,15 @@ import org.apache.ibatis.annotations.Param;
 /** 举报、申诉和用户内容限权查询。 */
 public interface ContentGovernanceMapper {
     int insertReport(@Param("userId") long userId, @Param("targetType") String targetType, @Param("targetId") long targetId,
-                     @Param("reasonCode") String reasonCode, @Param("description") String description);
+                     @Param("reasonCode") String reasonCode, @Param("description") String description, @Param("revisionId") Long revisionId);
     List<ContentGovernanceBO> selectReports(@Param("status") String status, @Param("userId") Long userId);
     int resolveReport(@Param("id") long id, @Param("adminId") long adminId, @Param("status") String status, @Param("resolution") String resolution);
+    ContentGovernanceBO selectReport(@Param("id") long id);
+    ContentGovernanceBO selectAppeal(@Param("id") long id);
+    ContentTargetBO selectEvidenceTarget(@Param("targetType") String targetType, @Param("targetId") long targetId);
+    List<ContentEvidenceRevisionBO> selectEvidenceRevisions(
+            @Param("targetType") String targetType, @Param("targetId") long targetId);
+    List<ContentGovernanceBO> selectTargetLogs(@Param("targetType") String targetType, @Param("targetId") long targetId);
     int insertAppeal(@Param("logId") long logId, @Param("userId") long userId, @Param("body") String body);
     List<ContentGovernanceBO> selectAppeals(@Param("status") String status, @Param("userId") Long userId);
     int decideAppeal(@Param("id") long id, @Param("adminId") long adminId, @Param("status") String status, @Param("reason") String reason);

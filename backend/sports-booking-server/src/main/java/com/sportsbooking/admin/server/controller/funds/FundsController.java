@@ -110,6 +110,16 @@ public class FundsController {
                 body.getVenueId(), body.getPlanId(), body.getIdempotencyKey()));
     }
 
+    @GetMapping("mini/recharges")
+    public ApiResponse<List<MemberRechargeVO>> listMiniRecharges(@RequestParam long venueId) {
+        return ApiResponse.success(memberFundsService.listOwnRecharges(AuthContext.getMiniUserId(), venueId));
+    }
+
+    @PostMapping("mini/recharges/{rechargeId}/cancel")
+    public ApiResponse<MemberRechargeVO> cancelMiniRecharge(@PathVariable long rechargeId) {
+        return ApiResponse.success(memberFundsService.cancelRecharge(AuthContext.getMiniUserId(), rechargeId));
+    }
+
     @GetMapping("mini/recharges/{rechargeId}")
     public ApiResponse<MemberRechargeVO> getMiniRecharge(@PathVariable long rechargeId) {
         return ApiResponse.success(memberFundsService.getRecharge(AuthContext.getMiniUserId(), rechargeId));

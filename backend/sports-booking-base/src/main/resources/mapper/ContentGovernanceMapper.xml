@@ -10,7 +10,7 @@
             <otherwise>s_user_account</otherwise>
         </choose>
     </sql>
-    <select id="selectTargetForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentTargetBO">
+    <sql id="targetFields">
         SELECT id,
         <choose>
             <when test="targetType == 'POST'">CASE WHEN author_type = 'USER' THEN author_id END</when>
@@ -23,18 +23,24 @@
             <when test="targetType == 'USER'">status AS contentStatus, NULL AS currentRevisionId, NULL AS publicRevisionId</when>
             <otherwise>content_status AS contentStatus, current_revision_id AS currentRevisionId, public_revision_id AS publicRevisionId</otherwise>
         </choose>
-        FROM <include refid="targetTable"/> WHERE id = #{targetId} FOR UPDATE
+        FROM <include refid="targetTable"/> WHERE id = #{targetId}
+    </sql>
+    <select id="selectTargetForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentTargetBO">
+        <include refid="targetFields"/> FOR UPDATE
+    </select>
+    <select id="selectEvidenceTarget" resultType="com.sportsbooking.admin.base.bo.ContentTargetBO">
+        <include refid="targetFields"/>
     </select>
     <update id="setLegalHold">
         UPDATE <include refid="targetTable"/> SET legal_hold = #{hold} WHERE id = #{targetId}
     </update>
     <insert id="insertReport">
-        INSERT INTO s_content_report (reporter_user_id,target_type,target_id,reason_code,description)
-        VALUES (#{userId},#{targetType},#{targetId},#{reasonCode},#{description})
+        INSERT INTO s_content_report (reporter_user_id,target_type,target_id,reason_code,description,evidence_revision_id)
+        VALUES (#{userId},#{targetType},#{targetId},#{reasonCode},#{description},#{revisionId})
     </insert>
     <sql id="reportFields">
         id, reporter_user_id AS userId, target_type AS targetType, target_id AS targetId,
-        reason_code AS reason, description, status, resolution AS decisionReason,
+        evidence_revision_id AS revisionId, reason_code AS reason, description, status, resolution AS decisionReason,
         created_at AS createdAt, resolved_at AS decidedAt
     </sql>
     <select id="selectReports" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
@@ -48,6 +54,47 @@
     <select id="selectReportForUpdate" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
         SELECT <include refid="reportFields"/> FROM s_content_report WHERE id = #{id} FOR UPDATE
     </select>
+    <select id="selectReport" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="reportFields"/> FROM s_content_report WHERE id = #{id}
+    </select>
+    <select id="selectAppeal" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT <include refid="appealFields"/>
+        FROM s_content_appeal a JOIN s_content_moderation_log l ON l.id = a.moderation_log_id WHERE a.id = #{id}
+    </select>
+    <select id="selectTargetLogs" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">
+        SELECT id, content_type AS targetType, content_id AS targetId, revision_id AS revisionId,
+               action, reason, created_at AS createdAt
+        FROM s_content_moderation_log WHERE content_type = #{targetType} AND content_id = #{targetId}
+        ORDER BY id DESC
+    </select>
+    <select id="selectEvidenceRevisions" resultType="com.sportsbooking.admin.base.bo.ContentEvidenceRevisionBO">
+        SELECT id AS revisionId, revision_no AS revisionNo, body, moderation_status AS moderationStatus,
+               created_at AS createdAt,
+        <choose>
+            <when test="targetType == 'REVIEW'">
+                overall_score AS overallScore, court_score AS courtScore, environment_score AS environmentScore,
+                service_score AS serviceScore, anonymous,
+                (SELECT GROUP_CONCAT(t.name ORDER BY rel.position SEPARATOR '、')
+                 FROM s_venue_review_tag_rel rel JOIN s_review_tag t ON t.id = rel.tag_id
+                 WHERE rel.revision_id = r.id) AS tags
+            </when>
+            <otherwise>NULL AS overallScore, NULL AS courtScore, NULL AS environmentScore,
+                NULL AS serviceScore, NULL AS anonymous, NULL AS tags</otherwise>
+        </choose>
+        , <choose>
+            <when test="targetType == 'POST'">(SELECT COUNT(*) FROM s_post_media m WHERE m.revision_id=r.id AND m.cleanup_status='PURGED')</when>
+            <when test="targetType == 'REVIEW'">(SELECT COUNT(*) FROM s_venue_review_media m WHERE m.revision_id=r.id AND m.cleanup_status='PURGED')</when>
+            <otherwise>0</otherwise>
+        </choose> AS purgedMediaCount
+        FROM
+        <choose>
+            <when test="targetType == 'POST'">s_post_revision r WHERE post_id</when>
+            <when test="targetType == 'REVIEW'">s_venue_review_revision r WHERE review_id</when>
+            <when test="targetType == 'COMMENT'">s_post_comment_revision r WHERE comment_id</when>
+            <otherwise>s_venue_review_reply_revision r WHERE reply_id</otherwise>
+        </choose> = #{targetId}
+        ORDER BY revision_no DESC
+    </select>
     <update id="resolveReport">
         UPDATE s_content_report SET status=#{status}, resolution=#{resolution}, operator_admin_id=#{adminId},
             resolved_at=UTC_TIMESTAMP(3) WHERE id=#{id} AND status='PENDING'
@@ -57,7 +104,7 @@
     </insert>
     <sql id="appealFields">
         a.id, a.appellant_user_id AS userId, l.content_type AS targetType, l.content_id AS targetId,
-        a.moderation_log_id AS moderationLogId, l.action, a.body AS description, a.status,
+        a.moderation_log_id AS moderationLogId, l.revision_id AS revisionId, l.action, a.body AS description, a.status,
         a.decision_reason AS decisionReason, a.created_at AS createdAt, a.decided_at AS decidedAt
     </sql>
     <select id="selectAppeals" resultType="com.sportsbooking.admin.base.bo.ContentGovernanceBO">

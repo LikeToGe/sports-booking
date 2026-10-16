@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.inOrder;
 
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.base.mapper.UserAccountMapper;
@@ -115,10 +116,44 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void retryCancelledBookingReturnsExistingFactWithoutMoreSideEffects() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.REFUNDED);
+        booking.source = BookingSource.ONLINE;
+        booking.userId = 1L;
+        booking.status = BookingStatus.CANCELLED;
+        booking.cancelReason = "原取消原因";
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+
+        assertThat(service.cancelByUser(1L, 7L)).isSameAs(booking);
+        assertThat(service.cancelByVenue(21L, 7L, "重试取消", true, false)).isSameAs(booking);
+        assertThat(booking.cancelReason).isEqualTo("原取消原因");
+        assertThatThrownBy(() -> service.cancelByUser(2L, 7L)).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> service.cancelByVenue(22L, 7L, "重试取消", true, false))
+                .isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> service.cancelByVenue(21L, 7L, "重试取消", false, false))
+                .isInstanceOf(ApiException.class);
+        org.mockito.Mockito.verifyNoInteractions(paymentService, memberFundsService, scheduleService);
+    }
+
+    @Test
+    void employeeCannotConfirmHistoricalUnrecordedOfflinePayment() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.UNRECORDED);
+        when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.updateOfflinePaymentStatus(
+                21L, null, 19L, 7L, BookingPaymentStatus.PAID, "历史补录"))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.FORBIDDEN.getDescription());
+        assertThat(booking.paymentStatus).isEqualTo(BookingPaymentStatus.UNRECORDED);
+        verify(bookingPaymentStatusLogMapper, never()).insert(any(BookingPaymentStatusLog.class));
+        verify(bookingMapper, never()).updateById(any(Booking.class));
+    }
+
+    @Test
     void rejectsDisabledVenueBeforeWritingOrFreezingFunds() {
         SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
         Venue venue = venue(30);
         venue.status = com.sportsbooking.admin.base.enums.VenueStatus.SUSPENDED;
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
         when(venueService.getVenue(21L)).thenReturn(venue);
@@ -134,6 +169,7 @@ class BookingServiceImplTest {
     @Test
     void rejectsChangedPriceWithoutCreatingBooking() {
         SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
         when(venueService.getVenue(21L)).thenReturn(venue(30));
@@ -223,6 +259,7 @@ class BookingServiceImplTest {
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
         when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
         when(venueService.getVenue(slot.venueId)).thenReturn(venue);
         when(courtMapper.selectById(slot.courtId)).thenReturn(court);
@@ -285,11 +322,65 @@ class BookingServiceImplTest {
         booking.sessionSlotId = 11L;
         booking.status = BookingStatus.PENDING_PAYMENT;
         when(bookingMapper.selectById(77L)).thenReturn(booking);
-        when(paymentService.queryPayment(1L, 77L)).thenReturn(booking);
+        when(paymentService.closeUnpaid(1L, 77L)).thenReturn(booking);
 
         assertThatThrownBy(() -> service.cancelByUser(1L, 77L))
                 .isInstanceOf(ApiException.class)
                 .hasMessage(ErrorCode.OPERATION_IN_PROGRESS.getDescription());
+        verify(scheduleService, never()).releaseBookingSlot(anyLong());
+        verify(redisLockService, never()).execute(any(), any());
+    }
+
+    @Test
+    void returnsClosedUnpaidBookingWithoutCancellingTwice() {
+        Booking booking = new Booking();
+        booking.id = 77L;
+        booking.userId = 1L;
+        booking.status = BookingStatus.PENDING_PAYMENT;
+        when(bookingMapper.selectById(77L)).thenReturn(booking);
+        when(paymentService.closeUnpaid(1L, 77L)).thenAnswer(invocation -> {
+            booking.status = BookingStatus.CANCELLED;
+            booking.paymentStatus = BookingPaymentStatus.PAYMENT_FAILED;
+            return booking;
+        });
+
+        assertThat(service.cancelByUser(1L, 77L)).isSameAs(booking);
+        assertThat(booking.status).isEqualTo(BookingStatus.CANCELLED);
+        verify(redisLockService, never()).execute(any(), any());
+    }
+
+    @Test
+    void rejectsOnlineSlotOverlappingAnExistingBookingSnapshotBeforeFreezing() {
+        SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(venueService.getVenue(21L)).thenReturn(venue(30));
+        when(courtMapper.selectById(31L)).thenReturn(court(31L));
+        when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
+        when(bookingMapper.selectOverlappingActiveForUpdate(31L, slot.startAt, slot.endAt, null, null))
+                .thenReturn(List.of(99L));
+
+        assertThatThrownBy(() -> service.createOnline(1L, 11L, "本地Mock", "MOCK_PHONE"))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.SLOT_CONFLICT.getDescription());
+        verify(bookingMapper, never()).insert(any(Booking.class));
+        verify(memberFundsService, never()).freeze(any(), anyLong(), any());
+        org.mockito.InOrder order = inOrder(courtMapper, sessionSlotMapper);
+        order.verify(courtMapper).selectForUpdate(31L);
+        order.verify(sessionSlotMapper).selectForUpdate(11L);
+    }
+
+    @Test
+    void rejectsDifferentOfflineSlotIdOverlappingAnExistingBookingSnapshot() {
+        SessionSlot slot = openSlot(Instant.now().plusSeconds(7200));
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
+        when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
+        when(bookingMapper.selectOverlappingActiveForUpdate(31L, slot.startAt, slot.endAt, null, null))
+                .thenReturn(List.of(99L));
+
+        assertThatThrownBy(() -> service.createOffline(21L, 11L, "本地Mock", "MOCK_PHONE",
+                BookingPaymentStatus.PAID, null))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.SLOT_CONFLICT.getDescription());
+        verify(bookingMapper, never()).insert(any(Booking.class));
     }
 
     @Test
@@ -305,6 +396,7 @@ class BookingServiceImplTest {
         sport.status = EnableStatus.ACTIVE;
         sport.id = slot.sportTypeId;
         sport.name = "篮球";
+        when(sessionSlotMapper.selectById(11L)).thenReturn(slot);
         when(sessionSlotMapper.selectForUpdate(11L)).thenReturn(slot);
         when(venueService.getVenue(slot.venueId)).thenReturn(venue);
         when(courtMapper.selectById(slot.courtId)).thenReturn(court);
@@ -441,6 +533,43 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void rejectsCrossVenuePendingCancellationBeforeClosingChannelPayment() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAYING);
+        booking.source = BookingSource.ONLINE;
+        booking.status = BookingStatus.PENDING_PAYMENT;
+        booking.userId = 1L;
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+
+        assertThatThrownBy(() -> service.cancelByVenue(22L, 7L, "取消", true, false))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.NOT_FOUND.getDescription());
+        verify(paymentService, never()).closeUnpaid(anyLong(), anyLong(), any(), any());
+    }
+
+    @Test
+    void rejectsBlankVenueCancellationReasonBeforeClosingChannelPayment() {
+        assertThatThrownBy(() -> service.cancelByVenue(21L, 7L, " ", true, false))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.INVALID_ARGUMENT.getDescription());
+        verify(paymentService, never()).closeUnpaid(anyLong(), anyLong(), any(), any());
+    }
+
+    @Test
+    void recordsVenueCancellationActorAndReasonWhenClosingUnpaidBooking() {
+        Booking booking = offlineBooking(7L, 11L, BookingPaymentStatus.PAYING);
+        booking.source = BookingSource.ONLINE;
+        booking.status = BookingStatus.PENDING_PAYMENT;
+        booking.userId = 1L;
+        when(bookingMapper.selectById(7L)).thenReturn(booking);
+        when(paymentService.closeUnpaid(1L, 7L, com.sportsbooking.admin.base.enums.CancelledBy.VENUE, "场馆取消"))
+                .thenAnswer(invocation -> {
+                    booking.status = BookingStatus.CANCELLED;
+                    return booking;
+                });
+
+        assertThat(service.cancelByVenue(21L, 7L, " 场馆取消 ", true, false)).isSameAs(booking);
+        verify(paymentService).closeUnpaid(1L, 7L, com.sportsbooking.admin.base.enums.CancelledBy.VENUE, "场馆取消");
+    }
+
+    @Test
     void deduplicatesAndLocksBatchSlotsInStableOrder() {
         LocalDate firstDate = LocalDate.now().plusDays(2);
         LocalDate secondDate = firstDate.plusDays(1);
@@ -471,6 +600,35 @@ class BookingServiceImplTest {
         verify(redisLockService).execute(lockCaptor.capture(), any());
         assertThat(lockCaptor.getValue()).containsExactly(
                 "sports-booking:lock:session-slot:20", "sports-booking:lock:session-slot:30");
+        org.mockito.InOrder order = inOrder(courtMapper, bookingMapper);
+        order.verify(courtMapper).selectIdsForUpdate(List.of(31L));
+        order.verify(bookingMapper).selectSlotsForUpdate(List.of(20L, 30L));
+    }
+
+    @Test
+    void rejectsEntireOfflineBatchWhenOneDateHasAnotherBookingSnapshot() {
+        LocalDate firstDate = LocalDate.now().plusDays(2);
+        LocalDate secondDate = firstDate.plusDays(1);
+        SessionSlot template = datedSlot(90L, firstDate, SessionSlotStatus.OPEN, 6000);
+        SessionSlot first = datedSlot(30L, firstDate, SessionSlotStatus.OPEN, 6000);
+        SessionSlot second = datedSlot(20L, secondDate, SessionSlotStatus.OPEN, 6000);
+        when(sessionSlotMapper.selectById(90L)).thenReturn(template);
+        when(venueService.getVenue(21L)).thenReturn(venue(0));
+        when(bookingMapper.selectTemplateSlots(90L, List.of(firstDate, secondDate))).thenReturn(List.of(first, second));
+        when(bookingMapper.selectSlotsForUpdate(List.of(20L, 30L))).thenReturn(List.of(second, first));
+        Booking overlapping = offlineBooking(99L, 999L, BookingPaymentStatus.PAID);
+        overlapping.startAt = second.startAt;
+        overlapping.endAt = second.endAt;
+        when(bookingMapper.selectActiveSnapshotsForUpdate(List.of(31L), first.startAt, second.endAt))
+                .thenReturn(List.of(overlapping));
+
+        ApiException error = catchThrowableOfType(() -> service.createOfflineBatch(21L, 90L,
+                List.of(firstDate, secondDate), "本地Mock", "MOCK_PHONE", BookingPaymentStatus.PAID, null),
+                ApiException.class);
+
+        assertThat(error.getCode()).isEqualTo(ErrorCode.BATCH_SLOT_CONFLICT);
+        assertThat(error.getData()).isEqualTo(List.of(secondDate));
+        verify(bookingMapper, never()).insert(any(Booking.class));
     }
 
     @Test
@@ -505,6 +663,8 @@ class BookingServiceImplTest {
         SessionSlot target = datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 6000);
         when(bookingMapper.selectById(7L)).thenReturn(booking);
         when(bookingMapper.selectForUpdate(7L)).thenReturn(booking);
+        when(sessionSlotMapper.selectById(30L)).thenReturn(original);
+        when(sessionSlotMapper.selectById(20L)).thenReturn(target);
         when(bookingMapper.selectSlotsForUpdate(List.of(20L, 30L))).thenReturn(List.of(target, original));
         when(courtMapper.selectById(31L)).thenReturn(court(31L));
         when(sportTypeMapper.selectById(41L)).thenReturn(sport(41L));
@@ -526,6 +686,23 @@ class BookingServiceImplTest {
         assertThat(logCaptor.getValue().originalSessionSlotId).isEqualTo(30L);
         assertThat(logCaptor.getValue().newSessionSlotId).isEqualTo(20L);
         assertThat(logCaptor.getValue().operatorAdminId).isEqualTo(99L);
+        verify(bookingMapper).selectOverlappingActiveForUpdate(
+                target.courtId, target.startAt, target.endAt, 7L, null);
+    }
+
+    @Test
+    void rejectsRescheduleToSnapshotConflictBeforeReleasingOriginalInventory() {
+        Booking booking = offlineBooking(7L, 30L, BookingPaymentStatus.PAID);
+        SessionSlot target = datedSlot(20L, LocalDate.now().plusDays(2), SessionSlotStatus.OPEN, 6000);
+        stubReschedule(booking, target);
+        when(bookingMapper.selectOverlappingActiveForUpdate(31L, target.startAt, target.endAt, 7L, null))
+                .thenReturn(List.of(99L));
+
+        assertThatThrownBy(() -> service.rescheduleOffline(21L, 99L, 7L, 20L, "调整日期"))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.SLOT_CONFLICT.getDescription());
+        verify(scheduleService, never()).releaseBookingSlot(anyLong());
+        verify(bookingRescheduleLogMapper, never()).insert(any(BookingRescheduleLog.class));
+        assertThat(booking.sessionSlotId).isEqualTo(30L);
     }
 
     @Test
@@ -615,6 +792,8 @@ class BookingServiceImplTest {
         original.holdBookingId = booking.id;
         when(bookingMapper.selectById(booking.id)).thenReturn(booking);
         when(bookingMapper.selectForUpdate(booking.id)).thenReturn(booking);
+        when(sessionSlotMapper.selectById(original.id)).thenReturn(original);
+        when(sessionSlotMapper.selectById(target.id)).thenReturn(target);
         when(bookingMapper.selectSlotsForUpdate(List.of(target.id, original.id))).thenReturn(List.of(target, original));
     }
 
@@ -622,6 +801,7 @@ class BookingServiceImplTest {
         Booking booking = new Booking();
         booking.id = id;
         booking.venueId = 21L;
+        booking.courtId = 31L;
         booking.sessionSlotId = sessionSlotId;
         booking.source = BookingSource.OFFLINE;
         booking.status = BookingStatus.CONFIRMED;

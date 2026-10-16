@@ -4,6 +4,14 @@
     <select id="selectForUpdate" resultType="com.sportsbooking.admin.base.po.Court">
         SELECT * FROM s_court WHERE id = #{courtId} FOR UPDATE
     </select>
+    <select id="selectVenueForUpdate" resultType="com.sportsbooking.admin.base.po.Court">
+        SELECT * FROM s_court WHERE venue_id = #{venueId} ORDER BY id FOR UPDATE
+    </select>
+    <select id="selectIdsForUpdate" resultType="com.sportsbooking.admin.base.po.Court">
+        SELECT * FROM s_court WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+        ORDER BY id FOR UPDATE
+    </select>
 
     <select id="selectSportIds" resultType="long">
         SELECT sport_type_id FROM s_court_sport WHERE court_id = #{courtId} ORDER BY sport_type_id

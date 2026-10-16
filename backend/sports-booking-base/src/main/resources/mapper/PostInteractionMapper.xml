@@ -37,18 +37,22 @@
         UPDATE s_post_comment SET content_status = 'DELETED', deleted_at = UTC_TIMESTAMP(3), updated_at = UTC_TIMESTAMP(3)
         WHERE id = #{commentId} AND author_user_id = #{userId} AND deleted_at IS NULL
     </update>
-    <select id="selectPublicComments" resultType="com.sportsbooking.admin.base.bo.PostCommentBO">
+    <!-- 本人的未通过当前版本仅用于管理，公开读取始终使用已通过指针。 -->
+    <select id="selectVisibleComments" resultType="com.sportsbooking.admin.base.bo.PostCommentBO">
         SELECT c.id, c.post_id, c.author_user_id, c.parent_comment_id, r.id AS revisionId,
                CASE WHEN c.content_status = 'DELETED' THEN '评论已删除' ELSE r.body END AS body,
                c.content_status, c.created_at, u.nickname AS authorName, r.moderation_status AS moderationStatus
-        FROM s_post_comment c JOIN s_post_comment_revision r ON r.id = c.public_revision_id
+        FROM s_post_comment c JOIN s_post_comment_revision r ON r.id =
+            CASE WHEN c.author_user_id = #{userId} AND c.deleted_at IS NULL
+                THEN c.current_revision_id ELSE c.public_revision_id END
         JOIN s_post p ON p.id = c.post_id
         JOIN s_user_account u ON u.id = c.author_user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
         WHERE c.post_id = #{postId} AND p.content_status = 'PUBLISHED' AND p.deleted_at IS NULL
-          AND r.moderation_status = 'APPROVED'
-          AND (c.content_status = 'PUBLISHED' OR (c.content_status = 'DELETED' AND c.parent_comment_id IS NULL
-              AND EXISTS (SELECT 1 FROM s_post_comment child
-                  WHERE child.parent_comment_id = c.id AND child.content_status = 'PUBLISHED')))
+          AND ((c.author_user_id = #{userId} AND c.deleted_at IS NULL AND c.content_status != 'DELETED')
+              OR (r.moderation_status = 'APPROVED'
+                  AND (c.content_status = 'PUBLISHED' OR (c.content_status = 'DELETED' AND c.parent_comment_id IS NULL
+                      AND EXISTS (SELECT 1 FROM s_post_comment child
+                          WHERE child.parent_comment_id = c.id AND child.content_status = 'PUBLISHED')))))
           AND (c.parent_comment_id IS NULL OR EXISTS (
               SELECT 1 FROM s_post_comment parent JOIN s_user_account pu ON pu.id = parent.author_user_id
               WHERE parent.id = c.parent_comment_id AND parent.content_status IN ('PUBLISHED','DELETED')
@@ -59,7 +63,8 @@
           AND NOT EXISTS (SELECT 1 FROM s_user_block b
                           WHERE (b.blocker_user_id = #{userId} AND b.blocked_user_id = c.author_user_id)
                              OR (b.blocker_user_id = c.author_user_id AND b.blocked_user_id = #{userId}))
-        ORDER BY c.created_at, c.id LIMIT 200
+        ORDER BY (c.author_user_id = #{userId} AND r.moderation_status != 'APPROVED') DESC,
+                 c.created_at, c.id LIMIT 200
     </select>
     <insert id="insertLike">
         INSERT IGNORE INTO s_post_like (post_id, user_id) VALUES (#{postId}, #{userId})

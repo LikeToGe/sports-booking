@@ -19,10 +19,12 @@ public class ReminderSubscriptionRequest {
     @Schema(description = "运动类型 ID") @ApiModelProperty("运动类型 ID") private Long sportTypeId;
     /** 目标业务日期。 */
     @Schema(description = "预约日期") @ApiModelProperty("预约日期") private LocalDate targetDate;
-    /** 可用时段开始。 */
-    @Schema(description = "开始时间") @ApiModelProperty("开始时间") private LocalTime startTime;
-    /** 可用时段结束。 */
-    @Schema(description = "结束时间") @ApiModelProperty("结束时间") private LocalTime endTime;
+    /** 可用时段开始，分钟精度。 */
+    @Schema(description = "开始时间 HH:mm，不接受非零秒或小数秒")
+    @ApiModelProperty("开始时间 HH:mm，不接受非零秒或小数秒") private LocalTime startTime;
+    /** 可用时段结束，分钟精度。 */
+    @Schema(description = "结束时间 HH:mm，不接受非零秒或小数秒")
+    @ApiModelProperty("结束时间 HH:mm，不接受非零秒或小数秒") private LocalTime endTime;
     /** 提醒类型：OPENING 开售、RELEASED 空位。 */
     @Schema(description = "提醒类型 OPENING/RELEASED") @ApiModelProperty("提醒类型") private String type;
 }

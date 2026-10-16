@@ -21,6 +21,9 @@ public class ContentGovernanceVO {
     @Schema(description = "目标 ID") @ApiModelProperty("目标 ID") private Long targetId;
     /** 处置记录 ID。 */
     @Schema(description = "处置记录 ID") @ApiModelProperty("处置记录 ID") private Long moderationLogId;
+    /** 案件或处置对应的历史版本 ID；账号处置中为限制记录 ID。 */
+    @Schema(description = "案件或处置对应的历史版本 ID；账号处置中为限制记录 ID")
+    @ApiModelProperty("案件或处置对应的历史版本 ID；账号处置中为限制记录 ID") private Long revisionId;
     /** 处置动作。 */
     @Schema(description = "处置动作") @ApiModelProperty("处置动作") private String action;
     /** 提交原因。 */
@@ -36,6 +39,6 @@ public class ContentGovernanceVO {
     /** 处理时间。 */
     @Schema(description = "处理时间") @ApiModelProperty("处理时间") private LocalDateTime decidedAt;
     public static ContentGovernanceVO from(ContentGovernanceBO row) {
-        return new ContentGovernanceVO(row.getId(), row.getUserId(), row.getTargetType(), row.getTargetId(), row.getModerationLogId(), row.getAction(), row.getReason(), row.getDescription(), row.getStatus(), row.getDecisionReason(), row.getCreatedAt(), row.getDecidedAt());
+        return new ContentGovernanceVO(row.getId(), row.getUserId(), row.getTargetType(), row.getTargetId(), row.getModerationLogId(), row.getRevisionId(), row.getAction(), row.getReason(), row.getDescription(), row.getStatus(), row.getDecisionReason(), row.getCreatedAt(), row.getDecidedAt());
     }
 }

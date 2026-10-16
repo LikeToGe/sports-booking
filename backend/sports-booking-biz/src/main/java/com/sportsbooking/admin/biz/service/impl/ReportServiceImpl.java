@@ -153,6 +153,7 @@ public class ReportServiceImpl implements ReportService {
                 venueId, toStartAt(startDate), toEndAt(endDate), courtId, sportTypeId);
         Map<ReportHour, MinuteBucket> buckets = new java.util.LinkedHashMap<>();
         Map<Long, String> courtNames = new HashMap<>();
+        Map<Long, LocalDateTime> courtStarts = new HashMap<>();
         Map<Long, String> sports = new java.util.TreeMap<>();
         for (ReportIntervalBO fact : facts) {
             courtNames.put(fact.getCourtId(), fact.getCourtName());
@@ -162,6 +163,11 @@ public class ReportServiceImpl implements ReportService {
             LocalDateTime clippedBegin = begin.isBefore(startDate.atStartOfDay()) ? startDate.atStartOfDay() : begin;
             LocalDateTime clippedEnd = finish.isAfter(endDate.plusDays(1).atStartOfDay())
                     ? endDate.plusDays(1).atStartOfDay() : finish;
+            if ("UNKNOWN".equals(fact.getKind())) {
+                // 场地存在不等于该时段可售；只记待核对范围，不给缺失数据补容量。
+                courtStarts.put(fact.getCourtId(), clippedBegin.withMinute(0).withSecond(0).withNano(0));
+                continue;
+            }
             for (LocalDateTime hour = clippedBegin.withMinute(0).withSecond(0).withNano(0);
                  hour.isBefore(clippedEnd); hour = hour.plusHours(1)) {
                 MinuteBucket bucket = buckets.computeIfAbsent(new ReportHour(fact.getCourtId(), hour), key -> new MinuteBucket());
@@ -204,6 +210,19 @@ public class ReportServiceImpl implements ReportService {
                 low.add(new ReportLowUtilizationVO(key.getCourtId(), courtNames.get(key.getCourtId()),
                         key.getHour().toLocalDate().toString(), key.getHour().toString(), key.getHour().plusHours(1).toString(),
                         available, booked, rate(booked, available), bucket.cancelledIds.size()));
+            }
+        }
+        // 每个存在的场地逐日核对，避免同一星期另一天无事实时被已有事实掩盖。
+        // 缺失小时直接标记汇总，不为最多 90 天的全场地范围分配空分钟桶。
+        for (Map.Entry<Long, LocalDateTime> court : courtStarts.entrySet()) {
+            for (LocalDateTime hour = court.getValue(); hour.isBefore(endDate.plusDays(1).atStartOfDay());
+                 hour = hour.plusHours(1)) {
+                if (buckets.containsKey(new ReportHour(court.getKey(), hour))) continue;
+                boolean historical = hour.toLocalDate().isBefore(today);
+                String cell = hour.getDayOfWeek().getValue() + ":" + hour.getHour();
+                (historical ? history : future).computeIfAbsent(cell, ignored -> new MinuteSummary()).unknown = true;
+                (historical ? historicalCourts : futureCourts)
+                        .computeIfAbsent(court.getKey(), ignored -> new MinuteSummary()).unknown = true;
             }
         }
         low.sort(java.util.Comparator.comparingInt(ReportLowUtilizationVO::getUtilizationRateBasisPoints)

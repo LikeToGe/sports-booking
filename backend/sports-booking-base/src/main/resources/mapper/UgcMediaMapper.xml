@@ -114,6 +114,8 @@
         JOIN s_venue_review_revision rev ON rev.id = m.revision_id
         WHERE m.id = #{mediaId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rev.moderation_status = 'APPROVED' AND m.moderation_status = 'APPROVED'
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
           AND m.cleanup_status = 'ACTIVE'
     </select>
 
@@ -123,6 +125,8 @@
         FROM s_venue_review_media m JOIN s_venue_review_revision rev ON rev.id = m.revision_id
         JOIN s_venue_review r ON r.id = rev.review_id
         WHERE m.id = #{mediaId} AND r.user_id = #{userId} AND r.deleted_at IS NULL
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
           AND m.cleanup_status = 'ACTIVE'
     </select>
 

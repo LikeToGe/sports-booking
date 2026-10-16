@@ -228,6 +228,107 @@ class MemberFundsServiceImplTest {
         verify(rechargeMapper, never()).insert(any(MemberRecharge.class));
     }
 
+    @Test
+    void cancelPendingRechargeOnlyAfterChannelConfirmsUnpaidClosure() {
+        MemberRecharge pending = ownedPendingRecharge();
+        when(channelAdapter.closeRecharge(pending)).thenReturn(PaymentResult.FAILED);
+
+        assertThat(service.cancelRecharge(2L, 7L).getStatus()).isEqualTo(RechargeStatus.CLOSED);
+        assertThat(service.cancelRecharge(2L, 7L).getStatus()).isEqualTo(RechargeStatus.CLOSED);
+
+        verify(channelAdapter).closeRecharge(pending);
+        verify(lotMapper, never()).insert(any(MemberBalanceLot.class));
+        verify(flowMapper, never()).insert(any(com.sportsbooking.admin.base.po.MemberBalanceFlow.class));
+        verify(lockService).execute(org.mockito.ArgumentMatchers.eq(List.of(
+                com.sportsbooking.admin.biz.constants.RedisLockType.RECHARGE.key(7L),
+                com.sportsbooking.admin.biz.constants.RedisLockType.MEMBER_BALANCE.key(9L))), any());
+    }
+
+    @Test
+    void unknownCloseResultLeavesPendingAndCreatesNoBalance() {
+        MemberRecharge pending = ownedPendingRecharge();
+        when(channelAdapter.closeRecharge(pending)).thenReturn(PaymentResult.UNKNOWN);
+
+        assertThatThrownBy(() -> service.cancelRecharge(2L, 7L)).isInstanceOf(ApiException.class);
+
+        assertThat(pending.status).isEqualTo(RechargeStatus.PENDING);
+        verify(rechargeMapper, never()).updateById(any(MemberRecharge.class));
+        verify(lotMapper, never()).insert(any(MemberBalanceLot.class));
+    }
+
+    @Test
+    void concurrentSuccessfulNotificationWinsOverCloseResponse() {
+        MemberRecharge pending = ownedPendingRecharge();
+        when(channelAdapter.closeRecharge(pending)).thenAnswer(invocation -> {
+            pending.status = RechargeStatus.SUCCESS;
+            return PaymentResult.FAILED;
+        });
+
+        assertThat(service.cancelRecharge(2L, 7L).getStatus()).isEqualTo(RechargeStatus.SUCCESS);
+
+        verify(rechargeMapper, never()).updateById(any(MemberRecharge.class));
+        verify(lotMapper, never()).insert(any(MemberBalanceLot.class));
+    }
+
+    @Test
+    void successfulChannelCloseResponseConvergesRechargeInsteadOfCancellingIt() {
+        MemberRecharge pending = ownedPendingRecharge();
+        when(channelAdapter.closeRecharge(pending)).thenReturn(PaymentResult.SUCCESS);
+        doAnswer(invocation -> {
+            MemberBalanceLot created = invocation.getArgument(0);
+            created.id = 21L;
+            return 1;
+        }).when(lotMapper).insert(any(MemberBalanceLot.class));
+
+        assertThat(service.cancelRecharge(2L, 7L).getStatus()).isEqualTo(RechargeStatus.SUCCESS);
+
+        verify(lotMapper).insert(any(MemberBalanceLot.class));
+    }
+
+    @Test
+    void closedRechargeRejectsMockPayAndContradictoryLateSuccessWithoutCrediting() {
+        MemberRecharge closed = ownedPendingRecharge();
+        closed.status = RechargeStatus.CLOSED;
+        when(rechargeMapper.selectByBusinessNo(closed.rechargeNo)).thenReturn(closed);
+
+        assertThatThrownBy(() -> service.confirmMockRecharge(2L, 7L)).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> service.handleMockRechargeNotification(closed.rechargeNo,
+                closed.paidAmountFen, PaymentResult.SUCCESS)).isInstanceOf(ApiException.class);
+
+        assertThat(closed.status).isEqualTo(RechargeStatus.CLOSED);
+        verify(lotMapper, never()).insert(any(MemberBalanceLot.class));
+        verify(rechargeMapper, never()).updateById(any(MemberRecharge.class));
+    }
+
+    @Test
+    void anotherUserCannotCloseRechargeOrReadOwnersRechargeList() {
+        MemberRecharge pending = ownedPendingRecharge();
+
+        assertThatThrownBy(() -> service.cancelRecharge(3L, 7L)).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> service.listOwnRecharges(3L, 1L)).isInstanceOf(ApiException.class);
+
+        verify(channelAdapter, never()).closeRecharge(pending);
+        verify(rechargeMapper, never()).selectByCustomer(anyLong());
+    }
+
+    @Test
+    void listsRechargesOnlyForAuthenticatedUsersVenueRelationship() {
+        MemberRecharge pending = ownedPendingRecharge();
+        when(customerMapper.selectByVenueAndUser(1L, 2L)).thenReturn(customer(9L, 1L, 2L));
+        when(rechargeMapper.selectByCustomer(9L)).thenReturn(List.of(pending));
+
+        assertThat(service.listOwnRecharges(2L, 1L)).extracting(row -> row.getId()).containsExactly(7L);
+    }
+
+    private MemberRecharge ownedPendingRecharge() {
+        MemberRecharge pending = recharge(7L, 9L, RechargeChannel.MOCK);
+        pending.status = RechargeStatus.PENDING;
+        when(rechargeMapper.selectById(7L)).thenReturn(pending);
+        when(rechargeMapper.selectForUpdate(7L)).thenReturn(pending);
+        when(customerMapper.selectById(9L)).thenReturn(customer(9L, 1L, 2L));
+        return pending;
+    }
+
     private MemberBalanceLot lot(long id, BalanceType type, int available, Instant expiresAt) {
         MemberBalanceLot lot = new MemberBalanceLot();
         lot.id = id;

@@ -134,6 +134,57 @@ class ReportServiceImplTest {
     }
 
     @Test
+    void missingRepeatedWeekdayStaysUnknownWithoutInventingCapacity() {
+        ReportIntervalBO coverage = interval(3L, "UNKNOWN", null, "2026-09-01T00:00", "2026-09-09T00:00");
+        ReportIntervalBO booked = interval(3L, "BOOKED", 1L, "2026-09-01T19:00", "2026-09-01T20:00");
+        when(reportMapper.selectUtilizationIntervals(eq(21L), any(), any(), eq(null), eq(null)))
+                .thenReturn(List.of(coverage, booked));
+
+        ReportUtilizationVO report = service.getUtilizationReport(21L,
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 8), null, null, true);
+        var cell = report.getHeatmap().stream().filter(row -> row.getDayOfWeek() == 2 && row.getHourOfDay() == 19)
+                .findFirst().orElseThrow();
+        assertThat(cell.getDataStatus()).isEqualTo("DATA_INSUFFICIENT");
+        assertThat(cell.getAvailableMinutes()).isEqualTo(60);
+        assertThat(cell.getBookedMinutes()).isEqualTo(60);
+        assertThat(report.getCourts().get(0).getDataStatus()).isEqualTo("DATA_INSUFFICIENT");
+
+        when(reportMapper.selectUtilizationIntervals(eq(21L), any(), any(), eq(null), eq(null)))
+                .thenReturn(List.of(coverage, booked,
+                        interval(3L, "UNAVAILABLE", null, "2026-09-08T19:00", "2026-09-08T20:00")));
+        ReportUtilizationVO withClosure = service.getUtilizationReport(21L,
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 8), null, null, true);
+        var closedCell = withClosure.getHeatmap().stream()
+                .filter(row -> row.getDayOfWeek() == 2 && row.getHourOfDay() == 19).findFirst().orElseThrow();
+        assertThat(closedCell.getDataStatus()).isEqualTo("KNOWN");
+        assertThat(closedCell.getAvailableMinutes()).isEqualTo(60);
+    }
+
+    @Test
+    void includesEmptyCourtsButDoesNotCountDatesBeforeCourtCreation() {
+        when(reportMapper.selectUtilizationIntervals(eq(21L), any(), any(), eq(null), eq(null))).thenReturn(List.of(
+                interval(3L, "UNKNOWN", null, "2026-09-08T12:30", "2026-09-09T00:00"),
+                interval(3L, "BOOKED", 1L, "2026-09-08T19:00", "2026-09-08T20:00"),
+                interval(4L, "UNKNOWN", null, "2026-09-08T12:30", "2026-09-09T00:00")));
+        ReportUtilizationVO report = service.getUtilizationReport(21L,
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 8), null, null, true);
+        assertThat(report.getCourts()).hasSize(2);
+        assertThat(report.getCourts().stream().filter(row -> row.getCourtId() == 4).findFirst().orElseThrow()
+                .getDataStatus()).isEqualTo("DATA_INSUFFICIENT");
+        assertThat(report.getLowUtilization()).isEmpty();
+        assertThat(report.getHeatmap().stream().filter(row -> row.getDayOfWeek() == 2 && row.getHourOfDay() == 19)
+                .findFirst().orElseThrow().getDataStatus()).isEqualTo("DATA_INSUFFICIENT");
+
+        when(reportMapper.selectUtilizationIntervals(eq(21L), any(), any(), eq(null), eq(null))).thenReturn(List.of(
+                interval(3L, "UNKNOWN", null, "2026-09-08T12:30", "2026-09-09T00:00"),
+                interval(3L, "BOOKED", 1L, "2026-09-08T19:00", "2026-09-08T20:00")));
+        ReportUtilizationVO newlyCreated = service.getUtilizationReport(21L,
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 8), null, null, true);
+        assertThat(newlyCreated.getHeatmap().stream().filter(row -> row.getDayOfWeek() == 2 && row.getHourOfDay() == 19)
+                .findFirst().orElseThrow().getDataStatus()).isEqualTo("KNOWN");
+    }
+
+    @Test
     void separatesFutureAndHidesCourtDetailsForPlatform() {
         LocalDate tomorrow = LocalDate.now(com.sportsbooking.admin.biz.constants.BusinessConstants.BUSINESS_ZONE).plusDays(1);
         when(reportMapper.selectUtilizationIntervals(eq(null), any(), any(), eq(null), eq(null))).thenReturn(List.of(

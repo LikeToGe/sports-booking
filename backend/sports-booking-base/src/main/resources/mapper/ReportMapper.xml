@@ -361,5 +361,24 @@
         <if test="venueId != null">AND b.venue_id=#{venueId}</if>
         <if test="courtId != null">AND b.court_id=#{courtId}</if>
         <if test="sportTypeId != null">AND b.sport_type_id=#{sportTypeId}</if>
+        UNION ALL
+        <!-- 场地创建沿用旧链路的本地业务时间，转换为 UTC 后与预约快照比较。 -->
+        <!-- 存在范围只用于识别缺失小时，不拿当前周场次或启停状态填造历史供给。 -->
+        SELECT c.venue_id, c.id, c.name, NULL, NULL, NULL,
+               GREATEST(CONVERT_TZ(c.created_at, '+08:00', '+00:00'), #{startAt}), #{endAt}, 'UNKNOWN'
+        FROM s_court c
+        WHERE c.created_at &lt; CONVERT_TZ(#{endAt}, '+00:00', '+08:00')
+        <if test="venueId != null">AND c.venue_id=#{venueId}</if>
+        <if test="courtId != null">AND c.id=#{courtId}</if>
+        <if test="sportTypeId != null">
+          AND (EXISTS (SELECT 1 FROM s_court_sport cs
+                       WHERE cs.court_id=c.id AND cs.sport_type_id=#{sportTypeId})
+               OR EXISTS (SELECT 1 FROM s_session_slot ss
+                          WHERE ss.court_id=c.id AND ss.sport_type_id=#{sportTypeId}
+                            AND ss.start_at &lt; #{endAt} AND ss.end_at &gt; #{startAt})
+               OR EXISTS (SELECT 1 FROM s_booking b
+                          WHERE b.court_id=c.id AND b.sport_type_id=#{sportTypeId}
+                            AND b.start_at &lt; #{endAt} AND b.end_at &gt; #{startAt}))
+        </if>
     </select>
 </mapper>

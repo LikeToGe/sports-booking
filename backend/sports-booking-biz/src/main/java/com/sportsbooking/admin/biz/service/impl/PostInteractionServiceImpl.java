@@ -58,7 +58,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
 
     @Override public List<PostCommentVO> listComments(long userId, long postId) {
         requireVisible(userId, postId);
-        return mapper.selectPublicComments(postId, userId).stream().map(row -> {
+        return mapper.selectVisibleComments(postId, userId).stream().map(row -> {
             PostCommentVO comment = PostCommentVO.from(row);
             comment.setIsMine(row.authorUserId == userId);
             return comment;

@@ -22,6 +22,6 @@ public class ReportIntervalBO {
     private Instant startAt;
     /** 结束时刻。 */
     private Instant endAt;
-    /** SUPPLY、UNAVAILABLE、BOOKED、CANCELLED 或 OTHER。 */
+    /** SUPPLY、UNAVAILABLE、BOOKED、CANCELLED、OTHER；UNKNOWN 仅标记场地存在范围。 */
     private String kind;
 }

@@ -50,8 +50,8 @@ def instant(day, clock):
 sport = int(sql("SELECT id FROM s_sport_type WHERE owner_venue_id IS NULL AND status='ACTIVE' ORDER BY id LIMIT 1"))
 second_sport = int(sql("SELECT id FROM s_sport_type WHERE owner_venue_id IS NULL AND status='ACTIVE' ORDER BY id DESC LIMIT 1"))
 # 自有 fixture IDs；重复执行只重建自己的事实，不触碰预约、支付或余额流程的数据。
-sql("DELETE FROM s_booking WHERE booking_no LIKE 'P6UTIL-%'; DELETE FROM s_session_slot WHERE id BETWEEN 981001 AND 981020; DELETE FROM s_court_sport WHERE court_id IN (981001,981002); DELETE FROM s_court WHERE id IN (981001,981002);")
-sql(f"INSERT INTO s_court(id,venue_id,name,status) VALUES(981001,1,'P6分钟测试场','ACTIVE'),(981002,2,'P6隔离测试场','ACTIVE'); INSERT INTO s_court_sport(court_id,sport_type_id) VALUES(981001,{sport}),(981002,{sport});")
+sql("DELETE FROM s_booking WHERE booking_no LIKE 'P6UTIL-%'; DELETE FROM s_session_slot WHERE id BETWEEN 981001 AND 981020; DELETE FROM s_court_sport WHERE court_id IN (981001,981002,981003,981004); DELETE FROM s_court WHERE id IN (981001,981002,981003,981004);")
+sql(f"INSERT INTO s_court(id,venue_id,name,status,created_at) VALUES(981001,1,'P6分钟测试场','ACTIVE','{DAY-dt.timedelta(days=10)} 00:00:00'),(981002,2,'P6隔离测试场','ACTIVE','{DAY-dt.timedelta(days=10)} 00:00:00'); INSERT INTO s_court_sport(court_id,sport_type_id) VALUES(981001,{sport}),(981002,{sport});")
 
 
 def slot(number, start, end, status='OPEN', day=DAY):
@@ -107,4 +107,39 @@ if second_sport != sport:
 future = ok(path + urllib.parse.urlencode({**params, 'startDate': str(FUTURE), 'endDate': str(FUTURE)}), venue)
 assert not future['courts'] and future['futureCourts'][0]['availableMinutes'] == 60
 assert all(c['availableMinutes'] == 0 for c in future['heatmap'])
+
+# 同一星期的另一天完全缺失，必须保持未知；显式关闭则是已知且没有容量。
+previous = DAY - dt.timedelta(days=7)
+repeated_params = {**params, 'startDate': str(previous)}
+repeated = ok(path + urllib.parse.urlencode(repeated_params), venue)
+cell = next(c for c in repeated['heatmap'] if c['dayOfWeek'] == DAY.isoweekday() and c['hourOfDay'] == 10)
+assert (cell['dataStatus'], cell['availableMinutes'], cell['bookedMinutes']) == ('DATA_INSUFFICIENT', 60, 15), cell
+assert repeated['courts'][0]['dataStatus'] == 'DATA_INSUFFICIENT'
+slot(9, '10:00', '11:00', 'CLOSED', day=previous)
+closed = ok(path + urllib.parse.urlencode(repeated_params), venue)
+cell = next(c for c in closed['heatmap'] if c['dayOfWeek'] == DAY.isoweekday() and c['hourOfDay'] == 10)
+assert (cell['dataStatus'], cell['availableMinutes'], cell['bookedMinutes']) == ('KNOWN', 60, 15), cell
+
+# 空场地也必须参与完整性检查，场地创建前的日期却不能被当成缺失供给。
+sql(f"INSERT INTO s_court(id,venue_id,name,status,created_at) VALUES(981003,1,'P6空事实测试场','ACTIVE','{previous} 00:00:00'),(981004,1,'P6新建日期测试场','ACTIVE','{DAY} 23:30:00'); INSERT INTO s_court_sport(court_id,sport_type_id) VALUES(981003,{sport}),(981004,{sport});")
+empty = ok(path + urllib.parse.urlencode({**repeated_params, 'courtId': 981003}), venue)
+assert empty['courts'][0]['dataStatus'] == 'DATA_INSUFFICIENT' and empty['courts'][0]['availableMinutes'] == 0
+assert not empty['lowUtilization']
+created = ok(path + urllib.parse.urlencode({**repeated_params, 'courtId': 981004}), venue)
+assert created['courts'][0]['dataStatus'] == 'DATA_INSUFFICIENT', '创建时间按旧链路业务时区理解，不能漏掉当晚创建的空场地'
+sql(f"INSERT INTO s_session_slot(id,venue_id,court_id,sport_type_id,manual_override,slot_date,start_at,end_at,price_fen,status) VALUES(981010,1,981004,{sport},1,'{DAY}','{instant(DAY,'23:30')}','{instant(DAY,'24:00')}',1000,'OPEN');")
+created = ok(path + urllib.parse.urlencode({**repeated_params, 'courtId': 981004}), venue)
+cell = next(c for c in created['heatmap'] if c['dayOfWeek'] == DAY.isoweekday() and c['hourOfDay'] == 23)
+assert (cell['dataStatus'], cell['availableMinutes']) == ('KNOWN', 30), cell
+if second_sport != sport:
+    unrelated = ok(path + urllib.parse.urlencode({**repeated_params, 'courtId': 981003, 'sportTypeId': second_sport}), venue)
+    assert not unrelated['courts'], '运动筛选不能纳入无关联也无历史事实的场地'
+sql('DELETE FROM s_court_sport WHERE court_id=981001;')
+try:
+    removed = ok(path + urllib.parse.urlencode({**repeated_params, 'sportTypeId': sport}), venue)
+    cell = next(c for c in removed['heatmap'] if c['dayOfWeek'] == DAY.isoweekday() and c['hourOfDay'] == 11)
+    assert cell['dataStatus'] == 'DATA_INSUFFICIENT', '移除当前运动关联不能隐藏历史范围内缺失日期'
+finally:
+    sql(f'INSERT INTO s_court_sport(court_id,sport_type_id) VALUES(981001,{sport});')
 print('P6 utilization HTTP passed: interval union 270/40, snapshots, held supply, unique cancellation counts, missing data, future separation, platform scope and midnight/sport drilldown')
+print('P6 utilization completeness passed: repeated weekday gaps, explicit closures, empty courts, creation boundary and current/historical sport scope')

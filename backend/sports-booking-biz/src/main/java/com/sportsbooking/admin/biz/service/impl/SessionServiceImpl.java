@@ -61,9 +61,10 @@ public class SessionServiceImpl implements SessionService {
         return create(ADMIN_SESSION_KIND, principal);
     }
 
+    /** 员工会话保存原绑定身份，避免员工档案换绑后旧用户沿用令牌。 */
     @Override
-    public String createEmployeeAdminSession(long employeeId, long venueId) {
-        return create(ADMIN_SESSION_KIND, Map.of("employeeId", employeeId, "venueId", venueId));
+    public String createEmployeeAdminSession(long employeeId, long venueId, long userId) {
+        return create(ADMIN_SESSION_KIND, Map.of("employeeId", employeeId, "venueId", venueId, "userId", userId));
     }
 
     /**
@@ -89,7 +90,10 @@ public class SessionServiceImpl implements SessionService {
         try {
             com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(sessionJson);
             if (root.has("employeeId") && !root.has("role")) {
-                return permissionService.resolveEmployee(root.get("employeeId").asLong(), root.get("venueId").asLong());
+                // 旧格式员工会话没有原绑定用户，重新扫码后才可继续，避免重绑后旧会话复活。
+                if (!root.has("userId")) throw unauthorized();
+                return permissionService.resolveEmployee(root.get("employeeId").asLong(),
+                        root.get("venueId").asLong(), root.get("userId").asLong());
             }
             return objectMapper.readValue(sessionJson, AdminPrincipal.class);
         } catch (ApiException exception) {

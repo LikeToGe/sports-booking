@@ -105,7 +105,7 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
                 .filter(item -> item.getVenueId() == venueId).findFirst().orElseThrow(this::forbidden);
         try {
             Long result = redisTemplate.execute(CONFIRM_SCRIPT, List.of(key(ticket)), json(Map.of(
-                    "status", "CONFIRMED", "employeeId", staffVenue.getEmployeeId(), "venueId", venueId)));
+                    "status", "CONFIRMED", "employeeId", staffVenue.getEmployeeId(), "venueId", venueId, "userId", userId)));
             if (result == null || result != 1) {
                 throw invalid();
             }
@@ -126,8 +126,11 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
             JsonNode data = read(value);
             long employeeId = data.get("employeeId").asLong();
             long venueId = data.get("venueId").asLong();
-            AdminPrincipal principal = permissionService.resolveEmployee(employeeId, venueId);
-            return new AdminLoginVO(sessionService.createEmployeeAdminSession(employeeId, venueId), principal);
+            // 消费时再次复核确认票据的原用户，解绑或换绑后不能用旧确认票据登录。
+            if (!data.has("userId")) throw invalid();
+            long userId = data.get("userId").asLong();
+            AdminPrincipal principal = permissionService.resolveEmployee(employeeId, venueId, userId);
+            return new AdminLoginVO(sessionService.createEmployeeAdminSession(employeeId, venueId, userId), principal);
         } catch (ApiException exception) {
             throw exception;
         } catch (DataAccessException exception) {

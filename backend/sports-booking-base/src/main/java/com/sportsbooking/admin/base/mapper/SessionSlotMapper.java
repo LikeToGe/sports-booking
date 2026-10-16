@@ -30,6 +30,13 @@ public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
      */
     SessionSlot selectForUpdate(long id);
 
+    /** 当前读取同模板原生成日的场次，避免周同步复制出第二份已占用库存。 */
+    SessionSlot selectTemplateForUpdate(@Param("weeklySlotId") long weeklySlotId,
+                                        @Param("date") LocalDate date);
+
+    /** 释放占用时显式清空预约关联和到期时间，避免默认非空实体策略遗漏清理。 */
+    int clearBookingHold(@Param("slot") SessionSlot slot);
+
     /**
      * 功能描述: 忽略唯一键冲突插入具体场次。
      * 创建时间: 2026/08/28 16:29

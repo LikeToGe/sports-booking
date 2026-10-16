@@ -12,6 +12,8 @@ import com.sportsbooking.admin.base.mapper.VenueReviewMapper;
 import com.sportsbooking.admin.base.mapper.UgcMediaMapper;
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.biz.pojo.vo.ContentGovernanceVO;
+import com.sportsbooking.admin.biz.pojo.vo.ContentCaseEvidenceVO;
+import com.sportsbooking.admin.biz.pojo.vo.ContentEvidenceRevisionVO;
 import com.sportsbooking.admin.biz.service.ContentGovernanceService;
 import com.sportsbooking.admin.biz.service.ContentMessageService;
 import com.sportsbooking.admin.biz.service.UgcMediaService;
@@ -77,7 +79,9 @@ public class ContentGovernanceServiceImpl implements ContentGovernanceService {
                 && !Objects.equals(target.ownerUserId, userId)) throw notFound();
         try {
             if (mapper.insertReport(userId, targetType, targetId, reasonCode,
-                    description == null ? null : description.trim()) != 1) throw conflict();
+                    description == null ? null : description.trim(),
+                    "PUBLISHED".equals(target.contentStatus) && target.publicRevisionId != null
+                            ? target.publicRevisionId : target.currentRevisionId) != 1) throw conflict();
         } catch (DuplicateKeyException duplicate) { throw conflict(); }
         mapper.setLegalHold(targetType, targetId, true);
         events.fact(userId,"REPORT_SUBMIT",targetType,targetId);
@@ -100,6 +104,28 @@ public class ContentGovernanceServiceImpl implements ContentGovernanceService {
             mapper.insertAppeal(moderationLogId, userId, body.trim());
         } catch (DuplicateKeyException duplicate) { throw conflict(); }
         mapper.setLegalHold(log.getTargetType(), log.getTargetId(), true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContentCaseEvidenceVO evidence(String caseType, long id) {
+        if (id <= 0 || !List.of("reports", "appeals").contains(caseType)) throw invalid();
+        ContentGovernanceBO caseRecord = "reports".equals(caseType) ? mapper.selectReport(id) : mapper.selectAppeal(id);
+        if (caseRecord == null) throw notFound();
+        ContentTargetBO target = mapper.selectEvidenceTarget(caseRecord.getTargetType(), caseRecord.getTargetId());
+        boolean account = "USER".equals(caseRecord.getTargetType());
+        // 老举报未保存所见版本，历史列表仅提供保留事实，不能冒充提交时证据。
+        String source = account ? "ACCOUNT_TARGET" : "appeals".equals(caseType) ? "MODERATION_DECISION"
+                : caseRecord.getRevisionId() == null ? "LEGACY_UNRECORDED" : "REPORT_SUBMISSION";
+        var versions = account ? List.<ContentEvidenceRevisionVO>of()
+                : mapper.selectEvidenceRevisions(caseRecord.getTargetType(), caseRecord.getTargetId()).stream()
+                    .map(ContentEvidenceRevisionVO::from).toList();
+        var logs = mapper.selectTargetLogs(caseRecord.getTargetType(), caseRecord.getTargetId()).stream()
+                .map(ContentGovernanceVO::from).toList();
+        return new ContentCaseEvidenceVO(ContentGovernanceVO.from(caseRecord), source,
+                account ? null : caseRecord.getRevisionId(), target == null ? "MISSING" : target.contentStatus,
+                target == null ? null : target.currentRevisionId, target == null ? null : target.publicRevisionId,
+                versions, logs);
     }
 
     @Override public List<ContentGovernanceVO> reports(String status) {

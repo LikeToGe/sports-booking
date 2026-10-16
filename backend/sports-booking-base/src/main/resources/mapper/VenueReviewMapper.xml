@@ -53,6 +53,8 @@
             AND rrr.moderation_status = 'APPROVED'
         WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rev.moderation_status = 'APPROVED'
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
         <if test="score != null">AND rev.overall_score = #{score}</if>
         <if test="tagId != null">
             AND EXISTS (SELECT 1 FROM s_venue_review_tag_rel rel
@@ -74,6 +76,8 @@
         JOIN s_venue_review_revision rev ON rev.id = r.public_revision_id
         WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rev.moderation_status = 'APPROVED'
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
     </select>
 
     <select id="selectTagCounts" resultType="com.sportsbooking.admin.base.bo.ReviewTagCountBO">
@@ -84,6 +88,8 @@
         JOIN s_review_tag t ON t.id = rel.tag_id
         WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rev.moderation_status = 'APPROVED'
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
         GROUP BY t.id, t.name
         ORDER BY reviewCount DESC, t.id
     </select>
@@ -104,6 +110,8 @@
         LEFT JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.current_revision_id
         WHERE r.venue_id = #{venueId} AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rev.moderation_status = 'APPROVED'
+          AND EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL)
         ORDER BY r.created_at DESC, r.id DESC
         LIMIT 100
     </select>
@@ -112,8 +120,11 @@
         SELECT rr.id AS replyId, rrr.body, rr.content_status AS contentStatus,
                rrr.moderation_status AS moderationStatus, rrr.created_at AS createdAt
         FROM s_venue_review_reply rr
+        JOIN s_venue_review r ON r.id = rr.review_id
+        JOIN s_user_account u ON u.id = r.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL
         JOIN s_venue_review_reply_revision rrr ON rrr.id = rr.public_revision_id
         WHERE rr.review_id = #{reviewId} AND rr.content_status = 'PUBLISHED'
+          AND r.content_status = 'PUBLISHED' AND r.deleted_at IS NULL
           AND rrr.moderation_status = 'APPROVED'
         LIMIT 1
     </select>
@@ -205,6 +216,8 @@
     <update id="setContentStatus">
         UPDATE s_venue_review SET content_status = #{status}, updated_at = UTC_TIMESTAMP(3)
         WHERE id = #{reviewId} AND deleted_at IS NULL
+          AND (#{status} != 'PUBLISHED' OR EXISTS (SELECT 1 FROM s_user_account u
+              WHERE u.id = s_venue_review.user_id AND u.status = 'ACTIVE' AND u.deleted_at IS NULL))
     </update>
 
     <update id="deleteModerated">

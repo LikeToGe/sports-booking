@@ -25,6 +25,10 @@ public interface MemberFundsService {
     }
     MemberRechargeVO createAdminRecharge(long venueId, Long operatorAdminId, Long operatorEmployeeId,
                                          long customerId, long planId, RechargeChannel channel, String idempotencyKey);
+    /** 用户主动放弃充值；只有渠道确认未支付关闭后才进入 CLOSED。 */
+    MemberRechargeVO cancelRecharge(long userId, long rechargeId);
+    /** 本人指定场馆的充值记录，允许重新进入未支付充值。 */
+    List<MemberRechargeVO> listOwnRecharges(long userId, long venueId);
     MemberRechargeVO getRecharge(long userId, long rechargeId);
     List<MemberRechargeVO> listRecharges(long venueId, long customerId);
     default MemberRechargeVO reverseRecharge(long venueId, long operatorAdminId, long rechargeId,

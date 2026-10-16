@@ -162,10 +162,11 @@ public class BookingServiceImpl implements BookingService {
                 return existing;
             }
         }
-        VenueCustomer venueCustomer = venueCustomerService.ensureCustomer(
-                sessionSlotVenueId(sessionSlotId), userId);
+        SessionSlot candidate = requireSlotCandidate(sessionSlotId);
+        VenueCustomer venueCustomer = venueCustomerService.ensureCustomer(candidate.venueId, userId);
         Booking created = redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId),
                 RedisLockType.MEMBER_BALANCE.key(venueCustomer.id)), () -> {
+            courtMapper.selectForUpdate(candidate.courtId);
             // 与注销共用用户行锁，已认证但尚未写入的并发请求不能复活已注销账号。
             UserAccount user = userAccountMapper.selectForUpdate(userId);
             if (user == null || user.status != com.sportsbooking.admin.base.enums.EnableStatus.ACTIVE
@@ -190,6 +191,7 @@ public class BookingServiceImpl implements BookingService {
             if (slot == null || !SessionSlotStatus.OPEN.equals(slot.status)) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
             }
+            requireUnchangedCourt(slot, candidate.courtId);
             Venue venue = venueService.getVenue(slot.venueId);
             // 场馆规则必须在服务端再次校验，不能依赖详情页隐藏临近开场的场次。
             LocalDate today = now.atZone(BusinessConstants.BUSINESS_ZONE).toLocalDate();
@@ -213,6 +215,7 @@ public class BookingServiceImpl implements BookingService {
             String name = requireText(contactName);
             String phone = requireText(contactPhone);
 
+            requireNoBookingOverlap(slot, null);
             Booking booking = baseBooking(slot, venue, court, sport, name, phone);
             booking.userId = userId;
             booking.venueCustomerId = venueCustomer.id;
@@ -273,12 +276,16 @@ public class BookingServiceImpl implements BookingService {
                                  BookingPaymentStatus paymentStatus, Long venueCustomerId) {
         validateOfflinePaymentStatus(paymentStatus);
         validateVenueCustomer(venueId, venueCustomerId);
+        SessionSlot candidate = requireSlotCandidate(sessionSlotId);
         return redisLockService.execute(List.of(RedisLockType.SESSION_SLOT.key(sessionSlotId)), () -> {
+            courtMapper.selectForUpdate(candidate.courtId);
             SessionSlot slot = sessionSlotMapper.selectForUpdate(sessionSlotId);
             if (slot == null || slot.venueId != venueId || !SessionSlotStatus.OPEN.equals(slot.status)
                     || !slot.startAt.isAfter(Instant.now())) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
             }
+            requireUnchangedCourt(slot, candidate.courtId);
+            requireNoBookingOverlap(slot, null);
             Venue venue = venueService.getVenue(venueId);
             // 线下预约同样遵守场馆最晚预约规则，避免后台绕过对用户端的库存保护。
             if (!slot.startAt.isAfter(Instant.now().plus(Duration.ofMinutes(venue.minBookingMinutes)))) {
@@ -318,9 +325,34 @@ public class BookingServiceImpl implements BookingService {
 
         List<Long> slotIds = new ArrayList<>(new TreeSet<>(resolvedSlots.stream().map(slot -> slot.id).toList()));
         List<String> lockKeys = slotIds.stream().map(RedisLockType.SESSION_SLOT::key).toList();
+        List<Long> courtIds = new ArrayList<>(new TreeSet<>(resolvedSlots.stream().map(slot -> slot.courtId).toList()));
         return redisLockService.execute(lockKeys, () -> {
+            courtMapper.selectIdsForUpdate(courtIds);
             List<SessionSlot> lockedSlots = bookingMapper.selectSlotsForUpdate(slotIds);
             List<LocalDate> lockedConflicts = findConflictDates(uniqueDates, lockedSlots, venue, Instant.now());
+            Map<Long, SessionSlot> expectedSlots = new LinkedHashMap<>();
+            for (SessionSlot expected : resolvedSlots) expectedSlots.put(expected.id, expected);
+            for (SessionSlot slot : lockedSlots) {
+                SessionSlot expected = expectedSlots.get(slot.id);
+                if (expected == null || !slot.courtId.equals(expected.courtId)
+                        || !slot.sportTypeId.equals(expected.sportTypeId)
+                        || !slot.startAt.equals(expected.startAt) || !slot.endAt.equals(expected.endAt)) {
+                    if (!lockedConflicts.contains(slot.slotDate)) lockedConflicts.add(slot.slotDate);
+                }
+            }
+            lockedConflicts.sort(LocalDate::compareTo);
+            if (!lockedConflicts.isEmpty()) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.BATCH_SLOT_CONFLICT, lockedConflicts);
+            }
+            Instant earliest = lockedSlots.stream().map(slot -> slot.startAt).min(Instant::compareTo).orElseThrow();
+            Instant latest = lockedSlots.stream().map(slot -> slot.endAt).max(Instant::compareTo).orElseThrow();
+            List<Booking> snapshots = bookingMapper.selectActiveSnapshotsForUpdate(courtIds, earliest, latest);
+            for (SessionSlot slot : lockedSlots) {
+                boolean overlaps = snapshots.stream().anyMatch(snapshot -> snapshot.courtId.equals(slot.courtId)
+                        && snapshot.startAt.isBefore(slot.endAt) && snapshot.endAt.isAfter(slot.startAt));
+                if (overlaps && !lockedConflicts.contains(slot.slotDate)) lockedConflicts.add(slot.slotDate);
+            }
+            lockedConflicts.sort(LocalDate::compareTo);
             if (!lockedConflicts.isEmpty()) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.BATCH_SLOT_CONFLICT, lockedConflicts);
             }
@@ -374,6 +406,11 @@ public class BookingServiceImpl implements BookingService {
                 throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
             }
             BookingPaymentStatus beforeStatus = booking.paymentStatus;
+            // 历史未记录收款没有支付证据，只有场馆超级管理员可人工确认。
+            if (beforeStatus == BookingPaymentStatus.UNRECORDED
+                    && (operatorAdminId == null || operatorEmployeeId != null)) {
+                throw new ApiException(HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN);
+            }
             if (!isAllowedOfflinePaymentTransition(booking.status, beforeStatus, paymentStatus)) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.INVALID_ARGUMENT);
             }
@@ -405,11 +442,19 @@ public class BookingServiceImpl implements BookingService {
                                      long sessionSlotId, String reason) {
         String normalizedReason = requireText(reason);
         Booking candidate = requiredBooking(bookingId);
+        SessionSlot originalCandidate = requireSlotCandidate(candidate.sessionSlotId);
+        SessionSlot targetCandidate = requireSlotCandidate(sessionSlotId);
         List<String> lockKeys = List.of(RedisLockType.BOOKING.key(bookingId),
                 RedisLockType.SESSION_SLOT.key(candidate.sessionSlotId),
                 RedisLockType.SESSION_SLOT.key(sessionSlotId));
         return redisLockService.execute(lockKeys, () -> {
+            // 跨场地改期先按稳定顺序锁原快照和两份库存的场地，再锁预约与场次。
+            courtMapper.selectIdsForUpdate(new ArrayList<>(new TreeSet<>(List.of(candidate.courtId,
+                    originalCandidate.courtId, targetCandidate.courtId))));
             Booking booking = requiredLockedBooking(bookingId);
+            if (!booking.courtId.equals(candidate.courtId)) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+            }
             requireUnchangedSessionSlot(booking, candidate.sessionSlotId);
             List<Long> slotIds = new ArrayList<>(new TreeSet<>(List.of(booking.sessionSlotId, sessionSlotId)));
             Map<Long, SessionSlot> slotsById = new LinkedHashMap<>();
@@ -422,6 +467,8 @@ public class BookingServiceImpl implements BookingService {
             if (booking.venueId != venueId || targetSlot == null || targetSlot.venueId != venueId) {
                 throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
             }
+            requireUnchangedCourt(originalSlot, originalCandidate.courtId);
+            requireUnchangedCourt(targetSlot, targetCandidate.courtId);
             if (booking.source != BookingSource.OFFLINE || booking.status != BookingStatus.CONFIRMED
                     || !booking.startAt.isAfter(now) || originalSlot == null
                     || originalSlot.status != SessionSlotStatus.BOOKED
@@ -435,6 +482,7 @@ public class BookingServiceImpl implements BookingService {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.INVALID_ARGUMENT);
             }
 
+            requireNoBookingOverlap(targetSlot, booking.id);
             // 复用既有释放规则；周模板已停用时原场次必须保持关闭。
             scheduleService.releaseBookingSlot(originalSlot.id);
 
@@ -480,8 +528,10 @@ public class BookingServiceImpl implements BookingService {
     public Booking cancelByUser(long userId, long bookingId) {
         Booking candidate = requiredBooking(bookingId);
         requireOwner(candidate, userId);
+        // 取消终态不倒退；响应丢失后的本人重试只返回原事实，不重复释放或退款。
+        if (candidate.status == BookingStatus.CANCELLED) return candidate;
         if (candidate.status == BookingStatus.PENDING_PAYMENT) {
-            paymentService.queryPayment(userId, bookingId);
+            paymentService.closeUnpaid(userId, bookingId);
             candidate = requiredBooking(bookingId);
             if (candidate.status == BookingStatus.PENDING_PAYMENT) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
@@ -497,6 +547,7 @@ public class BookingServiceImpl implements BookingService {
             Booking booking = requiredLockedBooking(bookingId);
             requireUnchangedSessionSlot(booking, lockedCandidate.sessionSlotId);
             requireOwner(booking, userId);
+            if (booking.status == BookingStatus.CANCELLED) return booking;
             Venue venue = venueService.getVenue(booking.venueId);
             Instant cutoff = booking.startAt.minus(Duration.ofMinutes(venue.cancelCutoffMinutes));
             if (!Instant.now().isBefore(cutoff)) {
@@ -516,10 +567,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking cancelByVenue(long venueId, long bookingId, String reason,
                                  boolean canCancelOnline, boolean canEditOffline) {
+        String normalizedReason = requireText(reason);
         Booking candidate = requiredBooking(bookingId);
+        // 渠道闭单也有副作用，必须先确认场馆归属，再处理待支付预约。
+        if (candidate.venueId != venueId) {
+            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
+        }
         requireVenueCancelPermission(candidate.source, canCancelOnline, canEditOffline);
+        if (candidate.status == BookingStatus.CANCELLED) return candidate;
         if (candidate.source == BookingSource.ONLINE && candidate.status == BookingStatus.PENDING_PAYMENT) {
-            paymentService.queryPayment(bookingId);
+            if (candidate.userId == null) {
+                throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+            }
+            paymentService.closeUnpaid(candidate.userId, bookingId, CancelledBy.VENUE, normalizedReason);
             candidate = requiredBooking(bookingId);
             if (candidate.status == BookingStatus.PENDING_PAYMENT) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
@@ -541,7 +601,7 @@ public class BookingServiceImpl implements BookingService {
                 throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.NOT_FOUND);
             }
             requireVenueCancelPermission(booking.source, canCancelOnline, canEditOffline);
-            return cancel(booking, CancelledBy.VENUE, requireText(reason));
+            return cancel(booking, CancelledBy.VENUE, normalizedReason);
         });
         return finishExternalRefund(cancelled);
     }
@@ -725,6 +785,7 @@ public class BookingServiceImpl implements BookingService {
      * @author gjm
      */
     private Booking cancel(Booking booking, CancelledBy cancelledBy, String reason) {
+        if (booking.status == BookingStatus.CANCELLED) return booking;
         if (!BookingStatus.CONFIRMED.equals(booking.status)
                 && !BookingStatus.PENDING_PAYMENT.equals(booking.status)) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.NOT_CANCELLABLE);
@@ -762,13 +823,28 @@ public class BookingServiceImpl implements BookingService {
         return booking;
     }
 
-    /** 加锁前读取场馆 ID，仅用于确定会员余额锁。 */
-    private long sessionSlotVenueId(long sessionSlotId) {
+    /** 加锁前仅确定场地与场馆资源，库存可用性仍由锁内当前读取复核。 */
+    private SessionSlot requireSlotCandidate(long sessionSlotId) {
         SessionSlot slot = sessionSlotMapper.selectById(sessionSlotId);
         if (slot == null) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_UNAVAILABLE);
         }
-        return slot.venueId;
+        return slot;
+    }
+
+    /** 等待行锁期间场次若换场地，拒绝使用未锁定的新场地继续写入。 */
+    private void requireUnchangedCourt(SessionSlot slot, long expectedCourtId) {
+        if (slot == null || slot.courtId != expectedCourtId) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.OPERATION_IN_PROGRESS);
+        }
+    }
+
+    /** 同一物理场地共用行锁后当前读取快照，两个不同场次 ID 也不能重复出售。 */
+    private void requireNoBookingOverlap(SessionSlot slot, Long excludedBookingId) {
+        if (!bookingMapper.selectOverlappingActiveForUpdate(
+                slot.courtId, slot.startAt, slot.endAt, excludedBookingId, null).isEmpty()) {
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.SLOT_CONFLICT);
+        }
     }
 
     /** 在线下预约事务中写预约并把已锁定场次直接转为已订。 */

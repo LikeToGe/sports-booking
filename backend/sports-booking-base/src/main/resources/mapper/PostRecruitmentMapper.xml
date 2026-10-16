@@ -10,8 +10,14 @@
     <select id="selectMember" resultType="com.sportsbooking.admin.base.po.PostRecruitmentMember">
         SELECT * FROM s_post_recruitment_member WHERE recruitment_id = #{recruitmentId} AND user_id = #{userId}
     </select>
-    <select id="selectActive" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
-        SELECT * FROM s_post_recruitment WHERE status IN ('RECRUITING','FULL') ORDER BY id LIMIT 200
+    <select id="selectExpired" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
+        SELECT r.* FROM s_post_recruitment r
+        LEFT JOIN s_post p ON p.id = r.post_id
+        LEFT JOIN s_booking b ON b.id = r.booking_id
+        WHERE r.status IN ('RECRUITING','FULL')
+          AND (p.id IS NULL OR p.deleted_at IS NOT NULL OR p.content_status != 'PUBLISHED'
+              OR b.id IS NULL OR b.status != 'CONFIRMED' OR b.start_at &lt;= #{now})
+        ORDER BY r.id LIMIT 200
     </select>
     <select id="selectAffectedByUser" resultType="com.sportsbooking.admin.base.po.PostRecruitment">
         SELECT r.* FROM s_post_recruitment r JOIN s_post p ON p.id = r.post_id

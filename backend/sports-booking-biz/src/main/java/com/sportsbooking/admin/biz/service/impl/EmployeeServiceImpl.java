@@ -1,6 +1,7 @@
 package com.sportsbooking.admin.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sportsbooking.admin.biz.exception.ApiException;
 import com.sportsbooking.admin.biz.service.TokenService;
 import com.sportsbooking.admin.biz.constants.BusinessConstants;
@@ -15,6 +16,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +83,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = requireEmployee(venueId, employeeId);
         employee.name = requireText(name);
         employee.updatedAt = LocalDateTime.now();
-        employeeMapper.updateById(employee);
+        // 仅更新本次资料字段，避免旧对象中的绑定摘要把已消费的凭证重新写回。
+        employeeMapper.update(null, new UpdateWrapper<Employee>().eq("id", employee.id)
+                .set("name", employee.name).set("updated_at", employee.updatedAt));
         return employee;
     }
 
@@ -99,7 +103,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.bindingCodeHash = tokenService.hash(code);
         employee.bindingExpiresAt = LocalDateTime.now().plus(BusinessConstants.EMPLOYEE_BINDING_TTL);
         employee.updatedAt = LocalDateTime.now();
-        employeeMapper.updateById(employee);
+        employeeMapper.update(null, new UpdateWrapper<Employee>().eq("id", employee.id)
+                .set("binding_code_hash", employee.bindingCodeHash)
+                .set("binding_expires_at", employee.bindingExpiresAt).set("updated_at", employee.updatedAt));
         return new EmployeeBindingVO(employee.id, code, employee.bindingExpiresAt);
     }
 
@@ -112,11 +118,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional
     public Employee bindEmployee(long userId, String code) {
+        // 认证到写入之间可能发生注销；先按 User→Employee 顺序锁定当前有效用户。
+        if (employeeMapper.lockActiveBindingUser(userId) == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.USER_DISABLED);
+        }
         String codeHash = tokenService.hash(requireText(code));
         Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>()
                 .eq("binding_code_hash", codeHash).eq("status", EnableStatus.ACTIVE));
+        LocalDateTime now = LocalDateTime.now();
         if (employee == null || employee.bindingExpiresAt == null
-                || employee.bindingExpiresAt.isBefore(LocalDateTime.now())) {
+                || !employee.bindingExpiresAt.isAfter(now)) {
             throw badRequest();
         }
         Long existingCount = employeeMapper.selectCount(new QueryWrapper<Employee>()
@@ -125,11 +136,18 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.ALREADY_BOUND);
         }
         // 绑定码只能消费一次，绑定成功后立即清除摘要和过期时间。
+        try {
+            if (employeeMapper.consumeBindingCode(employee.id, codeHash, userId, now) != 1) {
+                throw badRequest();
+            }
+        } catch (DuplicateKeyException exception) {
+            // 同用户并发绑定同馆多个员工时，由唯一约束兜底并回滚码的消费。
+            throw new ApiException(HttpStatus.CONFLICT, ErrorCode.ALREADY_BOUND);
+        }
         employee.userId = userId;
         employee.bindingCodeHash = null;
         employee.bindingExpiresAt = null;
-        employee.updatedAt = LocalDateTime.now();
-        employeeMapper.updateById(employee);
+        employee.updatedAt = now;
         return employee;
     }
 
@@ -147,7 +165,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = requireEmployee(venueId, employeeId);
         employee.status = status;
         employee.updatedAt = LocalDateTime.now();
-        employeeMapper.updateById(employee);
+        employeeMapper.update(null, new UpdateWrapper<Employee>().eq("id", employee.id)
+                .set("status", employee.status).set("updated_at", employee.updatedAt));
         return employee;
     }
 
@@ -159,9 +178,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public Employee getActiveEmployee(long userId) {
-        Employee employee = employeeMapper.selectList(new QueryWrapper<Employee>()
-                .eq("user_id", userId).eq("status", EnableStatus.ACTIVE).orderByAsc("id")).stream()
-                .findFirst().orElse(null);
+        Employee employee = employeeMapper.selectActiveSessionBinding(null, null, userId);
         if (employee == null) {
             throw new ApiException(HttpStatus.FORBIDDEN, ErrorCode.STAFF_REQUIRED);
         }
@@ -170,8 +187,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Employee getActiveEmployee(long userId, long venueId) {
-        Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>()
-                .eq("user_id", userId).eq("venue_id", venueId).eq("status", EnableStatus.ACTIVE));
+        Employee employee = employeeMapper.selectActiveSessionBinding(null, venueId, userId);
         if (employee == null) {
             throw new ApiException(HttpStatus.FORBIDDEN, ErrorCode.STAFF_REQUIRED);
         }
@@ -185,7 +201,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.bindingCodeHash = null;
         employee.bindingExpiresAt = null;
         employee.updatedAt = LocalDateTime.now();
-        employeeMapper.updateById(employee);
+        // 必须显式清 NULL；默认实体更新会跳过空字段，导致解绑只在响应中生效。
+        employeeMapper.clearBinding(employeeId, venueId, employee.updatedAt);
         return employee;
     }
 

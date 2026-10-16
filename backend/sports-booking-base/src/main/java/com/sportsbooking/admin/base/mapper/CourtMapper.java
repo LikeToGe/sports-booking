@@ -22,6 +22,12 @@ public interface CourtMapper extends BaseMapper<Court> {
      */
     Court selectForUpdate(@Param("courtId") long courtId);
 
+    /** 排期批量操作按 ID 锁定本馆场地，再读取模板和具体场次。 */
+    List<Court> selectVenueForUpdate(@Param("venueId") long venueId);
+
+    /** 跨场地或批量预约按 ID 一次锁定全部物理场地。 */
+    List<Court> selectIdsForUpdate(@Param("ids") List<Long> ids);
+
     /**
      * 功能描述: 查询场地关联的运动类型 ID。
      * 创建时间: 2026/08/28 16:29

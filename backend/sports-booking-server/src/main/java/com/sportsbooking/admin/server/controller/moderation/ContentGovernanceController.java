@@ -6,6 +6,7 @@ import com.sportsbooking.admin.server.context.AuthContext;
 import com.sportsbooking.admin.server.support.Principals;
 import java.util.List;
 import com.sportsbooking.admin.biz.pojo.vo.ContentGovernanceVO;
+import com.sportsbooking.admin.biz.pojo.vo.ContentCaseEvidenceVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,13 @@ public class ContentGovernanceController {
     public ApiResponse<List<ContentGovernanceVO>> appeals(@RequestParam(required = false) String status) {
         Principals.platform();
         return ApiResponse.success(service.appeals(status));
+    }
+
+    @GetMapping("/platform/content-governance/{caseType}/{id}/evidence")
+    public ApiResponse<ContentCaseEvidenceVO> evidence(
+            @PathVariable String caseType, @PathVariable long id) {
+        Principals.platform();
+        return ApiResponse.success(service.evidence(caseType, id));
     }
 
     @PostMapping("/platform/content-governance/reports/{id}/resolve")

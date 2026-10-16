@@ -6,6 +6,9 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportsbooking.admin.base.enums.AdminRole;
@@ -62,5 +65,38 @@ class WebLoginTicketServiceImplTest {
                 .execute(any(RedisScript.class), anyList(), any(Object[].class));
 
         assertThatThrownBy(() -> service.consume("ticket")).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void rejectsConsumptionAfterOriginalConfirmingUserIsUnbound() {
+        doReturn("{\"status\":\"CONFIRMED\",\"employeeId\":2,\"venueId\":3,\"userId\":1}")
+                .when(redisTemplate).execute(any(RedisScript.class), anyList(), any(Object[].class));
+        when(permissionService.resolveEmployee(2L, 3L, 1L)).thenThrow(new ApiException(
+                org.springframework.http.HttpStatus.FORBIDDEN,
+                com.sportsbooking.admin.base.enums.ErrorCode.FORBIDDEN));
+
+        assertThatThrownBy(() -> service.consume("ticket")).isInstanceOf(ApiException.class);
+        verify(sessionService, never()).createEmployeeAdminSession(anyLong(), anyLong(), anyLong());
+    }
+
+    @Test
+    void rejectsLegacyConfirmedTicketWithoutOriginalUser() {
+        doReturn("{\"status\":\"CONFIRMED\",\"employeeId\":2,\"venueId\":3}")
+                .when(redisTemplate).execute(any(RedisScript.class), anyList(), any(Object[].class));
+
+        assertThatThrownBy(() -> service.consume("ticket")).isInstanceOf(ApiException.class);
+        verify(sessionService, never()).createEmployeeAdminSession(anyLong(), anyLong(), anyLong());
+    }
+
+    @Test
+    void carriesOriginalConfirmingUserIntoSession() {
+        doReturn("{\"status\":\"CONFIRMED\",\"employeeId\":2,\"venueId\":3,\"userId\":1}")
+                .when(redisTemplate).execute(any(RedisScript.class), anyList(), any(Object[].class));
+        when(permissionService.resolveEmployee(2L, 3L, 1L)).thenReturn(
+                new AdminPrincipal(0L, AdminRole.VENUE_EMPLOYEE, 3L, "员工"));
+
+        service.consume("ticket");
+
+        verify(sessionService).createEmployeeAdminSession(2L, 3L, 1L);
     }
 }

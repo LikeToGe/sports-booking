@@ -75,6 +75,46 @@ class PostRecruitmentServiceImplTest {
     }
 
     @Test
+    void schedulerClosesAnExpiredCandidatePastTwoHundredFutureRows() {
+        PostMapper posts = mock(PostMapper.class);
+        PostRecruitmentMapper recruitments = mock(PostRecruitmentMapper.class);
+        BookingMapper bookings = mock(BookingMapper.class);
+        RedisLockService locks = mock(RedisLockService.class);
+        ContentMessageService messages = mock(ContentMessageService.class);
+        when(locks.execute(anyList(), any())).thenAnswer(invocation ->
+                ((Supplier<?>) invocation.getArgument(1)).get());
+        PostRecruitmentServiceImpl service = new PostRecruitmentServiceImpl(posts, mock(PostRevisionMapper.class),
+                bookings, recruitments, mock(PostInteractionMapper.class), mock(ContentAgreementService.class),
+                mock(ContentGovernanceService.class), locks, messages, mock(UserActionEventService.class));
+        Post post = new Post();
+        post.id = 201L;
+        post.authorType = "USER";
+        post.authorId = 11L;
+        post.contentStatus = "PUBLISHED";
+        PostRecruitment row = new PostRecruitment();
+        row.id = 201L;
+        row.postId = 201L;
+        row.bookingId = 3L;
+        row.status = "RECRUITING";
+        Booking booking = new Booking();
+        booking.status = BookingStatus.CANCELLED;
+        PostRecruitmentMember member = new PostRecruitmentMember();
+        member.userId = 12L;
+        member.status = "APPLIED";
+        when(recruitments.selectExpired(any(Instant.class))).thenReturn(java.util.List.of(row));
+        when(recruitments.selectById(201L)).thenReturn(row);
+        when(recruitments.selectByIdForUpdate(201L)).thenReturn(row);
+        when(recruitments.selectMembers(201L)).thenReturn(java.util.List.of(member));
+        when(posts.selectForUpdate(201L)).thenReturn(post);
+        when(bookings.selectById(3L)).thenReturn(booking);
+
+        service.closeExpiredRecruitments();
+
+        verify(recruitments).updateStatus(201L, "BOOKING_CANCELLED");
+        verify(messages).record(12L, "POST", 201L, "closed:201:12", "找搭子招募已结束", "关联预约已取消");
+    }
+
+    @Test
     void rejectsOfflineBookingEvenWhenUserAndPostMatch() {
         PostMapper posts = mock(PostMapper.class);
         PostRevisionMapper revisions = mock(PostRevisionMapper.class);

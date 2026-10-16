@@ -160,6 +160,19 @@ class VenueReviewServiceImplTest {
                 ErrorCode.OPERATION_IN_PROGRESS);
     }
 
+    @Test
+    void refusesRestoreWhenAtomicAuthorGuardRejectsIt() {
+        VenueReview hidden = review();
+        hidden.contentStatus = "HIDDEN";
+        hidden.publicRevisionId = 20L;
+        when(reviewMapper.selectForUpdate(10L)).thenReturn(hidden);
+        when(reviewMapper.setContentStatus(10L, "PUBLISHED")).thenReturn(0);
+
+        assertCode(() -> service.moderate(3L, 10L, 11L, "RESTORE", "恢复公开"),
+                ErrorCode.OPERATION_IN_PROGRESS);
+        verify(reviewMapper, never()).insertModerationLog(10L, 11L, "RESTORE", "恢复公开", 3L);
+    }
+
     private Booking booking(Instant completedAt) {
         Booking booking = new Booking();
         booking.id = 4L;

@@ -134,10 +134,12 @@ public class PermissionServiceImpl implements PermissionService {
         }
     }
 
+    /** 绑定关系改变后拒绝原用户会话，权限仍按当前有效角色实时解析。 */
     @Override
-    public AdminPrincipal resolveEmployee(long employeeId, long venueId) {
-        Employee employee = requireEmployee(venueId, employeeId);
-        if (employee.status != EnableStatus.ACTIVE || employee.userId == null) {
+    public AdminPrincipal resolveEmployee(long employeeId, long venueId, long userId) {
+        Employee employee = employeeMapper.selectActiveSessionBinding(employeeId, venueId, userId);
+        if (employee == null || employee.status != EnableStatus.ACTIVE
+                || employee.userId == null || employee.userId != userId) {
             throw forbidden();
         }
         Set<VenuePermission> permissions = new LinkedHashSet<>(
@@ -148,8 +150,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public Employee requireEmployee(long userId, long venueId, VenuePermission permission) {
-        Employee employee = employeeMapper.selectOne(new QueryWrapper<Employee>()
-                .eq("user_id", userId).eq("venue_id", venueId).eq("status", EnableStatus.ACTIVE));
+        Employee employee = employeeMapper.selectActiveSessionBinding(null, venueId, userId);
         if (employee == null || !rolePermissionMapper.selectByEmployee(employee.id, venueId).contains(permission)) {
             throw forbidden();
         }
