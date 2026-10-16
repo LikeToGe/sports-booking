@@ -1,0 +1,5 @@
+Command: /Applications/wechatwebdevtools.app/Contents/MacOS/cli auto --project /Users/gjm/GjmWork/MyWork/sports-booking/miniapp --auto-port 9420
+Exit code: 246
+[error] IDE service port disabled.
+[error] 工具的服务端口已关闭。要使用命令行调用工具，请手动打开工具 -> 设置 -> 安全设置，将服务端口开启。
+未开启服务端口，未更改安全设置。

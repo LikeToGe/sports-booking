@@ -1,0 +1,66 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 container
+							18 text 17 : 04
+						19 container
+							20 标题 会员, Value: 3
+								21 文本 会员
+							22 链接
+							23 链接
+						24 HTML 内容 Webview: pages/membership/index, URL: 127.0.0.1:28074/__pageframe__/pages/membership/index
+							25 container
+								26 按钮 订场
+									27 文本 订场
+								28 按钮 动态
+									29 文本 动态
+								30 按钮 预约
+									31 文本 预约
+								32 按钮 会员
+									33 文本 会员
+								34 按钮 我的
+									35 文本 我的
+							36 文本 会员
+							37 文本 选择场馆
+							38 文本 P5测试馆1
+							39 文本 P5测试馆1
+							40 文本 普通顾客
+							41 按钮 会员码
+							42 container 会员余额
+								43 文本 实付余额
+								44 文本 ¥0.00
+								45 文本 赠送余额
+								46 文本 ¥0.00
+							47 文本 充值档位
+							48 文本 2 个可选
+							49 按钮 充100送10 30 天有效 ¥100.00 赠 ¥10.00
+								50 文本 充100送10
+								51 文本 30 天有效
+								52 文本 ¥100.00
+								53 文本 赠 ¥10.00
+							54 按钮 并发充100 长期有效 ¥100.00 无赠送
+								55 文本 并发充100
+								56 文本 长期有效
+								57 文本 ¥100.00
+								58 文本 无赠送
+							59 按钮 (disabled) 创建充值单
+							60 文本 余额流水
+							61 文本 0 条
+							62 文本 暂无余额流水
+							63 文本 充值、冻结或退款后会显示明细。
+						64 HTML 内容 

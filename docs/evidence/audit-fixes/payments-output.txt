@@ -1,0 +1,7 @@
+F02 passed: NO_SHOW/COMPLETED success and failure replay preserve fulfillment and paidAt
+F04 passed: cancelled/refunded replay preserves first paidAt and one refund
+F05 passed: fresh employee Web session rejects historical backfill; admin backfill and normal employee update work
+C02 user passed: actual combination payment close releases hold/frozen funds; late success refunds once without reviving booking
+C02 venue passed: blank reason and cross-venue calls have no side effects; actor/reason preserved
+Fixture cleanup passed (FK-safe, scoped to this run)
+PASS: F02/F04/F05/C02 HTTP regression and fixture cleanup completed

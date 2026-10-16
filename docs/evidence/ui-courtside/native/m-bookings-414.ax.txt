@@ -1,0 +1,54 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 container
+							18 text 17 : 10
+						19 container
+							20 标题 我的预约, Value: 3
+								21 文本 我的预约
+							22 链接
+							23 链接
+						24 HTML 内容 Webview: pages/bookings/index, URL: 127.0.0.1:28074/__pageframe__/pages/bookings/index
+							25 container
+								26 按钮 订场
+									27 文本 订场
+								28 按钮 动态
+									29 文本 动态
+								30 按钮 预约
+									31 文本 预约
+								32 按钮 会员
+									33 文本 会员
+								34 按钮 我的
+									35 文本 我的
+							36 文本 我的预约
+							37 文本 支付、核销与取消状态都在这里。
+							38 按钮 P5测试馆1 支付失败 已取消 2026-10-15　10:00 - 11:00 羽毛球 2 号场 · 羽毛球 查看预约 ¥50.00
+								39 文本 P5测试馆1
+								40 text 支付失败 已取消
+								41 文本 2026-10-15　10:00 - 11:00
+								42 文本 羽毛球 2 号场 · 羽毛球
+								43 文本 查看预约
+								44 文本 ¥50.00
+							45 按钮 P5测试馆1 已支付 待核销 2026-10-15　09:00 - 10:00 羽毛球 1 号场 · 羽毛球 查看预约 ¥60.00
+								46 文本 P5测试馆1
+								47 text 已支付 待核销
+								48 文本 2026-10-15　09:00 - 10:00
+								49 文本 羽毛球 1 号场 · 羽毛球
+								50 文本 查看预约
+								51 文本 ¥60.00
+						52 HTML 内容 

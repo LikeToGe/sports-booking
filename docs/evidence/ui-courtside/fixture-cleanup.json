@@ -1,0 +1,30 @@
+{
+  "complete": true,
+  "attempts": [
+    {
+      "bookingId": 993077,
+      "status": "CANCELLED"
+    },
+    {
+      "bookingId": 993078,
+      "status": "CANCELLED"
+    },
+    {
+      "bookingId": 993079,
+      "status": "CANCELLED"
+    },
+    {
+      "rechargeId": 11,
+      "closed": true
+    },
+    {
+      "employeeCleanupError": "HTTP Error 500: "
+    },
+    {
+      "employeeId": 994014,
+      "unboundAndDisabled": true,
+      "roleRemoved": true,
+      "correctedMethod": "PATCH"
+    }
+  ]
+}

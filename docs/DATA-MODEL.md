@@ -43,10 +43,18 @@
 | `s_user_block` | 用户双向内容过滤的拉黑关系 |
 | `s_notification` / `s_notification_delivery` | 站内消息、未读状态和 Mock 投递记录 |
 | `s_content_agreement_setting` / `s_content_agreement_acceptance` | 社区规则/隐私版本和用户接受事实 |
-| `s_content_report` / `s_content_appeal` | 举报和每条处置最多一次申诉 |
+| `s_content_report` / `s_content_appeal` | 举报和每条处置最多一次申诉；V24 为新举报记录提交时实际所见的 `evidence_revision_id`，旧举报保持空值 |
 | `s_user_content_restriction` | 发布、评论和找搭子限权 |
 | `s_ugc_upload` / `s_content_detection_job` | UGC 私有暂存对象和异步检测任务 |
 | `s_user_action_event` / `s_user_identity_tombstone` | 最小动作事实和注销身份保留 |
+| `s_user_venue_favourite` | 本人收藏，用户/场馆唯一；账号注销时清除 |
+| `s_reminder_subscription` | 本人指定场馆、运动、日期、分钟范围及类型的有效提醒登记 |
+| `s_slot_release_event` | 已提交供给释放事件与处理标记，消息按登记/事件幂等 |
+| `s_notification_delivery_attempt` | 同一站内消息的独立 Mock 投递尝试、结果和重试记录 |
+| `s_venue_customer_tag` / `s_venue_customer_tag_relation` / `s_venue_customer_tag_audit` | 场馆内顾客标签、关系和可信操作者审计 |
+| `s_venue_customer_followup` | 回访来源、未完成目的唯一约束及终态处理人员、时间和备注 |
+
+V11–V23 追加预约入口、场馆区县、收藏、招募水平/发现事件、经营索引、提醒及顾客经营；V16/V17 未使用。V24 只为举报新增可空版本定位，不修改旧内容、资金或迁移记录。案件证据只通过平台权限读取保留版本及媒体；申诉沿既有处置日志的版本定位，旧举报不猜测提交时内容，已清理媒体不伪造可读。
 
 V8 的评价修改只新增内容版本；人工审核通过后切换公开版本。未通过、隐藏和已删除评价不计入公开评分。平台对评价、官方回复、动态和评论按当前版本执行通过、拒绝、隐藏、恢复、删除并写审计；隐藏内容的新版本通过后仍保持隐藏。`ugc.enabled` 默认关闭；当前已实现文字/图片评价、场馆官方回复、标签分布和评分/标签筛选。V10 新增协议、举报、申诉、账号限权、清理保留和注销事实。
 
@@ -84,7 +92,7 @@ UNRECORDED -> UNPAID -> PAID
 CANCELLED + PAID -> REFUNDED
 ```
 
-每次线下状态修改必须写 `s_booking_payment_status_log`；取消线下预约本身不自动改变登记状态，也不生成支付、退款或余额流水。
+每次线下状态修改必须写 `s_booking_payment_status_log`；`UNRECORDED` 转出只允许场馆超级管理员。取消线下预约本身不自动改变登记状态，也不生成支付、退款或余额流水。
 
 ## 具体场次状态
 
@@ -99,7 +107,7 @@ OPEN ──创建线上预约──> HELD ──支付──> BOOKED
 
 ## 一致性
 
-- 创建预约按完整 Redis key 取得具体场次和会员余额锁，再使用 `SELECT ... FOR UPDATE` 锁定 `s_session_slot` 与可用余额批次。
+- 创建预约按完整 Redis key 取得具体场次和会员余额锁；数据库先按 ID 锁定物理场地，再锁具体场次及可用余额批次。有效预约快照以锁定当前读保护半开重叠区间，不因具体场次人工改时或换场地而失去占用保护。
 - 用户首次在场馆创建线上预约时，以 `(venue_id, user_id)` 幂等创建 `s_venue_customer`；同一用户跨场馆分别建档。
 - 预约写入、场次占用、按批次冻结和固定支付组成在同一事务内；全余额预约同事务消费并确认，且不创建 `s_payment`。
 - 有外部差额时，每笔预约只创建一条支付记录；Adapter 发起、查单和退款发生在数据库事务与 Redis 锁外，结果再按预约、场次和会员余额锁进入事务收敛。
@@ -114,7 +122,7 @@ OPEN ──创建线上预约──> HELD ──支付──> BOOKED
 - 批量线下预约先对日期去重，按完整 Redis key 和数据库 ID 排序加锁；任一日期冲突时整批回滚并返回全部冲突日期。
 - 线下改期同时锁定原、新具体场次，只允许同馆、未开始且同价的目标场次，并保持登记收款状态不变。
 - 服务端从后台会话或小程序会话推导场馆、用户和员工归属，不接受客户端传入归属范围。
-- 普通员工后台会话只保存 `employee_id + venue_id`；每个请求重新查询员工绑定、启停、有效角色和权限并集，角色调整、停用或解绑在下一请求生效。
+- 员工绑定码条件更新原子消费，摘要/到期时间和解绑用户通过显式 SQL 清空；绑定先按 User→Employee 顺序锁定并当前读取有效用户，与注销一致。普通员工后台会话保存 `employee_id + venue_id + 原绑定 user_id`。每个请求重新查询有效用户、员工绑定、启停、有效角色和权限并集，停用/注销或解绑后失效，改绑另一用户不使旧会话或票据复活；旧格式员工凭证重新扫码。
 - `s_booking_payment_status_log`、`s_booking_reschedule_log` 的管理员与员工操作者必须恰有一个非空；充值和余额流水允许用户自助时两者均空。
 - 角色权限码不落独立字典表，由后端 `VenuePermission` 固定枚举校验；失效角色不参与权限并集。
 - 所有具体时间以 UTC 存储和传输，`slot_date`、周场次和页面展示使用 `Asia/Shanghai`。

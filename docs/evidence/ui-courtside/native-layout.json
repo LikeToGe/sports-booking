@@ -1,0 +1,1112 @@
+[
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "query": "",
+    "pathMatched": false,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "query": "",
+    "pathMatched": false,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "query": "id=993077",
+    "pathMatched": false,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "query": "id=993078",
+    "pathMatched": false,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "query": "bookingId=993077",
+    "pathMatched": false,
+    "loading": false,
+    "error": false
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "query": "id=993077",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "query": "id=993078",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "query": "bookingId=993077",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "query": "bookingId=993077",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "query": "id=990011",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "query": "venueId=1",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "query": "id=1",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "query": "",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "query": "venueId=1&customerId=991010&name=UI%20%E7%82%B9%E9%AA%8C",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "query": "venueId=1",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "query": "id=1&date=2026-10-15",
+    "pathMatched": true,
+    "loading": false
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "pathMatched": true
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "119 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "117 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "55 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "54 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "66 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "73 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "56 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "39 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "47 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "58 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "width": 320,
+    "pathMatched": true,
+    "device": "42 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "56 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "61 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "width": 320,
+    "pathMatched": true,
+    "device": "59 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "78 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "78 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "46 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "51 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "53 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "54 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "45 文本 iPhone 5 110% 16"
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "116 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "114 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "52 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "51 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "63 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "70 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "45 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "45 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "53 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "63 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "44 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "55 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "width": 375,
+    "pathMatched": true,
+    "device": "39 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "53 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "58 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "width": 375,
+    "pathMatched": true,
+    "device": "56 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "75 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "36 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "43 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "48 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "50 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "51 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "width": 375,
+    "pathMatched": true,
+    "device": "42 文本 iPhone X 91% 16"
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "116 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "114 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "52 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "51 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "63 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "70 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "45 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "45 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "53 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "63 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "44 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "55 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "width": 414,
+    "pathMatched": true,
+    "device": "39 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "53 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "58 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "width": 414,
+    "pathMatched": true,
+    "device": "56 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "75 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "75 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "43 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "36 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "36 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "51 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "width": 414,
+    "pathMatched": true,
+    "device": "42 文本 iPhone XR 82% 16"
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "119 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "117 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "55 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "35 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "66 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "73 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "39 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "66 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "59 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "width": 320,
+    "pathMatched": true,
+    "device": "42 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "56 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "61 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "width": 320,
+    "pathMatched": true,
+    "device": "59 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "78 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "95 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "46 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "51 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "53 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "54 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "width": 320,
+    "pathMatched": true,
+    "device": "45 文本 iPhone 5 102% 16"
+  },
+  {
+    "id": "m-home",
+    "route": "pages/home/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "116 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-venue",
+    "route": "pages/venue/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "114 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-confirm",
+    "route": "pages/confirm/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-bookings",
+    "route": "pages/bookings/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "63 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-booking",
+    "route": "pages/booking/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "70 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-rebook",
+    "route": "pages/rebook/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "45 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-favourites",
+    "route": "pages/favourites/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "45 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-reminders",
+    "route": "pages/reminders/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "53 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-review",
+    "route": "pages/review/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "63 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-content-agreement",
+    "route": "pages/content-agreement/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "44 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "55 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-user",
+    "route": "pages/community/user",
+    "width": 390,
+    "pathMatched": true,
+    "device": "39 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-venue-reviews",
+    "route": "pages/venue-reviews/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "54 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-posts",
+    "route": "pages/posts/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "58 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-post-detail",
+    "route": "pages/posts/detail",
+    "width": 390,
+    "pathMatched": true,
+    "device": "56 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-membership",
+    "route": "pages/membership/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "75 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-mine",
+    "route": "pages/mine/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "92 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-bind",
+    "route": "pages/staff-bind/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "43 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-web-login",
+    "route": "pages/staff-web-login/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "48 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-verify",
+    "route": "pages/staff-verify/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "50 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-recharge",
+    "route": "pages/staff-recharge/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-records",
+    "route": "pages/staff-records/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "42 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-contact-base",
+    "route": "pages/mine/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "92 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-member-code-base",
+    "route": "pages/membership/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "75 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-account-base",
+    "route": "pages/mine/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "92 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-venue-grid-base",
+    "route": "pages/venue/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "115 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-editor-base",
+    "route": "pages/posts/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "58 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-payment",
+    "route": "pages/payment/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "54 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-payment-success",
+    "route": "pages/payment/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "53 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-recharge-base",
+    "route": "pages/membership/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "84 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-staff-member-base",
+    "route": "pages/staff-verify/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "50 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-posts",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-reports",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-decisions",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "52 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-appeals",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "49 文本 iPhone 12/13 (Pro) 88% 16"
+  },
+  {
+    "id": "m-community-blocks",
+    "route": "pages/community/index",
+    "width": 390,
+    "pathMatched": true,
+    "device": "51 文本 iPhone 12/13 (Pro) 88% 16"
+  }
+]

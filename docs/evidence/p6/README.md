@@ -41,3 +41,13 @@ P5 本次已完成模拟器预约确认/Mock 支付/本人详情/再订日期与
 代码已提交到当前分支：`83e70ab`。本次未推送、未创建 PR、未部署，也未关闭远端 Issue。P6 #17 仍保留端侧窗口点验门禁。
 
 最后边界修复 `d5cd86d`：标签名称改为数据库 JSON 数组，无损保留逗号、引号及原文，避免分隔符拆标签和 GROUP_CONCAT 截断。Service 回归和真实 HTTP 均先红后绿；最新 package 共 171 项通过，针对该小修复的 Standards 复核无新增阻断。客户专项输出见 tag-roundtrip-output.txt。
+
+## 2026-10-13 功能复查修复
+
+- 历史利用率补查每块场地存在期间的自然小时，缺失日期、小时及整块空事实场地参与 `DATA_INSUFFICIENT` 判断；保留已知分钟数，不填造容量。场地创建时间沿用旧链路的本地业务时间，转为 UTC 后裁剪范围；当前或历史运动关联仍受筛选约束。显式关闭保持已知不可售，平台明细权限不变。
+- 提醒登记拒绝非零秒与小数秒，起止两端均在读取/写入事实前校验。小程序只省略全零秒，遗留非法精度不会被静默截断或扩大范围；Request 注解与 OpenAPI 已同步。
+- 招募水平表单显示中文选项，提交仍使用约定枚举；顾客归属、文本和操作身份私有方法补齐边界 JavaDoc。
+- 最终 headless `./mvn-project package`：biz 150 + server 24，共 174 项，0 failures/errors/skipped。小程序 13 个测试文件、原生 24 WXML / 25 WXSS 编译通过，`git diff --check` 通过。
+- 扩展 `backend/scripts/verify-p6-utilization.py` 在隔离 MySQL/Redis 和最终 JAR 的 8093 HTTP 实例通过：原 270/40 分钟核算、快照、占位、取消去重、未来分离、越馆/平台边界、午夜下钻，以及重复星期缺日期、显式关闭、空场地、晚间创建和移除当前运动关联后的历史缺失判断。
+- 提醒专项 HTTP：起止各自含秒/小数秒均为 400，拒绝登记不留记录；合法分钟条件保存成功且重复幂等，专用登记已撤回。日志 `/tmp/sports-booking-fixes-package.log`、`/tmp/sports-booking-fixes-miniapp.log`、`/tmp/sports-booking-fixes-native.log`、`/tmp/sports-booking-fixes-utilization.log`。
+- 首次额外实例缺 UGC 保留期而启动失败，补齐已有测试环境配置后通过；尝试用旧 8091 实例复验基线时 HTTP 超时，不计为业务证据。本次不新增迁移、不修改真实渠道、不推送或部署，端侧交互和真机门禁仍待验。

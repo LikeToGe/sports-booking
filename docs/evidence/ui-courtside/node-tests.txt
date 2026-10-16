@@ -1,0 +1,37 @@
+✔ 收起首页筛选保留条件、结果和待提交标记 (2.130417ms)
+✔ 动态图片失败保留正文，旧图片下载不覆盖较新筛选 (0.822917ms)
+✔ 五个 Tab 页面在原生组件就绪后刷新稳定路径选中态 (2.321542ms)
+local API configuration checks passed
+✔ miniapp/tests/local-api-config.test.js (36.699583ms)
+p2 miniapp behavior checks passed
+✔ miniapp/tests/p2-pages.test.js (37.47975ms)
+p3 staff page behavior checks passed
+✔ miniapp/tests/p3-staff-pages.test.js (36.648917ms)
+p4 community page behavior checks passed
+✔ miniapp/tests/p4-community-pages.test.js (37.555625ms)
+P5 favourites page add, reload and suspended display checks passed
+✔ miniapp/tests/p5-favourites.test.js (38.343583ms)
+P5 monetary display preserves cents passed
+✔ miniapp/tests/p5-money.test.js (35.967375ms)
+P5 rebook: explicit date, owned history, current slot flow and error recovery passed
+✔ miniapp/tests/p5-rebook.test.js (43.366667ms)
+P5 recruitment refresh, failure and retry checks passed
+✔ miniapp/tests/p5-recruitment-discovery.test.js (35.492375ms)
+P5 complete slot comparison, public states, filters, preferences and retry passed
+✔ miniapp/tests/p5-slot-comparison.test.js (33.193584ms)
+P5 time search, condition preservation, price and entry checks passed
+✔ miniapp/tests/p5-time-search.test.js (38.042125ms)
+P6 owned booking navigation and current entry notice preserve booking snapshot passed
+✔ miniapp/tests/p6-booking-arrival.test.js (34.492708ms)
+P6 reminder registration, current supply and message landing checks passed
+✔ miniapp/tests/p6-reminders.test.js (39.815958ms)
+style A date, profile, member-code and editor UI checks passed
+✔ miniapp/tests/style-a-ui.test.js (27.116375ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.444667

@@ -1,0 +1,21 @@
+{
+  "pages": 25,
+  "widths": [
+    1440,
+    768,
+    375,
+    320
+  ],
+  "pageChecks": 100,
+  "modeChecks": 20,
+  "employeePresentation": "passed",
+  "unchangedFromTaskStart": {
+    "admin-web/src/api.ts": true,
+    "admin-web/src/auth.ts": true,
+    "admin-web/src/types.ts": true,
+    "admin-web/src/router.ts": true,
+    "admin-web/src/feedback.ts": true,
+    "admin-web/src/main.ts": true,
+    "admin-web/src/pagination.ts": true
+  }
+}

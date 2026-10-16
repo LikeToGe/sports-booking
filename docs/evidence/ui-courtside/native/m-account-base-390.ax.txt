@@ -1,0 +1,83 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 container
+							18 text 18 : 03
+						19 container
+							20 标题 我的, Value: 3
+								21 文本 我的
+							22 链接
+							23 链接
+						24 HTML 内容 Webview: pages/mine/index, URL: 127.0.0.1:28074/__pageframe__/pages/mine/index
+							25 container
+								26 按钮 订场
+									27 文本 订场
+								28 按钮 动态
+									29 文本 动态
+								30 按钮 预约
+									31 文本 预约
+								32 按钮 会员
+									33 文本 会员
+								34 按钮 我的
+									35 文本 我的
+							36 文本 我的
+							37 文本 UI 点验
+							38 文本 13800000000
+							39 按钮 编辑联系人
+							40 按钮 我的预约
+								41 文本 我的预约
+							42 按钮 常约场馆
+								43 文本 常约场馆
+							44 按钮 场馆会员
+								45 文本 场馆会员
+							46 按钮 消息中心
+								47 文本 消息中心
+							48 文本 个人与记录
+							49 按钮 常用联系人 ›
+								50 文本 常用联系人
+								51 文本 ›
+							52 按钮 提醒登记 ›
+								53 文本 提醒登记
+								54 文本 ›
+							55 按钮 我的发布 ›
+								56 文本 我的发布
+								57 文本 ›
+							58 按钮 举报与申诉 ›
+								59 文本 举报与申诉
+								60 文本 ›
+							61 按钮 社区协议 ›
+								62 文本 社区协议
+								63 文本 ›
+							64 文本 场馆工作
+							65 按钮 Web 后台扫码登录 ›
+								66 文本 Web 后台扫码登录
+								67 文本 ›
+							68 按钮 核销与会员识别 ›
+								69 文本 核销与会员识别
+								70 文本 ›
+							71 按钮 我的核销记录 ›
+								72 文本 我的核销记录
+								73 文本 ›
+							74 文本 本地联调
+							75 文本 API 地址
+							76 文本栏 (settable) http://127.0.0.1:8091/api
+								77 文本栏 (settable) http://127.0.0.1:8091/api
+							78 按钮 保存并重连
+							79 文本 账号设置
+							80 按钮 注销账号
+						81 HTML 内容 

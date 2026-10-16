@@ -1,0 +1,810 @@
+[
+  {
+    "id": "a-report-utilization",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-bookings",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-member-flows",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-receipts",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-service-fees",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-utilization",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-member-operations",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-service-fees",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-login-qr",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-create",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-batch",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-payment",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-today-slot",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-customer-detail",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-role-edit",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-venue-edit",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-case-evidence",
+    "width": 1440,
+    "status": "rendered: controlled UI response fixture",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-loading",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-empty",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-error",
+    "width": 1440,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [
+      "Failed to fetch 重新加载"
+    ],
+    "errors": []
+  },
+  {
+    "id": "a-report-utilization",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-bookings",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-member-flows",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-receipts",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-service-fees",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-utilization",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-member-operations",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-service-fees",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-login-qr",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-create",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-batch",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-payment",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-today-slot",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-customer-detail",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-role-edit",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-venue-edit",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-case-evidence",
+    "width": 768,
+    "status": "rendered: controlled UI response fixture",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-loading",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-empty",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-error",
+    "width": 768,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [
+      "Failed to fetch 重新加载"
+    ],
+    "errors": []
+  },
+  {
+    "id": "a-report-utilization",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-bookings",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-member-flows",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-receipts",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-service-fees",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-utilization",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-member-operations",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-service-fees",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-login-qr",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-create",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-batch",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-payment",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-today-slot",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-customer-detail",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-role-edit",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-venue-edit",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-case-evidence",
+    "width": 375,
+    "status": "rendered: controlled UI response fixture",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-loading",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-empty",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-error",
+    "width": 375,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [
+      "Failed to fetch 重新加载"
+    ],
+    "errors": []
+  },
+  {
+    "id": "a-report-utilization",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-bookings",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-member-flows",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-receipts",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-report-service-fees",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-utilization",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-member-operations",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-platform-report-service-fees",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-login-qr",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-create",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-batch",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-booking-payment",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-today-slot",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-customer-detail",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-role-edit",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-venue-edit",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-case-evidence",
+    "width": 320,
+    "status": "rendered: controlled UI response fixture",
+    "overflow": false,
+    "dialog": true,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-loading",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-empty",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": true,
+    "alerts": [],
+    "errors": []
+  },
+  {
+    "id": "a-state-error",
+    "width": 320,
+    "status": "rendered",
+    "overflow": false,
+    "dialog": false,
+    "focusVisible": false,
+    "alerts": [
+      "Failed to fetch 重新加载"
+    ],
+    "errors": []
+  }
+]

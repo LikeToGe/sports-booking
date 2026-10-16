@@ -1,0 +1,108 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 container
+							18 text 17 : 10
+						19 container
+							20 标题 约场, Value: 3
+								21 文本 约场
+							22 链接
+							23 链接
+						24 HTML 内容 Webview: pages/home/index, URL: 127.0.0.1:28074/__pageframe__/pages/home/index
+							25 container
+								26 按钮 订场
+									27 文本 订场
+								28 按钮 动态
+									29 文本 动态
+								30 按钮 预约
+									31 文本 预约
+								32 按钮 会员
+									33 文本 会员
+								34 按钮 我的
+									35 文本 我的
+							36 文本 今天，去打球
+							37 文本 郑州
+							38 container 搜索场馆名称
+								39 文本栏 (settable) 
+搜索场馆名称
+									40 文本栏 (settable)
+									41 文本 搜索场馆名称
+							42 按钮 搜索
+							43 container 运动类型
+								44 container
+									45 切换按钮 全部运动, Value: 1
+									46 切换按钮 篮球, Value: 0
+									47 切换按钮 羽毛球, Value: 0
+									48 切换按钮 网球, Value: 0
+									49 切换按钮 足球, Value: 0
+									50 切换按钮 乒乓球, Value: 0
+							51 container 未来七天预约日期
+								52 container
+									53 切换按钮 Description: 2026-10-14, Value: 1
+										54 文本 今天
+										55 文本 14
+									56 切换按钮 Description: 2026-10-15, Value: 0
+										57 文本 周四
+										58 文本 15
+									59 切换按钮 Description: 2026-10-16, Value: 0
+										60 文本 周五
+										61 文本 16
+									62 切换按钮 Description: 2026-10-17, Value: 0
+										63 文本 周六
+										64 文本 17
+									65 切换按钮 Description: 2026-10-18, Value: 0
+										66 文本 周日
+										67 文本 18
+									68 切换按钮 Description: 2026-10-19, Value: 0
+										69 文本 周一
+										70 文本 19
+									71 切换按钮 Description: 2026-10-20, Value: 0
+										72 文本 周二
+										73 文本 20
+							74 container 郑州区县
+								75 文本 区县
+								76 文本 全部区县
+							77 按钮 时间与价格
+							78 文本 可预约场馆
+							79 文本 3 家
+							80 container 预约日期 2026-10-14
+								81 文本 10-14
+							82 container
+								83 按钮 P5测试馆1场馆封面 P5测试馆1 篮球、羽毛球 区县未设置 · 郑东新区商务内环路 22 号 ¥10.00 起 18:00 可约 查看场次
+									84 图像 P5测试馆1场馆封面
+									85 文本 P5测试馆1
+									86 文本 篮球、羽毛球
+									87 文本 区县未设置 · 郑东新区商务内环路 22 号
+									88 文本 ¥10.00 起
+									89 文本 18:00 可约
+									90 文本 查看场次
+								91 按钮 P5测试馆2场馆封面 P5测试馆2 乒乓球、篮球、羽毛球 区县未设置 · 二七区大学中路 86 号 ¥20.00 起 18:00 可约
+									92 图像 P5测试馆2场馆封面
+									93 文本 P5测试馆2
+									94 文本 乒乓球、篮球、羽毛球
+									95 文本 区县未设置 · 二七区大学中路 86 号
+									96 文本 ¥20.00 起
+									97 文本 18:00 可约
+								98 按钮 P5测试馆3场馆封面 P5测试馆3 篮球、网球 区县未设置 · 高新区科学大道 57 号 ¥80.00 起 19:00 可约
+									99 图像 P5测试馆3场馆封面
+									100 文本 P5测试馆3
+									101 文本 篮球、网球
+									102 文本 区县未设置 · 高新区科学大道 57 号
+									103 文本 ¥80.00 起
+									104 文本 19:00 可约
+						105 HTML 内容 

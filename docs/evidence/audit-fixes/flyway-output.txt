@@ -1,0 +1,14 @@
+WARN existing Flyway declares MySQL 8.4 newer than its tested range; no dependency upgrade performed
+FLYWAY_PROBE target=24 applied=22 current=24
+WARN existing Flyway declares MySQL 8.4 newer than its tested range; no dependency upgrade performed
+FLYWAY_PROBE target=15 applied=15 current=15
+WARN existing Flyway declares MySQL 8.4 newer than its tested range; no dependency upgrade performed
+FLYWAY_PROBE target=24 applied=7 current=24
+WARN existing Flyway declares MySQL 8.4 newer than its tested range; no dependency upgrade performed
+FLYWAY_PROBE target=24 applied=0 current=24
+PASS empty V1-V24: 22 real SQL migrations; repository has no V16/V17
+PASS real Flyway V15 validate/migrate to V24 and idempotent replay; old history checksums preserved
+PASS all original fields across 16 legacy tables preserved; snapshot SHA256=84626799e45ad04c295ce12995b78f695237271c81ff2cb0c57846b3d5ad54fc
+PASS original paid_at, paid/gift/frozen balances, booking snapshots, messages/delivery and report content preserved
+PASS old report evidence_revision_id remains NULL; no current-version evidence fabricated
+PASS dedicated databases and temporary Java helper removed; primary sports_booking untouched

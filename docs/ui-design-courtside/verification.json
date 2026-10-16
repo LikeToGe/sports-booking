@@ -1,0 +1,1735 @@
+{
+  "date": "2026-10-14",
+  "rendered": 86,
+  "mainAdmin": 25,
+  "mainMini": 23,
+  "extra": 38,
+  "pass": true,
+  "failures": [],
+  "gallery": {
+    "errors": [],
+    "bookingFlow": true,
+    "offlineModalOpenClose": true,
+    "searchPass": true,
+    "adminOverview": true,
+    "miniOverview": true,
+    "at768": true,
+    "at390": true
+  },
+  "screens": [
+    {
+      "id": "a-booking-batch",
+      "title": "预约管理 · 批量预约 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1152,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 1065,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-booking-create",
+      "title": "预约管理 · 创建线下预约 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1152,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 1021,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-booking-payment",
+      "title": "预约管理 · 登记收款 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1152,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 995,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-bookings",
+      "title": "预约管理 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1152,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 905,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-case-evidence",
+      "title": "内容举报 · 案件证据 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 612,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-content-appeals",
+      "title": "内容申诉 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 409,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-content-reports",
+      "title": "内容举报 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 404,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-content-settings",
+      "title": "审核配置 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 302,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-courts",
+      "title": "场地管理 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 368,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-customer-detail",
+      "title": "顾客与会员 · 顾客详情 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1485,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 1068,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-customers",
+      "title": "顾客与会员 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1485,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 850,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-employees",
+      "title": "员工管理 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 370,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-login",
+      "title": "管理端登录 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 110,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-login-qr",
+      "title": "员工扫码登录 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 113,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-moderation",
+      "title": "内容审核与处置 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 463,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-official",
+      "title": "官方动态 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 204,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-plans",
+      "title": "充值档位 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 379,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-platform-official",
+      "title": "官方动态 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 193,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-platform-report-member-operations",
+      "title": "经营总报表 · 会员经营 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 444,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-platform-report-service-fees",
+      "title": "经营总报表 · 月度结算 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1366,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 783,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-platform-report-utilization",
+      "title": "经营总报表 · 时段分析 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1674,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 893,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-platform-reports",
+      "title": "经营总报表 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1314,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 635,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-profile",
+      "title": "场馆资料 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1223,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 292,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-refunds",
+      "title": "退款异常 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 520,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-report-bookings",
+      "title": "经营报表 · 预约明细 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 623,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-report-member-flows",
+      "title": "经营报表 · 会员流水 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 573,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-report-receipts",
+      "title": "经营报表 · 每日收款 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 468,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-report-service-fees",
+      "title": "经营报表 · 月度结算 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1256,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 705,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-report-utilization",
+      "title": "经营报表 · 时段分析 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1674,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 888,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-reports",
+      "title": "经营报表 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1314,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 630,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-restrictions",
+      "title": "账号内容权限 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 252,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-review-tags",
+      "title": "评价标签 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 291,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-reviews",
+      "title": "场地评价 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 384,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-role-edit",
+      "title": "角色权限 · 编辑角色 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 440,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-roles",
+      "title": "角色权限 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 318,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-schedule",
+      "title": "固定排期 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1071,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 546,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-sessions",
+      "title": "具体场次 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 530,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-sports",
+      "title": "运动类型 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 273,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-state-empty",
+      "title": "预约管理 · 空列表 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 283,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-state-error",
+      "title": "预约管理 · 失败 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 279,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-state-loading",
+      "title": "预约管理 · 加载 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 258,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-today",
+      "title": "今日运营 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1593,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 1328,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "a-today-slot",
+      "title": "今日运营 · 场次操作 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1593,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 1419,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-venue-edit",
+      "title": "场馆管理 · 编辑资料 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 535,
+      "overlay": true,
+      "jsErrors": []
+    },
+    {
+      "id": "a-venues",
+      "title": "场馆管理 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "width": 1440,
+      "height": 1000,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 418,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-account-close",
+      "title": "个人中心 · 注销确认 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 83,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-booking",
+      "title": "预约详情 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1305,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 225,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-bookings",
+      "title": "我的预约 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 858,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 228,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community",
+      "title": "社区记录 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 127,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-appeals",
+      "title": "社区记录 · 申诉 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 85,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-blocks",
+      "title": "社区记录 · 拉黑名单 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 73,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-decisions",
+      "title": "社区记录 · 内容处置 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 90,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-posts",
+      "title": "社区记录 · 我的发布 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 126,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-reports",
+      "title": "社区记录 · 举报 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 97,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-community-user",
+      "title": "球友主页 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 885,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 173,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-confirm",
+      "title": "确认预约 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 135,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-contact-edit",
+      "title": "个人中心 · 常用联系人 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 50,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-content-agreement",
+      "title": "社区协议 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 179,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-favourites",
+      "title": "常约场馆 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 125,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-home",
+      "title": "订场首页 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 994,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 210,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-member-code",
+      "title": "场馆会员 · 会员码 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 90,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-membership",
+      "title": "场馆会员 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1242,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 333,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-mine",
+      "title": "个人中心 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1362,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 160,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-payment",
+      "title": "预约支付 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 861,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 152,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-payment-success",
+      "title": "预约支付 · 已支付 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 142,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-payment-unknown",
+      "title": "预约支付 · 结果待确认 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 82,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-post-detail",
+      "title": "动态详情与找搭子 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1548,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 269,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-post-editor",
+      "title": "运动动态 · 发布编辑 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 132,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-posts",
+      "title": "运动动态 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1051,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 216,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-rebook",
+      "title": "再次预约 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 127,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-recharge-pending",
+      "title": "场馆会员 · 充值待支付 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 124,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-recruitment",
+      "title": "运动动态 · 找搭子发现 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 891,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 183,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-reminders",
+      "title": "提醒登记 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1003,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 150,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-review",
+      "title": "场地评价 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 995,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 114,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-bind",
+      "title": "绑定员工身份 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 69,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-member",
+      "title": "场馆工作 · 会员识别 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 994,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 147,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-recharge",
+      "title": "员工人工充值 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 144,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-records",
+      "title": "我的核销记录 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1015,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 267,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-verify",
+      "title": "核销与会员识别 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 108,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-staff-web-login",
+      "title": "Web 后台登录 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 115,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-state-empty",
+      "title": "订场首页 · 空列表 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 117,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-state-error",
+      "title": "订场首页 · 失败 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 109,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-state-loading",
+      "title": "订场首页 · 加载 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 844,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 86,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-venue",
+      "title": "场馆与场次 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1499,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 375,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-venue-grid",
+      "title": "场馆场次 · 网格比较 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1294,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 377,
+      "overlay": false,
+      "jsErrors": []
+    },
+    {
+      "id": "m-venue-reviews",
+      "title": "场馆公开评价 · 约场设计预览",
+      "pass": true,
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "width": 390,
+      "height": 1030,
+      "brokenImages": 0,
+      "galleryChrome": false,
+      "canvasCount": 1,
+      "text": 192,
+      "overlay": false,
+      "jsErrors": []
+    }
+  ],
+  "miniAt320": [
+    {
+      "id": "m-home",
+      "pass": true
+    },
+    {
+      "id": "m-venue",
+      "pass": true
+    },
+    {
+      "id": "m-confirm",
+      "pass": true
+    },
+    {
+      "id": "m-payment",
+      "pass": true
+    },
+    {
+      "id": "m-bookings",
+      "pass": true
+    },
+    {
+      "id": "m-booking",
+      "pass": true
+    },
+    {
+      "id": "m-rebook",
+      "pass": true
+    },
+    {
+      "id": "m-favourites",
+      "pass": true
+    },
+    {
+      "id": "m-reminders",
+      "pass": true
+    },
+    {
+      "id": "m-review",
+      "pass": true
+    },
+    {
+      "id": "m-content-agreement",
+      "pass": true
+    },
+    {
+      "id": "m-community",
+      "pass": true
+    },
+    {
+      "id": "m-community-user",
+      "pass": true
+    },
+    {
+      "id": "m-venue-reviews",
+      "pass": true
+    },
+    {
+      "id": "m-posts",
+      "pass": true
+    },
+    {
+      "id": "m-post-detail",
+      "pass": true
+    },
+    {
+      "id": "m-membership",
+      "pass": true
+    },
+    {
+      "id": "m-mine",
+      "pass": true
+    },
+    {
+      "id": "m-staff-bind",
+      "pass": true
+    },
+    {
+      "id": "m-staff-web-login",
+      "pass": true
+    },
+    {
+      "id": "m-staff-verify",
+      "pass": true
+    },
+    {
+      "id": "m-staff-recharge",
+      "pass": true
+    },
+    {
+      "id": "m-staff-records",
+      "pass": true
+    },
+    {
+      "id": "m-venue-grid",
+      "pass": true
+    },
+    {
+      "id": "m-member-code",
+      "pass": true
+    },
+    {
+      "id": "m-recharge-pending",
+      "pass": true
+    },
+    {
+      "id": "m-payment-success",
+      "pass": true
+    },
+    {
+      "id": "m-payment-unknown",
+      "pass": true
+    },
+    {
+      "id": "m-contact-edit",
+      "pass": true
+    },
+    {
+      "id": "m-staff-member",
+      "pass": true
+    },
+    {
+      "id": "m-recruitment",
+      "pass": true
+    },
+    {
+      "id": "m-post-editor",
+      "pass": true
+    },
+    {
+      "id": "m-community-posts",
+      "pass": true
+    },
+    {
+      "id": "m-community-reports",
+      "pass": true
+    },
+    {
+      "id": "m-community-decisions",
+      "pass": true
+    },
+    {
+      "id": "m-community-appeals",
+      "pass": true
+    },
+    {
+      "id": "m-community-blocks",
+      "pass": true
+    },
+    {
+      "id": "m-account-close",
+      "pass": true
+    },
+    {
+      "id": "m-state-loading",
+      "pass": true
+    },
+    {
+      "id": "m-state-empty",
+      "pass": true
+    },
+    {
+      "id": "m-state-error",
+      "pass": true
+    }
+  ]
+}

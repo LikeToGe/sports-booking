@@ -1,0 +1,1 @@
+PASS F01: one-time binding, NULL clearing, revocation, user-closure race and disabled-user legacy binding; fixtures cleaned

@@ -1,0 +1,30 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 文本 WeChat 
+						18 container
+							19 text 17 : 13
+						20 container
+							21 text 80 %
+						22 container
+							23 标题 提醒登记, Value: 3
+								24 文本 提醒登记
+							25 链接
+							26 链接
+						27 HTML 内容 Webview: pages/reminders/index, URL: 127.0.0.1:28074/__pageframe__/pages/reminders/index
+						28 HTML 内容 

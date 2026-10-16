@@ -1,0 +1,108 @@
+Window: "约场", App: 微信开发者工具.
+0 标准窗口 约场, Secondary Actions: Raise
+	1 HTML 内容 file:///Applications/wechatwebdevtools.app/Contents/Resources/app.asar/html/electron-project.html?projectpath=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&projectname=%E7%BA%A6%E5%9C%BA&projectid=%2FUsers%2Fgjm%2FGjmWork%2FMyWork%2Fsports-booking%2Fminiapp&theme=dark&skeletonPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%20Support%2F%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7%2Fd1e8765721a6c23d43b14c95b1843e6b%2FWeappCache%2FskeletonCache%2F9a1f78587cddbdebbfae564f9b1d2054%2Fpageskeleton.html&appid=wxbb82fb2a7b99dac9&frame=0&devid=s0&runtimeid=0&devtype=miniprogram&proxyPort=54957&userDataPath=%2FUsers%2Fgjm%2FLibrary%2FApplication%2520Support%2F%25E5%25BE%25AE%25E4%25BF%25A1%25E5%25BC%2580%25E5%258F%2591%25E8%2580%2585%25E5%25B7%25A5%25E5%2585%25B7%2Fd1e8765721a6c23d43b14c95b1843e6b&appVersion=2.02.2608060&appVersionType=0
+		2 container
+			3 文本 微信开发者工具 Stable 2.02.2608060
+			4 container
+				5 text 小程序模式
+			6 文本 预览
+			7 文本 真机调试
+			8 文本 上传
+			9 未加标签的图片 要获取缺失的图片说明，请打开上下文菜单。
+			10 container
+				11 container
+					12 container
+						13 text 预览 编辑
+					14 container
+						15 text 场边点验
+					16 container
+						17 文本 WeChat 
+						18 container
+							19 text 17 : 13
+						20 container
+							21 text 80 %
+						22 container
+							23 标题 P5测试馆1, Value: 3
+								24 文本 P5测试馆1
+							25 链接
+							26 链接
+						27 HTML 内容 Webview: pages/venue/index, URL: 127.0.0.1:28074/__pageframe__/pages/venue/index
+							28 图像 P5测试馆1场馆封面
+							29 文本 P5测试馆1
+							30 文本 郑东新区商务内环路 22 号
+							31 按钮 导航
+							32 文本 区县未设置
+							33 按钮 收藏与常约
+							34 文本 更衣室、淋浴、停车场、饮水
+							35 文本 选择场次
+							36 文本 一次预约一个完整具体场次
+							37 文本 2026-10-15
+							38 container
+								39 按钮 全部 
+									40 文本 全部
+								41 按钮 篮球 
+									42 文本 篮球
+								43 按钮 羽毛球 
+									44 文本 羽毛球
+							45 按钮 按场地列表查看
+							46 按钮 按时间和场地比较
+							47 文本 当前价格和取消截止以所选具体场次显示为准；确认预约时重新校验库存和价格。
+							48 文本 入场须知：请提前 15 分钟到场，穿着适合场地的运动鞋。
+							49 文本 羽毛球 1 号场
+							50 文本 羽毛球
+							51 按钮 (disabled) 羽毛球 1 号场 00:08 - 01:08 ¥60.00 已预约
+								52 文本 00:08 - 01:08
+								53 文本 ¥60.00
+								54 文本 已预约
+								55 文本 取消截止 10-14 22:08
+							56 按钮 (disabled) 羽毛球 1 号场 09:00 - 10:00 ¥60.00 已预约
+								57 文本 09:00 - 10:00
+								58 文本 ¥60.00
+								59 文本 已预约
+								60 文本 取消截止 10-15 07:00
+							61 按钮 羽毛球 1 号场 14:00 - 15:00 ¥70.00 可预约
+								62 文本 14:00 - 15:00
+								63 文本 ¥70.00
+								64 文本 可预约
+								65 文本 取消截止 10-15 12:00
+							66 按钮 羽毛球 1 号场 19:00 - 20:00 ¥90.00 可预约
+								67 文本 19:00 - 20:00
+								68 文本 ¥90.00
+								69 文本 可预约
+								70 文本 取消截止 10-15 17:00
+							71 按钮 羽毛球 1 号场 22:15 - 23:15 ¥80.00 可预约
+								72 文本 22:15 - 23:15
+								73 文本 ¥80.00
+								74 文本 可预约
+								75 文本 取消截止 10-15 20:15
+							76 文本 羽毛球 2 号场
+							77 文本 羽毛球
+							78 按钮 羽毛球 2 号场 10:00 - 11:00 ¥50.00 可预约
+								79 文本 10:00 - 11:00
+								80 文本 ¥50.00
+								81 文本 可预约
+								82 文本 取消截止 10-15 08:00
+							83 按钮 羽毛球 2 号场 16:00 - 17:00 ¥65.00 可预约
+								84 文本 16:00 - 17:00
+								85 文本 ¥65.00
+								86 文本 可预约
+								87 文本 取消截止 10-15 14:00
+							88 按钮 羽毛球 2 号场 20:00 - 21:00 ¥80.00 可预约
+								89 文本 20:00 - 21:00
+								90 文本 ¥80.00
+								91 文本 可预约
+								92 文本 取消截止 10-15 18:00
+							93 文本 测试场地880001
+							94 文本 篮球
+							95 按钮 测试场地880001 19:00 - 20:30 ¥77.77 可预约
+								96 文本 19:00 - 20:30
+								97 文本 ¥77.77
+								98 文本 可预约
+								99 文本 取消截止 10-15 17:00
+							100 文本 场地评价
+							101 文本 0 条已公开
+							102 按钮 查看全部
+							103 文本 暂无公开评价
+							104 文本 入场须知
+							105 文本 请提前 15 分钟到场，穿着适合场地的运动鞋。
+						106 HTML 内容 

@@ -1809,6 +1809,25 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
+  /mini/recharges/{rechargeId}/cancel:
+    post:
+      tags:
+      - funds-controller
+      operationId: cancelMiniRecharge
+      parameters:
+      - name: rechargeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseMemberRechargeVO"
   /mini/recharges/create:
     post:
       tags:
@@ -3866,6 +3885,30 @@ paths:
               schema:
                 type: string
                 format: binary
+  /platform/content-governance/{caseType}/{id}/evidence:
+    get:
+      tags:
+      - content-governance-controller
+      operationId: evidence
+      parameters:
+      - name: caseType
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseContentCaseEvidenceVO"
   /platform/content-governance/reports:
     get:
       tags:
@@ -4134,6 +4177,25 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ApiResponseListRecruitmentDiscoveryVO"
+  /mini/recharges:
+    get:
+      tags:
+      - funds-controller
+      operationId: listMiniRecharges
+      parameters:
+      - name: venueId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ApiResponseListMemberRechargeVO"
   /mini/recharges/{rechargeId}:
     get:
       tags:
@@ -6454,10 +6516,10 @@ components:
           description: 预约日期
         startTime:
           type: string
-          description: 开始时间
+          description: 开始时间 HH:mm，不接受非零秒或小数秒
         endTime:
           type: string
-          description: 结束时间
+          description: 结束时间 HH:mm，不接受非零秒或小数秒
         type:
           type: string
           description: 提醒类型 OPENING/RELEASED
@@ -8507,18 +8569,97 @@ components:
           format: int32
         msg:
           type: string
-    ApiResponseListContentGovernanceVO:
+    ApiResponseContentCaseEvidenceVO:
       type: object
       properties:
         data:
-          type: array
-          items:
-            $ref: "#/components/schemas/ContentGovernanceVO"
+          $ref: "#/components/schemas/ContentCaseEvidenceVO"
         code:
           type: integer
           format: int32
         msg:
           type: string
+    ContentCaseEvidenceVO:
+      type: object
+      properties:
+        caseRecord:
+          $ref: "#/components/schemas/ContentGovernanceVO"
+          description: 举报或申诉案件
+        evidenceSource:
+          type: string
+          description: REPORT_SUBMISSION、MODERATION_DECISION、LEGACY_UNRECORDED 或 ACCOUNT_TARGET
+        evidenceRevisionId:
+          type: integer
+          format: int64
+          description: 提交时版本或所申诉处置版本 ID，旧举报未记录时为空
+        currentStatus:
+          type: string
+          description: 目标当前状态，目标不存在时为 MISSING
+        currentRevisionId:
+          type: integer
+          format: int64
+          description: 目标当前版本 ID
+        publicRevisionId:
+          type: integer
+          format: int64
+          description: 目标当前公开版本 ID
+        revisions:
+          type: array
+          description: 保留版本列表，不代表全部历史内容均可还原
+          items:
+            $ref: "#/components/schemas/ContentEvidenceRevisionVO"
+        decisions:
+          type: array
+          description: 目标的处置记录
+          items:
+            $ref: "#/components/schemas/ContentGovernanceVO"
+    ContentEvidenceRevisionVO:
+      type: object
+      properties:
+        revisionId:
+          type: integer
+          format: int64
+          description: 内容版本 ID
+        revisionNo:
+          type: integer
+          format: int32
+          description: 内容版本序号
+        body:
+          type: string
+          description: 保留的版本原文
+        moderationStatus:
+          type: string
+          description: 当前版本审核状态
+        createdAt:
+          type: string
+          format: date-time
+          description: 版本创建时间
+        overallScore:
+          type: integer
+          format: int32
+          description: 总体评分
+        courtScore:
+          type: integer
+          format: int32
+          description: 场地评分
+        environmentScore:
+          type: integer
+          format: int32
+          description: 环境评分
+        serviceScore:
+          type: integer
+          format: int32
+          description: 服务评分
+        anonymous:
+          type: boolean
+          description: 匿名评价标记
+        tags:
+          type: string
+          description: 评价标签名称
+        purgedMediaCount:
+          type: integer
+          format: int32
+          description: 已物理清理的媒体数量，无法读取或恢复
     ContentGovernanceVO:
       type: object
       properties:
@@ -8541,6 +8682,10 @@ components:
           type: integer
           format: int64
           description: 处置记录 ID
+        revisionId:
+          type: integer
+          format: int64
+          description: 案件或处置对应的历史版本 ID；账号处置中为限制记录 ID
         action:
           type: string
           description: 处置动作
@@ -8564,6 +8709,18 @@ components:
           type: string
           format: date-time
           description: 处理时间
+    ApiResponseListContentGovernanceVO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentGovernanceVO"
+        code:
+          type: integer
+          format: int32
+        msg:
+          type: string
     ApiResponseListUserActionEventVO:
       type: object
       properties:

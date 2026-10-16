@@ -1,0 +1,2591 @@
+{
+  "mainPages": 48,
+  "keyModes": 38,
+  "rows": [
+    {
+      "id": "a-bookings",
+      "title": "预约管理",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-bookings-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-bookings-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-bookings-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-bookings-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-today",
+      "title": "今日运营",
+      "route": "/today",
+      "source": "admin-web/src/views/TodayView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-today-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-today-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-today-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-today-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-customers",
+      "title": "顾客与会员",
+      "route": "/customers",
+      "source": "admin-web/src/views/CustomersView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-customers-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-customers-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-customers-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-customers-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-plans",
+      "title": "充值档位",
+      "route": "/recharge-plans",
+      "source": "admin-web/src/views/RechargePlansView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-plans-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-plans-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-plans-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-plans-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-courts",
+      "title": "场地管理",
+      "route": "/courts",
+      "source": "admin-web/src/views/CourtsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-courts-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-courts-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-courts-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-courts-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-schedule",
+      "title": "固定排期",
+      "route": "/schedule",
+      "source": "admin-web/src/views/ScheduleView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-schedule-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-schedule-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-schedule-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-schedule-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-sessions",
+      "title": "具体场次",
+      "route": "/sessions",
+      "source": "admin-web/src/views/SessionsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-sessions-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-sessions-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-sessions-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-sessions-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-employees",
+      "title": "员工管理",
+      "route": "/employees",
+      "source": "admin-web/src/views/EmployeesView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-employees-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-employees-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-employees-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-employees-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-roles",
+      "title": "角色权限",
+      "route": "/roles",
+      "source": "admin-web/src/views/RolesView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-roles-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-roles-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-roles-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-roles-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-profile",
+      "title": "场馆资料",
+      "route": "/profile",
+      "source": "admin-web/src/views/ProfileView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-profile-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-profile-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-profile-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-profile-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-reviews",
+      "title": "场地评价",
+      "route": "/venue-reviews",
+      "source": "admin-web/src/views/VenueReviewsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-reviews-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-reviews-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-reviews-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-reviews-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-official",
+      "title": "官方动态",
+      "route": "/official-posts",
+      "source": "admin-web/src/views/OfficialPostsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-official-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-official-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-official-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-official-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-platform-official",
+      "title": "官方动态",
+      "route": "/platform/official-posts",
+      "source": "admin-web/src/views/OfficialPostsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-platform-official-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-platform-official-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-platform-official-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-platform-official-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-venues",
+      "title": "场馆管理",
+      "route": "/platform/venues",
+      "source": "admin-web/src/views/PlatformVenuesView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-venues-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-venues-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-venues-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-venues-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-sports",
+      "title": "运动类型",
+      "route": "/platform/sports",
+      "source": "admin-web/src/views/PlatformSportsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-sports-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-sports-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-sports-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-sports-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-refunds",
+      "title": "退款异常",
+      "route": "/platform/refunds",
+      "source": "admin-web/src/views/PlatformRefundsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-refunds-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-refunds-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-refunds-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-refunds-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-moderation",
+      "title": "内容审核与处置",
+      "route": "/platform/moderation",
+      "source": "admin-web/src/views/PlatformModerationView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-moderation-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-moderation-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-moderation-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-moderation-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-content-reports",
+      "title": "内容举报",
+      "route": "/platform/content-reports",
+      "source": "admin-web/src/views/ContentGovernanceView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-content-reports-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-content-reports-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-content-reports-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-content-reports-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-content-appeals",
+      "title": "内容申诉",
+      "route": "/platform/content-appeals",
+      "source": "admin-web/src/views/ContentGovernanceView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-content-appeals-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-content-appeals-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-content-appeals-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-content-appeals-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-restrictions",
+      "title": "账号内容权限",
+      "route": "/platform/content-restrictions",
+      "source": "admin-web/src/views/ContentRestrictionsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-restrictions-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-restrictions-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-restrictions-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-restrictions-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-content-settings",
+      "title": "审核配置",
+      "route": "/platform/content-settings",
+      "source": "admin-web/src/views/ContentSettingsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-content-settings-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-content-settings-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-content-settings-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-content-settings-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-review-tags",
+      "title": "评价标签",
+      "route": "/platform/review-tags",
+      "source": "admin-web/src/views/ReviewTagsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-review-tags-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-review-tags-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-review-tags-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-review-tags-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-reports",
+      "title": "经营报表",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-reports-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-reports-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-reports-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-reports-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-report-utilization",
+      "title": "经营报表 · 时段分析",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-report-utilization-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-report-utilization-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-report-utilization-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-report-utilization-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-report-bookings",
+      "title": "经营报表 · 预约明细",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-report-bookings-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-report-bookings-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-report-bookings-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-report-bookings-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-report-member-flows",
+      "title": "经营报表 · 会员流水",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-report-member-flows-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-report-member-flows-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-report-member-flows-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-report-member-flows-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-report-receipts",
+      "title": "经营报表 · 每日收款",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-report-receipts-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-report-receipts-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-report-receipts-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-report-receipts-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-report-service-fees",
+      "title": "经营报表 · 月度结算",
+      "route": "/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-report-service-fees-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-report-service-fees-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-report-service-fees-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-report-service-fees-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-platform-reports",
+      "title": "经营总报表",
+      "route": "/platform/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-platform-reports-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-platform-reports-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-platform-reports-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-platform-reports-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-platform-report-utilization",
+      "title": "经营总报表 · 时段分析",
+      "route": "/platform/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-platform-report-utilization-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-platform-report-utilization-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-platform-report-utilization-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-platform-report-utilization-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-platform-report-member-operations",
+      "title": "经营总报表 · 会员经营",
+      "route": "/platform/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-platform-report-member-operations-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-platform-report-member-operations-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-platform-report-member-operations-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-platform-report-member-operations-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-platform-report-service-fees",
+      "title": "经营总报表 · 月度结算",
+      "route": "/platform/reports",
+      "source": "admin-web/src/views/ReportsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-platform-report-service-fees-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-platform-report-service-fees-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-platform-report-service-fees-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-platform-report-service-fees-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-login",
+      "title": "管理端登录",
+      "route": "/login",
+      "source": "admin-web/src/views/LoginView.vue",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-login-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-login-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-login-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-login-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-login-qr",
+      "title": "员工扫码登录",
+      "route": "/login",
+      "source": "admin-web/src/views/LoginView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-login-qr-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-login-qr-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-login-qr-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-login-qr-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-booking-create",
+      "title": "预约管理 · 创建线下预约",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-booking-create-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-booking-create-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-booking-create-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-booking-create-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-booking-batch",
+      "title": "预约管理 · 批量预约",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-booking-batch-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-booking-batch-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-booking-batch-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-booking-batch-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-booking-payment",
+      "title": "预约管理 · 登记收款",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-booking-payment-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-booking-payment-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-booking-payment-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-booking-payment-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-today-slot",
+      "title": "今日运营 · 场次操作",
+      "route": "/today",
+      "source": "admin-web/src/views/TodayView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-today-slot-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-today-slot-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-today-slot-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-today-slot-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-customer-detail",
+      "title": "顾客与会员 · 顾客详情",
+      "route": "/customers",
+      "source": "admin-web/src/views/CustomersView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-customer-detail-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-customer-detail-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-customer-detail-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-customer-detail-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-role-edit",
+      "title": "角色权限 · 编辑角色",
+      "route": "/roles",
+      "source": "admin-web/src/views/RolesView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-role-edit-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-role-edit-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-role-edit-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-role-edit-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-venue-edit",
+      "title": "场馆管理 · 编辑资料",
+      "route": "/platform/venues",
+      "source": "admin-web/src/views/PlatformVenuesView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-venue-edit-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-venue-edit-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-venue-edit-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-venue-edit-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-case-evidence",
+      "title": "内容举报 · 案件证据",
+      "route": "/platform/content-reports",
+      "source": "admin-web/src/views/ContentGovernanceView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-case-evidence-1440.png",
+          "kind": "vue_response_fixture"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-case-evidence-768.png",
+          "kind": "vue_response_fixture"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-case-evidence-375.png",
+          "kind": "vue_response_fixture"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-case-evidence-320.png",
+          "kind": "vue_response_fixture"
+        }
+      ],
+      "pending": [
+        "真实案件版本追溯未在本轮执行；截图使用明确标注的接口响应夹具。"
+      ]
+    },
+    {
+      "id": "m-home",
+      "title": "订场首页",
+      "route": "pages/home/index",
+      "source": "miniapp/pages/home/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-home-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "673bb2f9c47612fc91422983cb2925e33c4f317ddab77774364bea97769cec94"
+        },
+        {
+          "width": 375,
+          "path": "native/m-home-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "ef5210326229a228651a2904c22fa30b058225172a30dfbe6e9e1ec220c336f5"
+        },
+        {
+          "width": 390,
+          "path": "native/m-home-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "7a016de16f2c4f5a4a6126463530611744713226efaff34f1f623bd03175d396"
+        },
+        {
+          "width": 414,
+          "path": "native/m-home-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "86300c56038fee99b9258fd6745782fe32764ef4c41511c85d9324742caab370"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-venue",
+      "title": "场馆与场次",
+      "route": "pages/venue/index",
+      "source": "miniapp/pages/venue/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-venue-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": false,
+          "rawSha256": "ea69d76522f11db2c2780144a941039e64c3713fa913ef31fe176b8ea0971bac"
+        },
+        {
+          "width": 375,
+          "path": "native/m-venue-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": false,
+          "rawSha256": "df3692ba4aa65ea6634f7fcb1ff3bd23670ce10f8ccd3b4e87261c2a2c57d66c"
+        },
+        {
+          "width": 390,
+          "path": "native/m-venue-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": false,
+          "rawSha256": "d1b9440ada238257f640c5570bdcb80b749f53addd193a4e4565e76c1b37d2db"
+        },
+        {
+          "width": 414,
+          "path": "native/m-venue-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": false,
+          "rawSha256": "7ce669433ac878fbf8f374e769d7712375862edb1c7f59eed2eb2af42e1f282e"
+        }
+      ],
+      "pending": [
+        "320px 截图早于最后将预约说明移至场次列表后；窗口不可访问，最终顺序需补拍。",
+        "375px 截图早于最后将预约说明移至场次列表后；窗口不可访问，最终顺序需补拍。",
+        "390px 截图早于最后将预约说明移至场次列表后；窗口不可访问，最终顺序需补拍。",
+        "414px 截图早于最后将预约说明移至场次列表后；窗口不可访问，最终顺序需补拍。"
+      ]
+    },
+    {
+      "id": "m-confirm",
+      "title": "确认预约",
+      "route": "pages/confirm/index",
+      "source": "miniapp/pages/confirm/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-confirm-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "1e659e4ac08edcff40282da890674ec14c2601240ee5dbd2a337d72351c2529c"
+        },
+        {
+          "width": 375,
+          "path": "native/m-confirm-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "58e4cc0e06381c3ab7944b08b7dced3223db560f9aee2d6450d947f9463df7a5"
+        },
+        {
+          "width": 390,
+          "path": "native/m-confirm-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "bf50cf14a3e66818149f212a223a783008c65cacb4cfe5c46320e02efaf26548"
+        },
+        {
+          "width": 414,
+          "path": "native/m-confirm-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "2d1bde127f6d83bc1e054f6035290422dfec2656341f69f037a0cc5b0164a0c4"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-payment",
+      "title": "预约支付",
+      "route": "pages/payment/index",
+      "source": "miniapp/pages/payment/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 375,
+          "path": "native/m-payment-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "bfbe20fc318e52eafea14dd215d537f31718aa09d24cdd8464f5a3d0c1716c37"
+        },
+        {
+          "width": 390,
+          "path": "native/m-payment-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "17bbb6a79eb28c37e12115487d101bfa1042d692b68c662a61bb7a143f15c3b8"
+        },
+        {
+          "width": 414,
+          "path": "native/m-payment-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d99f4ce932f12356866e91d7f920730145254f11a8d188da72407875c9cd0599"
+        }
+      ],
+      "pending": [
+        "320px 页面内容尚未加载，排除该样本。"
+      ]
+    },
+    {
+      "id": "m-bookings",
+      "title": "我的预约",
+      "route": "pages/bookings/index",
+      "source": "miniapp/pages/bookings/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-bookings-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "73eee0358e82107e54e70fcf85dd03b6abf1a1c69ee983e1d06237d302a92397"
+        },
+        {
+          "width": 375,
+          "path": "native/m-bookings-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "febc90797cee54b8dacbf1d85d9f419dbaec52403e4cca62089096aa317232d6"
+        },
+        {
+          "width": 390,
+          "path": "native/m-bookings-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "e08cadf357761e79d3f410ec1698defdd201deadbe937e19e6878ee8c1de34a9"
+        },
+        {
+          "width": 414,
+          "path": "native/m-bookings-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "6d775be458be9296c9cf8fc7cd6812398757be9f8255f700630428e43ee5c70e"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-booking",
+      "title": "预约详情",
+      "route": "pages/booking/index",
+      "source": "miniapp/pages/booking/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-booking-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "9271ad8301a03d31b9e88418d37506f13d7abf2d6b5680639453c49aa7621857"
+        },
+        {
+          "width": 375,
+          "path": "native/m-booking-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a246ca4cee10c12212ebb914bc3bd97f9ef7c132f0a903278b6cddd8e37fdb70"
+        },
+        {
+          "width": 390,
+          "path": "native/m-booking-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "429f09927830c2f325e4ae6be78207d517a5bf35457a33aa74d4a511d594b73d"
+        },
+        {
+          "width": 414,
+          "path": "native/m-booking-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "551491733eaa38db7b500ba27d9d266b530bfac5106cf6d706c6e8d26b5e4829"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-rebook",
+      "title": "再次预约",
+      "route": "pages/rebook/index",
+      "source": "miniapp/pages/rebook/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-rebook-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "60b1e4782abe188d0b498763260732de77cf28f4448c57a772d4078ba5ff475a"
+        },
+        {
+          "width": 375,
+          "path": "native/m-rebook-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "24c552fea0662faecf30cfcc9ad64081ac5cbadd17de44e05aafbc7bb4bc2e1a"
+        },
+        {
+          "width": 390,
+          "path": "native/m-rebook-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d01ef7a90edf36d51e90b8a6e2aea501bedd7fca501027a8b2f45db78b8f4516"
+        },
+        {
+          "width": 414,
+          "path": "native/m-rebook-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "8e03ec7f0bcda871414edc4b120234ebda95996d40a69b45a0489ca27f8c88bf"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-favourites",
+      "title": "常约场馆",
+      "route": "pages/favourites/index",
+      "source": "miniapp/pages/favourites/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-favourites-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "bc4c25368f6c3371f22d15ecdac32dd3cb483883b83f11129658d6205012aed7"
+        },
+        {
+          "width": 375,
+          "path": "native/m-favourites-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "845578464a33b44ef6ed9bd8fbb5f0188ec626dda4cb60c21c09f1a3e0a8ffb1"
+        },
+        {
+          "width": 390,
+          "path": "native/m-favourites-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a71a75479e691bb13d7ff6de48722026ee4b050c72e7553c5718f0659435c423"
+        },
+        {
+          "width": 414,
+          "path": "native/m-favourites-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "0cb29169356df2a343bf1da608197c0fc10bfc5a2cb7193d7b134850446cc4d8"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-reminders",
+      "title": "提醒登记",
+      "route": "pages/reminders/index",
+      "source": "miniapp/pages/reminders/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 375,
+          "path": "native/m-reminders-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "3fd841019bbf0b92f2f1cff26aa8cac1a36652090001b06e47b8da40d709f9ff"
+        },
+        {
+          "width": 390,
+          "path": "native/m-reminders-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "019d1037695042cdb6e949ccbe889c67644d5f6bff3f373870faa882ff07cca5"
+        },
+        {
+          "width": 414,
+          "path": "native/m-reminders-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "130b437f76b6b36b2cd1d9df7a60c8a521b1b9217a7fe725cc29e8e72b0df33a"
+        }
+      ],
+      "pending": [
+        "320px 页面内容尚未加载，排除该样本。"
+      ]
+    },
+    {
+      "id": "m-review",
+      "title": "场地评价",
+      "route": "pages/review/index",
+      "source": "miniapp/pages/review/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-review-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "39ae955852e95bf8e53446c9c39c2d3f67d1f10333946d4873231534c39892be"
+        },
+        {
+          "width": 375,
+          "path": "native/m-review-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "718bc15b9667015eec9efaba71c611a59d31dc0c7140636cbf949cf3de9715d0"
+        },
+        {
+          "width": 390,
+          "path": "native/m-review-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "915500f810577a140d81c881bbe36ed6c0e730598c027fd87f6ab8a1034c88d8"
+        },
+        {
+          "width": 414,
+          "path": "native/m-review-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "2b93c03806c378d1ea8d2903ac5c8409aadd09ea366dbbe3b347a2400910a0db"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-content-agreement",
+      "title": "社区协议",
+      "route": "pages/content-agreement/index",
+      "source": "miniapp/pages/content-agreement/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-content-agreement-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a105114cc75b0dc0e2bb09117848baf42a963bf961db9ff8c1f7215007a9dbe5"
+        },
+        {
+          "width": 375,
+          "path": "native/m-content-agreement-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a1b5e14827cc1a25b26781cf1b3288a601857bc118071b56e7ec6be9b95f84ab"
+        },
+        {
+          "width": 390,
+          "path": "native/m-content-agreement-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "43f1d87c36b3a09b6b0e8c86a356b1fa5353d35da2eb74abed685ff398dab7e7"
+        },
+        {
+          "width": 414,
+          "path": "native/m-content-agreement-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "436c5fb2ed7f66b838d7da2f68d399ee496cfea002f35063d48206ba6f82df9e"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community",
+      "title": "社区记录",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-community-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "986db601711f8feda6228ee5091aa4cfb2350202834ddc10573902dfafcff13d"
+        },
+        {
+          "width": 375,
+          "path": "native/m-community-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "5d67b8bd57acbfc6865d157a6861f9a5e5b0baa3eea6912f9a8aebbcbf6474fe"
+        },
+        {
+          "width": 390,
+          "path": "native/m-community-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "177923c9a59ef78749b69a5fbecb28c54e4e1f2d0286767c3ea70b6ed69b4ce5"
+        },
+        {
+          "width": 414,
+          "path": "native/m-community-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "80a814ffb29efc16a607fef161fd4bf9e08bc00d3721f0ea7ab333d77a259f12"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-user",
+      "title": "球友主页",
+      "route": "pages/community/user",
+      "source": "miniapp/pages/community/user.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-community-user-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "ce8ae303f383a869987e69f63fec2d1770c1ddf5c4eac0a986035bacae1494a7"
+        },
+        {
+          "width": 375,
+          "path": "native/m-community-user-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "5a3ceaab373805a875d6f35f5bc7ef1f22e3bf28e875888cef860dcd2e44ebf8"
+        },
+        {
+          "width": 390,
+          "path": "native/m-community-user-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d2ffcfdbad9aeff664af40e0a5d0fa87c3dcabad299631ef2204234ce4027d4c"
+        },
+        {
+          "width": 414,
+          "path": "native/m-community-user-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "b361005acbd558963d61836ce5007a6d2d96db051af71ccc9507efb96f86fa2a"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-venue-reviews",
+      "title": "场馆公开评价",
+      "route": "pages/venue-reviews/index",
+      "source": "miniapp/pages/venue-reviews/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-venue-reviews-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "4819622d4a09f4d91418b387b08388021d0d282f356db89cfec92ed88a6c410f"
+        },
+        {
+          "width": 375,
+          "path": "native/m-venue-reviews-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "5e3c8cadd131788d5ba3f3a63cd2306187487a89ac109a38d4aec5b5ba24e7d2"
+        },
+        {
+          "width": 390,
+          "path": "native/m-venue-reviews-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "c1ef2a21acdace3fa1e6bb74f3c1898783a472d021cfab19c85ab1c03bb30cff"
+        },
+        {
+          "width": 414,
+          "path": "native/m-venue-reviews-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "c55af44310952e2e93d496d2f904d73c7bc0157fd43bb1f730dc4a4d84778782"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-posts",
+      "title": "运动动态",
+      "route": "pages/posts/index",
+      "source": "miniapp/pages/posts/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-posts-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "f9e4360b8a8f773ee8aa7b78a3791d1a74a69b7d203ba3d40e664cab8a025468"
+        },
+        {
+          "width": 375,
+          "path": "native/m-posts-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "b5a8584d66274cdd2b9d8a885351ab91bb390708f164c669a7303ea0cc2fd8dd"
+        },
+        {
+          "width": 390,
+          "path": "native/m-posts-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "8fada505cd21cb81ae3f1bb654d9569886c7a9ccc14d0e220515cb99547b3ed0"
+        },
+        {
+          "width": 414,
+          "path": "native/m-posts-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "9037348bda8d0714a8307239eab440710c0b8206a91c1f62b43e94d54a0bba2d"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-post-detail",
+      "title": "动态详情与找搭子",
+      "route": "pages/posts/detail",
+      "source": "miniapp/pages/posts/detail.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-post-detail-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "09f77674787bbdac1a1baf9e77dfe416ff78bcc118888ecddc1418f8a519d07c"
+        },
+        {
+          "width": 375,
+          "path": "native/m-post-detail-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "c01420eb3cd21177451b4a0713efd81d7a124b7157cb902d3e7b638dc2285002"
+        },
+        {
+          "width": 390,
+          "path": "native/m-post-detail-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "b7b608d52bb9295374cb025a4b0bfd8c80b131d0d5e0959760e1def8564c45ca"
+        },
+        {
+          "width": 414,
+          "path": "native/m-post-detail-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "5a06aee735d29003072071c7d0c2a0f610d9c0298d27e17cf83ba3f8f5469d94"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-membership",
+      "title": "场馆会员",
+      "route": "pages/membership/index",
+      "source": "miniapp/pages/membership/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-membership-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "bc3996502b4f74275dfe2a8d1d3e300a30060e498247f431ea2af71d00a7c292"
+        },
+        {
+          "width": 375,
+          "path": "native/m-membership-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "be20f3af66b7c85702b87d6b8c843bb13baabbc2f0b1b8a13945b6d1d09324ee"
+        },
+        {
+          "width": 390,
+          "path": "native/m-membership-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "15c300187b956aff812485707612569974aa3ad8b4c27ba12772dfbc981b27ce"
+        },
+        {
+          "width": 414,
+          "path": "native/m-membership-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d0e0767be075d130f86171c1ca63f9313785106097eb79b7dd73d57d0a9b3b66"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-mine",
+      "title": "个人中心",
+      "route": "pages/mine/index",
+      "source": "miniapp/pages/mine/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-mine-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a5c13cf052d0ac137b399801b5525ef48361ba7c8e19158392adbd182a34253c"
+        },
+        {
+          "width": 390,
+          "path": "native/m-mine-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "790b82da4a21c4f24593076d7de30ffd667f06892d4ebc26c90018c438f5e716"
+        },
+        {
+          "width": 414,
+          "path": "native/m-mine-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "c6421aa5a6ccd7c41446dbca33aee0262ea79df469c756f1d70ef3d8d585204e"
+        }
+      ],
+      "pending": [
+        "375px 页面内容尚未加载，排除该样本。"
+      ]
+    },
+    {
+      "id": "m-staff-bind",
+      "title": "绑定员工身份",
+      "route": "pages/staff-bind/index",
+      "source": "miniapp/pages/staff-bind/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-staff-bind-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a7a063178c41bbc671b41ff7bfb6f26f88194a8a81e3f352a46f92f77d61a73f"
+        },
+        {
+          "width": 375,
+          "path": "native/m-staff-bind-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "cb4a68d997b9b0f42ea9247a7bf4d9bb263fd42ee1fd6508fe3e3238bb3acdf1"
+        },
+        {
+          "width": 390,
+          "path": "native/m-staff-bind-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "f36a2b0af90e955b238f83862a52028ddc242aa291b36d82546d079702d8c344"
+        },
+        {
+          "width": 414,
+          "path": "native/m-staff-bind-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "ea1c9539e733250a5b612b0fce3362f4ff7a04205081741d2d2e10724eac7c94"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-staff-web-login",
+      "title": "Web 后台登录",
+      "route": "pages/staff-web-login/index",
+      "source": "miniapp/pages/staff-web-login/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-staff-web-login-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "6c7077d7761801b641f9f3b74fbfd65ea97018a0bd04b2bc19371b2a51e056b3"
+        },
+        {
+          "width": 375,
+          "path": "native/m-staff-web-login-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "2114cbf3bc3f852b560d94753c29db3ece0730c231b7eefec83e43556def171f"
+        },
+        {
+          "width": 390,
+          "path": "native/m-staff-web-login-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "98ff8839258cb67dffbfd8e57b299e3075972a8a2266d088730d8a3c7b163ed2"
+        }
+      ],
+      "pending": [
+        "414px 页面内容尚未加载，排除该样本。"
+      ]
+    },
+    {
+      "id": "m-staff-verify",
+      "title": "核销与会员识别",
+      "route": "pages/staff-verify/index",
+      "source": "miniapp/pages/staff-verify/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-staff-verify-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "041dd8e2264986d1d96d2c198ad21d98e75d085a807ac095fe449b6937159f06"
+        },
+        {
+          "width": 375,
+          "path": "native/m-staff-verify-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d33cc1bcc622accc53b0728767f1cdda8ae99a194875ef09496a0ddb582a8c2b"
+        },
+        {
+          "width": 390,
+          "path": "native/m-staff-verify-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "2dd93c2fb3d15cbad668a4efe399c7fe2c73a255b4128204a696b655378af9a8"
+        }
+      ],
+      "pending": [
+        "414px 页面内容尚未加载，排除该样本。"
+      ]
+    },
+    {
+      "id": "m-staff-recharge",
+      "title": "员工人工充值",
+      "route": "pages/staff-recharge/index",
+      "source": "miniapp/pages/staff-recharge/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-staff-recharge-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "4eecd67c415d4d0fa268218c7957d39120e56b68ba5eaac13be024044e145117"
+        },
+        {
+          "width": 375,
+          "path": "native/m-staff-recharge-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "f9604a54b7f47f4bd859bdce30289b0faaf1db087d93cfeb19d6ee778e0c8488"
+        },
+        {
+          "width": 390,
+          "path": "native/m-staff-recharge-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "9bc4f39eb5276c5d6400e1291655ea6cd008932e4375402a61b402b8498df811"
+        },
+        {
+          "width": 414,
+          "path": "native/m-staff-recharge-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "79c8b8080ab45362e107938693bcb22c783b11ade7512e495b17116aebea223f"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-staff-records",
+      "title": "我的核销记录",
+      "route": "pages/staff-records/index",
+      "source": "miniapp/pages/staff-records/index.wxml",
+      "extra": false,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 320,
+          "path": "native/m-staff-records-320.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "7d1d661e54b50a9caf43d1a660a167bf18b8a796c67be94c7ac78e9b4e1f98fc"
+        },
+        {
+          "width": 375,
+          "path": "native/m-staff-records-375.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "8d18b0f7ba0d241f20ec6b884f5cc51b35dd4ed5dd9761ad249408946d0709ce"
+        },
+        {
+          "width": 390,
+          "path": "native/m-staff-records-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "d5a6e725df33bd052077d05dba13148429ef0e3dac49218f8572853e721ffcc5"
+        },
+        {
+          "width": 414,
+          "path": "native/m-staff-records-414.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "2adbcf36a9e412a94ee5d55da56a1b04ecaa6f65ab086b0d3c0db9c43d2c4b86"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-venue-grid",
+      "title": "场馆场次 · 网格比较",
+      "route": "pages/venue/index",
+      "source": "miniapp/pages/venue/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-venue-grid-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": false,
+          "rawSha256": "e69ecbb4d62d3346a1739284d71171bdad8794fb5b1bff59cc3dc34d82028b75"
+        }
+      ],
+      "pending": [
+        "390px 截图早于最后将预约说明移至场次列表后；窗口不可访问，最终顺序需补拍。"
+      ]
+    },
+    {
+      "id": "m-member-code",
+      "title": "场馆会员 · 会员码",
+      "route": "pages/membership/index",
+      "source": "miniapp/pages/membership/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-member-code-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "142dfc7ca86270e72c79646434f134eb15d94fc197b0d8f00d7a8a4b5d693e67"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-recharge-pending",
+      "title": "场馆会员 · 充值待支付",
+      "route": "pages/membership/index",
+      "source": "miniapp/pages/membership/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-recharge-pending-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "c6573902ba5f8780eb52e55fff9005fbd879946d19314658185a775899bba5cf"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-payment-success",
+      "title": "预约支付 · 已支付",
+      "route": "pages/payment/index",
+      "source": "miniapp/pages/payment/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-payment-success-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "626cb331fec72c7737f65cd92196873b8a1bb5e61b4d3b4c5d4fbc10ba160010"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-payment-unknown",
+      "title": "预约支付 · 结果待确认",
+      "route": "pages/payment/index",
+      "source": "miniapp/pages/payment/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [],
+      "pending": [
+        "390px 原生模式截图未取得。"
+      ]
+    },
+    {
+      "id": "m-contact-edit",
+      "title": "个人中心 · 常用联系人",
+      "route": "pages/mine/index",
+      "source": "miniapp/pages/mine/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-contact-edit-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "bf1334ce8c009b51010441d791d377171ed836fa18c0d6b7f8b3cf89dae8a42f"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-staff-member",
+      "title": "场馆工作 · 会员识别",
+      "route": "pages/staff-verify/index",
+      "source": "miniapp/pages/staff-verify/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-staff-member-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "a858bf17ab218e84585f4bfca639799b59927f74c9b44695216be76c571d421a"
+        }
+      ],
+      "pending": [
+        "会员识别模式表单已截图；输入后的识别结果未完成原生点验，相关隔离 API 与既有 Node 行为通过。"
+      ]
+    },
+    {
+      "id": "m-recruitment",
+      "title": "运动动态 · 找搭子发现",
+      "route": "pages/posts/index",
+      "source": "miniapp/pages/posts/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-recruitment-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "e5b34928f784c6bc4cc44e8cc769f73e2429c41cfde0939a1b721194d4bc90f5"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-post-editor",
+      "title": "运动动态 · 发布编辑",
+      "route": "pages/posts/index",
+      "source": "miniapp/pages/posts/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-post-editor-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "0c45bb7f96bbe95986fdb687fa3e157024893081c8c870887fb6ee0046ce6ad6"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-posts",
+      "title": "社区记录 · 我的发布",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-community-posts-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "080c4aeba01b226ed30d562864add55ffba7ac0f40ebcfa1726db325961f5ce4"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-reports",
+      "title": "社区记录 · 举报",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-community-reports-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "32600425e7f3080470bab982b306cc2238a87f8536684aee1278a119cdd23b74"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-decisions",
+      "title": "社区记录 · 内容处置",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-community-decisions-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "44ac5c3a5e4d4ba8ed63586eaad5efe15e07266e99866f45feaca2274148866f"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-appeals",
+      "title": "社区记录 · 申诉",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-community-appeals-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "8a2bae8f2d9e89a10308131dbe695577d2e68dea71b766e10b7b02f47a1c71f5"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-community-blocks",
+      "title": "社区记录 · 拉黑名单",
+      "route": "pages/community/index",
+      "source": "miniapp/pages/community/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-community-blocks-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "7f12bdb50e4c2a8d68418aa99f344596242c569a0fc13f82aa04a6d5f41076ec"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-account-close",
+      "title": "个人中心 · 注销确认",
+      "route": "pages/mine/index",
+      "source": "miniapp/pages/mine/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 390,
+          "path": "native/m-account-close-390.png",
+          "kind": "native_live",
+          "finalLayoutVerified": true,
+          "rawSha256": "3d6c1ede62b054c57c3d53fa96733257785ade9e71ce517eb1987f1d239ba6c0"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-state-loading",
+      "title": "预约管理 · 加载",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-state-loading-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-state-loading-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-state-loading-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-state-loading-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-state-empty",
+      "title": "预约管理 · 空列表",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-state-empty-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-state-empty-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-state-empty-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-state-empty-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "a-state-error",
+      "title": "预约管理 · 失败",
+      "route": "/bookings",
+      "source": "admin-web/src/views/BookingsView.vue",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [
+        {
+          "width": 1440,
+          "path": "admin/a-state-error-1440.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 768,
+          "path": "admin/a-state-error-768.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 375,
+          "path": "admin/a-state-error-375.png",
+          "kind": "vue_live"
+        },
+        {
+          "width": 320,
+          "path": "admin/a-state-error-320.png",
+          "kind": "vue_live"
+        }
+      ],
+      "pending": []
+    },
+    {
+      "id": "m-state-loading",
+      "title": "订场首页 · 加载",
+      "route": "pages/home/index",
+      "source": "miniapp/pages/home/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [],
+      "pending": [
+        "390px 原生模式截图未取得。"
+      ]
+    },
+    {
+      "id": "m-state-empty",
+      "title": "订场首页 · 空列表",
+      "route": "pages/home/index",
+      "source": "miniapp/pages/home/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [],
+      "pending": [
+        "390px 原生模式截图未取得。"
+      ]
+    },
+    {
+      "id": "m-state-error",
+      "title": "订场首页 · 失败",
+      "route": "pages/home/index",
+      "source": "miniapp/pages/home/index.wxml",
+      "extra": true,
+      "implemented": true,
+      "screenshots": [],
+      "pending": [
+        "390px 原生模式截图未取得。"
+      ]
+    }
+  ],
+  "excludedUnreadyCaptures": [
+    "m-payment-320-window.png",
+    "m-reminders-320-window.png",
+    "m-mine-375-window.png",
+    "m-staff-web-login-414-window.png",
+    "m-staff-verify-414-window.png"
+  ]
+}

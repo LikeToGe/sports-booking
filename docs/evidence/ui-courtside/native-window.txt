@@ -1,0 +1,5 @@
+原生窗口后续连接失败：
+1. cua.getApp('/Applications/wechatwebdevtools.app') -> cgWindowNotFound
+2. cua.getState() -> 微信开发者工具 isRunning: true
+3. cua.getApp('com.github.Electron') -> cgWindowNotFound
+该阻塞只影响后续原生补拍/输入点验；独立管理端浏览器、WCC/WCSC 与 Node 检查仍可执行。

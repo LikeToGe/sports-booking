@@ -1,0 +1,166 @@
+{
+  "results": [
+    {
+      "name": "today-slot",
+      "width": 1440,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "booking-create",
+      "width": 1440,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-utilization",
+      "width": 1440,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-future-supply",
+      "width": 1440,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "venue-create",
+      "width": 1440,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "today-slot",
+      "width": 768,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "booking-create",
+      "width": 768,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-utilization",
+      "width": 768,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-future-supply",
+      "width": 768,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "venue-create",
+      "width": 768,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "today-slot",
+      "width": 375,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "booking-create",
+      "width": 375,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-utilization",
+      "width": 375,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-future-supply",
+      "width": 375,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "venue-create",
+      "width": 375,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "today-slot",
+      "width": 320,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "booking-create",
+      "width": 320,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-utilization",
+      "width": 320,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "report-future-supply",
+      "width": 320,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    },
+    {
+      "name": "venue-create",
+      "width": 320,
+      "overflow": false,
+      "dialogOverflow": false,
+      "dialogOffscreen": false,
+      "missingLabels": 0
+    }
+  ],
+  "employeePresentation": "passed",
+  "note": "员工检查使用前端权限夹具，不替代后端权限验收"
+}
