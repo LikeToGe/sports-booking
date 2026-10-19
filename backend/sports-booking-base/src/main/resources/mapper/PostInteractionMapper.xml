@@ -117,5 +117,16 @@
           AND ((p.author_id = #{userId} AND m.user_id = #{blockedUserId})
              OR (p.author_id = #{blockedUserId} AND m.user_id = #{userId}))
     </update>
+    <update id="refreshBlockedRecruitmentCapacity">
+        UPDATE s_post_recruitment r JOIN s_post p ON p.id = r.post_id
+        SET r.status = CASE WHEN (SELECT COUNT(*) FROM s_post_recruitment_member approved
+            WHERE approved.recruitment_id = r.id AND approved.status = 'APPROVED') &lt; r.max_members
+            THEN 'RECRUITING' ELSE 'FULL' END
+        WHERE r.status IN ('RECRUITING','FULL') AND p.author_type = 'USER'
+          AND EXISTS (SELECT 1 FROM s_post_recruitment_member member
+              WHERE member.recruitment_id = r.id
+                AND ((p.author_id = #{userId} AND member.user_id = #{blockedUserId})
+                  OR (p.author_id = #{blockedUserId} AND member.user_id = #{userId})))
+    </update>
     <select id="isCommentOwner" resultType="boolean">SELECT EXISTS (SELECT 1 FROM s_post_comment WHERE id = #{commentId} AND author_user_id = #{userId})</select>
 </mapper>

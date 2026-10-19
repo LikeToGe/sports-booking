@@ -51,12 +51,15 @@ Page({
   toggleMemberCode() { this.setData({ showMemberCode: !this.data.showMemberCode }); },
 
   async selectMembership(event) {
+    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    const previousIndex = this.data.selectedIndex;
     const selectedIndex = Number(event.detail.value);
     this.setData({ selectedIndex, switching: true, showMemberCode: false, error: "", actionError: "", actionMessage: "", recharge: null });
     try {
       await this.loadVenue(this.data.memberships[selectedIndex].venueId);
+      this.setData({ selectedPlanId: null, rechargeIdempotencyKey: "" });
     } catch (error) {
-      this.setData({ error: error.message });
+      this.setData({ selectedIndex: previousIndex, error: error.message });
     } finally {
       this.setData({ switching: false });
     }
@@ -103,12 +106,12 @@ Page({
   },
 
   selectPlan(event) {
-    if (this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ selectedPlanId: Number(event.currentTarget.dataset.id), rechargeIdempotencyKey: "", actionError: "", actionMessage: "" });
   },
 
   async createRecharge() {
-    if (this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     if (!this.data.current) { this.setData({ actionError: "请选择充值场馆" }); return; }
     if (!this.data.selectedPlanId) { this.setData({ actionError: "请选择充值档位" }); return; }
     const idempotencyKey = this.data.rechargeIdempotencyKey
@@ -132,6 +135,7 @@ Page({
   },
 
   async payRecharge() {
+    if (this.data.loading || this.data.switching) return;
     if (!this.data.recharge || this.data.recharge.status !== "PENDING" || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ payingRecharge: true, actionError: "", actionMessage: "" });
     try {
@@ -145,12 +149,14 @@ Page({
   },
 
   resumeRecharge(event) {
+    if (this.data.loading || this.data.switching) return;
     if (this.data.payingRecharge || this.data.cancellingRecharge || this.data.creatingRecharge) return;
     const recharge = this.data.pendingRecharges.find(row => row.id === Number(event.currentTarget.dataset.id));
     if (recharge) this.setData({ recharge, actionError: "", actionMessage: "" });
   },
 
   async cancelRecharge() {
+    if (this.data.loading || this.data.switching) return;
     if (!this.data.recharge || this.data.recharge.status !== "PENDING" || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ cancellingRecharge: true, actionError: "", actionMessage: "" });
     try {
@@ -166,6 +172,7 @@ Page({
   },
 
   async refreshRecharge() {
+    if (this.data.loading || this.data.switching) return;
     if (!this.data.recharge) return;
     try {
       const recharge = await request(`/mini/recharges/${this.data.recharge.id}`);
@@ -183,6 +190,7 @@ Page({
   },
 
   resetRecharge() {
+    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     this.setData({ recharge: null, selectedPlanId: null, actionError: "", actionMessage: "" });
   },
 

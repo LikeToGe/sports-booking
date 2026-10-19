@@ -53,6 +53,38 @@ import org.junit.jupiter.api.Test;
 class ScheduleServiceImplTest {
 
     @Test
+    void closingDayRejectsBookingCommittedWhileWaitingForCourtLock() {
+        CourtMapper courts = mock(CourtMapper.class);
+        SessionSlotMapper slots = mock(SessionSlotMapper.class);
+        LocalDate date = LocalDate.of(2026, 10, 20);
+        java.util.concurrent.atomic.AtomicBoolean bookingCommitted = new java.util.concurrent.atomic.AtomicBoolean();
+        when(courts.selectVenueForUpdate(2L)).thenAnswer(invocation -> {
+            bookingCommitted.set(true);
+            return List.of();
+        });
+        when(slots.countBusyForDate(2L, date)).thenAnswer(invocation -> bookingCommitted.get() ? 1 : 0);
+        ScheduleServiceImpl service = new ScheduleServiceImpl(mock(WeeklySlotMapper.class), slots, courts,
+                mock(SportTypeMapper.class), mock(VenueService.class), lockService(), mock(BookingMapper.class));
+
+        assertThatThrownBy(() -> service.closeDay(2L, date))
+                .isInstanceOf(ApiException.class).hasMessage(ErrorCode.DAY_HAS_BOOKINGS.getDescription());
+        verify(slots, never()).closeOpenForDate(2L, date);
+    }
+
+    @Test
+    void closesDayWithoutBookings() {
+        SessionSlotMapper slots = mock(SessionSlotMapper.class);
+        LocalDate date = LocalDate.of(2026, 10, 20);
+        ScheduleServiceImpl service = new ScheduleServiceImpl(mock(WeeklySlotMapper.class), slots,
+                mock(CourtMapper.class), mock(SportTypeMapper.class), mock(VenueService.class),
+                lockService(), mock(BookingMapper.class));
+
+        service.closeDay(2L, date);
+
+        verify(slots).closeOpenForDate(2L, date);
+    }
+
+    @Test
     void explainsUnsupportedSportAndMissingSelectionWithoutWritingInventory() {
         CourtMapper courts = mock(CourtMapper.class);
         SportTypeMapper sports = mock(SportTypeMapper.class);

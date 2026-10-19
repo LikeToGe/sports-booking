@@ -20,6 +20,7 @@ import com.sportsbooking.admin.biz.service.RedisLockService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -64,12 +65,21 @@ public class VerificationServiceImpl implements VerificationService {
         return verify(employeeService.getActiveEmployee(staffUserId, venueId), credential, method);
     }
 
+    /**
+     * 校验可信员工的场馆归属和核销窗口，在同一事务内完成预约与核销记录。
+     *
+     * @param employee 当前有效的员工身份
+     * @param credential 预约二维码或短码
+     * @param method 核销方式
+     * @return 已完成的预约
+     * @author gjm
+     */
     private Booking verify(Employee employee, String credential, VerificationMethod method) {
         Booking candidate = resolveCredential(employee.venueId, credential, method);
         return redisLockService.execute(List.of(
                 RedisLockType.BOOKING.key(candidate.id), RedisLockType.SESSION_SLOT.key(candidate.sessionSlotId)), () -> {
             Booking booking = bookingMapper.selectForUpdate(candidate.id);
-            if (booking == null || booking.venueId != employee.venueId
+            if (booking == null || !Objects.equals(booking.venueId, employee.venueId)
                     || booking.source != BookingSource.ONLINE
                     || !BookingStatus.CONFIRMED.equals(booking.status)) {
                 throw new ApiException(HttpStatus.CONFLICT, ErrorCode.NOT_VERIFIABLE);
@@ -117,7 +127,7 @@ public class VerificationServiceImpl implements VerificationService {
     }
 
     /**
-     * 功能描述: 将二维码或短码解析为当前场馆可核销预约。
+     * 功能描述: 将二维码或短码解析为当前场馆可核销预约；短码多笔命中时拒绝并提示扫码。
      * 创建时间: 2026/08/28 16:29
      *
      * @param venueId 员工所属场馆 ID
@@ -137,14 +147,20 @@ public class VerificationServiceImpl implements VerificationService {
                 return booking;
             }
         } else if (method == VerificationMethod.SHORT_CODE) {
-            // 当前按场馆核销窗口线性匹配；单日预约量过千时再增加短码索引列。
+            // 六位短码可能重复，必须检查整个核销窗口，不能默认核销首笔。
             Instant now = Instant.now();
+            Booking matched = null;
             for (Booking booking : bookingMapper.selectVerifiable(
                     venueId, now, now.plus(BusinessConstants.VERIFICATION_EARLY_WINDOW))) {
                 if (credentialService.createShortCode(booking.id).equals(credential)) {
-                    return booking;
+                    if (matched != null) {
+                        throw new ApiException(HttpStatus.CONFLICT, ErrorCode.INVALID_CREDENTIAL,
+                                "核销短码重复，请扫描预约二维码", null);
+                    }
+                    matched = booking;
                 }
             }
+            if (matched != null) return matched;
         } else {
             throw new ApiException(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_METHOD);
         }

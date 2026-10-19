@@ -104,6 +104,7 @@
         WHERE venue_id = #{venueId}
           AND slot_date = #{date}
           AND status IN ('HELD', 'BOOKED')
+        FOR UPDATE
     </select>
 
     <update id="closeOpenForDate">

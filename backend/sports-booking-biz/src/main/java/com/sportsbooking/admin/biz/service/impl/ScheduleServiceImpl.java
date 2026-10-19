@@ -464,11 +464,15 @@ public class ScheduleServiceImpl implements ScheduleService {
      * 功能描述: 关闭指定日期全部未被占用的具体场次。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param venueId 场馆 ID
+     * @param date 关闭日期，已有占位或预约时拒绝整日关闭
      * @author gjm
      */
     @Transactional
     @Override
     public void closeDay(long venueId, LocalDate date) {
+        // 与创建预约共用场地锁，等待结束后再读取最新占用，避免封场检查与写入交错。
+        courtMapper.selectVenueForUpdate(venueId);
         if (sessionSlotMapper.countBusyForDate(venueId, date) > 0) {
             throw new ApiException(HttpStatus.CONFLICT, ErrorCode.DAY_HAS_BOOKINGS);
         }

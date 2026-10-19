@@ -64,8 +64,10 @@ async function load() {
     if (!selectedDate.value) throw new Error("请选择预约日期");
     [bookings.value, sessions.value, customers.value] = await Promise.all([
       api<BookingView[]>(`/venue-admin/bookings/list?date=${selectedDate.value}`),
-      api<SessionView[]>(`/venue-admin/sessions/list?date=${selectedDate.value}`),
-      api<VenueCustomer[]>("/venue-admin/customers/list?keyword="),
+      hasPermission("SESSION_VIEW")
+        ? api<SessionView[]>(`/venue-admin/sessions/list?date=${selectedDate.value}`) : Promise.resolve([]),
+      hasPermission("CUSTOMER_VIEW")
+        ? api<VenueCustomer[]>("/venue-admin/customers/list?keyword=") : Promise.resolve([]),
     ]);
     offlineSlotId.value ||= openSessions.value[0]?.id || 0;
   } catch (reason) {

@@ -1,6 +1,9 @@
 package com.sportsbooking.admin.booking;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doAnswer;
@@ -22,6 +25,7 @@ import com.sportsbooking.admin.base.po.Employee;
 import com.sportsbooking.admin.biz.service.EmployeeService;
 import com.sportsbooking.admin.biz.service.RedisLockService;
 import java.time.Instant;
+import java.util.List;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +57,48 @@ class VerificationServiceImplTest {
         employee.venueId = 2L;
         when(employeeService.getActiveEmployee(9L)).thenReturn(employee);
         when(credentialService.resolveQr("qr")).thenReturn(10L);
+    }
+
+    @Test
+    void verifiesSameVenueBeyondLongCache() {
+        employee.venueId = Long.valueOf("128");
+        Booking booking = verifiableBooking();
+        booking.venueId = Long.valueOf("128");
+        when(bookingMapper.selectById(10L)).thenReturn(booking);
+        when(bookingMapper.selectForUpdate(10L)).thenReturn(booking);
+
+        assertThat(service.verify(9L, "qr", VerificationMethod.QR).status).isEqualTo(BookingStatus.COMPLETED);
+    }
+
+    @Test
+    void rejectsAmbiguousShortCodeWithoutCompletingEitherBooking() {
+        Booking first = verifiableBooking();
+        first.venueId = 2L;
+        Booking second = verifiableBooking();
+        second.id = 11L;
+        second.venueId = 2L;
+        when(bookingMapper.selectVerifiable(eq(2L), any(), any())).thenReturn(List.of(first, second));
+        when(credentialService.createShortCode(10L)).thenReturn("123456");
+        when(credentialService.createShortCode(11L)).thenReturn("123456");
+        when(bookingMapper.selectForUpdate(10L)).thenReturn(first);
+
+        assertThatThrownBy(() -> service.verify(9L, "123456", VerificationMethod.SHORT_CODE))
+                .isInstanceOf(ApiException.class).hasMessageContaining("二维码");
+        assertThat(first.status).isEqualTo(BookingStatus.CONFIRMED);
+        assertThat(second.status).isEqualTo(BookingStatus.CONFIRMED);
+        verify(verificationMapper, never()).insert(any(Verification.class));
+    }
+
+    @Test
+    void verifiesUniqueShortCode() {
+        Booking booking = verifiableBooking();
+        booking.venueId = 2L;
+        when(bookingMapper.selectVerifiable(eq(2L), any(), any())).thenReturn(List.of(booking));
+        when(credentialService.createShortCode(10L)).thenReturn("123456");
+        when(bookingMapper.selectForUpdate(10L)).thenReturn(booking);
+
+        assertThat(service.verify(9L, "123456", VerificationMethod.SHORT_CODE).status)
+                .isEqualTo(BookingStatus.COMPLETED);
     }
 
     @Test

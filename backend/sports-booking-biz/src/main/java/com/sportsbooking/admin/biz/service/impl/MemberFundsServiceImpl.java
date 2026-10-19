@@ -403,7 +403,7 @@ public class MemberFundsServiceImpl implements MemberFundsService {
             lot.frozenAmountFen -= hold.amountFen;
             boolean expiredGift = lot.type == BalanceType.GIFT && !lot.expiresAt.isAfter(now);
             if (expiredGift) {
-                lot.status = BalanceLotStatus.EXPIRED;
+                expireAvailableBalance(lot);
                 addFlow(lot.venueCustomerId, lot.id, BalanceFlowDirection.DEBIT, hold.amountFen,
                         BalanceBusinessType.EXPIRE, bookingId, null, null, null,
                         "booking:" + bookingId + ":release-expire:" + lot.id);
@@ -436,7 +436,7 @@ public class MemberFundsServiceImpl implements MemberFundsService {
                         BalanceBusinessType.REFUND, bookingId, null, null, null,
                         "booking:" + bookingId + ":refund:" + lot.id);
             } else {
-                lot.status = BalanceLotStatus.EXPIRED;
+                expireAvailableBalance(lot);
                 addFlow(lot.venueCustomerId, lot.id, BalanceFlowDirection.DEBIT, hold.amountFen,
                         BalanceBusinessType.EXPIRE, bookingId, null, null, null,
                         "booking:" + bookingId + ":refund-expire:" + lot.id);
@@ -476,18 +476,28 @@ public class MemberFundsServiceImpl implements MemberFundsService {
                 MemberBalanceLot lot = lotMapper.selectForUpdate(candidate.id);
                 if (lot != null && lot.status == BalanceLotStatus.ACTIVE && lot.availableAmountFen > 0
                         && !lot.expiresAt.isAfter(now)) {
-                    int expired = lot.availableAmountFen;
-                    lot.availableAmountFen = 0;
-                    if (lot.frozenAmountFen == 0) {
-                        lot.status = BalanceLotStatus.EXPIRED;
-                    }
+                    expireAvailableBalance(lot);
                     lot.updatedAt = LocalDateTime.now();
                     lotMapper.updateById(lot);
-                    addFlow(lot.venueCustomerId, lot.id, BalanceFlowDirection.DEBIT, expired,
-                            BalanceBusinessType.EXPIRE, null, null, null, null, "lot:" + lot.id + ":expire");
                 }
                 return null;
             });
+        }
+    }
+
+    /**
+     * 结清已失效批次的剩余可用额；其他预约冻结的金额仍由各自的消费或释放流程处理。
+     *
+     * @param lot 已锁定的失效余额批次
+     * @author gjm
+     */
+    private void expireAvailableBalance(MemberBalanceLot lot) {
+        int expired = lot.availableAmountFen;
+        lot.availableAmountFen = 0;
+        if (lot.frozenAmountFen == 0) lot.status = BalanceLotStatus.EXPIRED;
+        if (expired > 0) {
+            addFlow(lot.venueCustomerId, lot.id, BalanceFlowDirection.DEBIT, expired,
+                    BalanceBusinessType.EXPIRE, null, null, null, null, "lot:" + lot.id + ":expire");
         }
     }
 

@@ -139,6 +139,8 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         if (userId == blockedUserId || blockedUserId <= 0) throw invalid();
         mapper.insertBlock(userId, blockedUserId);
         mapper.detachBlockedMembers(userId, blockedUserId);
+        // 参与关系和容量状态在同一事务提交，发现列表不能继续把已空出的名额视为满员。
+        mapper.refreshBlockedRecruitmentCapacity(userId, blockedUserId);
     }
     @Override @Transactional public void unblock(long userId, long blockedUserId) {
         governance.requireEnabled();

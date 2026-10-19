@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sportsbooking.admin.base.enums.BalanceHoldStatus;
 import com.sportsbooking.admin.base.enums.BalanceLotStatus;
 import com.sportsbooking.admin.base.enums.BalanceType;
+import com.sportsbooking.admin.base.enums.BalanceBusinessType;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import com.sportsbooking.admin.base.enums.PaymentResult;
 import com.sportsbooking.admin.base.enums.RechargeChannel;
@@ -28,6 +29,7 @@ import com.sportsbooking.admin.base.mapper.VenueCustomerMapper;
 import com.sportsbooking.admin.base.po.Booking;
 import com.sportsbooking.admin.base.po.BookingBalanceHold;
 import com.sportsbooking.admin.base.po.MemberBalanceLot;
+import com.sportsbooking.admin.base.po.MemberBalanceFlow;
 import com.sportsbooking.admin.base.po.MemberRecharge;
 import com.sportsbooking.admin.base.po.RechargePlan;
 import com.sportsbooking.admin.base.po.VenueCustomer;
@@ -143,6 +145,66 @@ class MemberFundsServiceImplTest {
         assertThat(gift.availableAmountFen).isZero();
         assertThat(gift.status).isEqualTo(BalanceLotStatus.EXPIRED);
         assertThat(hold.status).isEqualTo(BalanceHoldStatus.RELEASED);
+    }
+
+    @Test
+    void expiredGiftRefundAlsoSettlesUnusedBalanceOnlyOnce() {
+        Instant now = Instant.parse("2026-09-15T00:00:00Z");
+        MemberBalanceLot gift = lot(1L, BalanceType.GIFT, 1000, now.minusSeconds(1));
+        gift.originalAmountFen = 2000;
+        BookingBalanceHold hold = new BookingBalanceHold();
+        hold.bookingId = 10L;
+        hold.lotId = gift.id;
+        hold.amountFen = 1000;
+        hold.status = BalanceHoldStatus.CONSUMED;
+        when(holdMapper.selectByBookingForUpdate(10L)).thenReturn(List.of(hold));
+        when(lotMapper.selectForUpdate(1L)).thenReturn(gift);
+
+        service.refund(10L, now);
+        service.refund(10L, now);
+
+        assertThat(gift.availableAmountFen).isZero();
+        assertThat(gift.status).isEqualTo(BalanceLotStatus.EXPIRED);
+        ArgumentCaptor<MemberBalanceFlow> flows = ArgumentCaptor.forClass(MemberBalanceFlow.class);
+        verify(flowMapper, org.mockito.Mockito.times(2)).insert(flows.capture());
+        assertThat(flows.getAllValues()).allMatch(flow -> flow.businessType == BalanceBusinessType.EXPIRE);
+        assertThat(flows.getAllValues()).extracting(flow -> flow.idempotencyKey)
+                .containsExactlyInAnyOrder("lot:1:expire", "booking:10:refund-expire:1");
+        assertThat(flows.getAllValues()).extracting(flow -> flow.amountFen).containsOnly(1000);
+    }
+
+    @Test
+    void expiredGiftReleaseSettlesUnusedBalanceAndPreservesOtherFrozenHold() {
+        Instant now = Instant.parse("2026-09-15T00:00:00Z");
+        MemberBalanceLot gift = lot(1L, BalanceType.GIFT, 1000, now.minusSeconds(1));
+        gift.frozenAmountFen = 2000;
+        BookingBalanceHold first = new BookingBalanceHold();
+        first.bookingId = 10L;
+        first.lotId = gift.id;
+        first.amountFen = 1000;
+        first.status = BalanceHoldStatus.FROZEN;
+        BookingBalanceHold second = new BookingBalanceHold();
+        second.bookingId = 11L;
+        second.lotId = gift.id;
+        second.amountFen = 1000;
+        second.status = BalanceHoldStatus.FROZEN;
+        when(holdMapper.selectByBookingForUpdate(10L)).thenReturn(List.of(first));
+        when(holdMapper.selectByBookingForUpdate(11L)).thenReturn(List.of(second));
+        when(lotMapper.selectForUpdate(1L)).thenReturn(gift);
+
+        service.release(10L, now);
+
+        assertThat(gift.availableAmountFen).isZero();
+        assertThat(gift.frozenAmountFen).isEqualTo(1000);
+        assertThat(gift.status).isEqualTo(BalanceLotStatus.ACTIVE);
+        service.release(11L, now);
+        service.release(10L, now);
+        assertThat(gift.frozenAmountFen).isZero();
+        assertThat(gift.status).isEqualTo(BalanceLotStatus.EXPIRED);
+        ArgumentCaptor<MemberBalanceFlow> flows = ArgumentCaptor.forClass(MemberBalanceFlow.class);
+        verify(flowMapper, org.mockito.Mockito.times(3)).insert(flows.capture());
+        assertThat(flows.getAllValues()).extracting(flow -> flow.idempotencyKey).doesNotHaveDuplicates();
+        assertThat(flows.getAllValues().stream().mapToInt(flow -> flow.amountFen).sum()).isEqualTo(3000);
     }
 
     @Test

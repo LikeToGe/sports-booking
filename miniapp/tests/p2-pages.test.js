@@ -110,6 +110,7 @@ async function main() {
   assert.equal(redirects.pop(), "/pages/booking/index?id=3");
 
   const membership = loadPage("membership");
+  membership.data.loading = false;
   membership.data.current = { venueId: 5 };
   membership.data.selectedPlanId = 6;
   const keys = [];
@@ -121,6 +122,40 @@ async function main() {
   await membership.createRecharge();
   await membership.createRecharge();
   assert.equal(keys[0], keys[1], "充值创建重试必须复用同一幂等键");
+
+  const switchingMembership = loadPage("membership");
+  Object.assign(switchingMembership.data, { loading: false, memberships: [{ venueId: 5 }, { venueId: 8 }],
+    current: { venueId: 5 }, selectedPlanId: 6, rechargeIdempotencyKey: "old-venue-key" });
+  let finishSwitch;
+  const delayedVenue = new Promise(resolve => { finishSwitch = resolve; });
+  const rechargeRequests = [];
+  requestHandler = async (url, options) => {
+    if (options?.method === "POST") { rechargeRequests.push({ url, data: options.data }); return { id: 77, status: "PENDING" }; }
+    await delayedVenue;
+    if (url.endsWith("/balance-flows")) return { flows: [] };
+    if (url.includes("/plans?")) return [{ id: 9 }];
+    if (url.includes("/recharges?")) return [];
+    return { venueId: 8, status: "MEMBER" };
+  };
+  const switching = switchingMembership.selectMembership({ detail: { value: 1 } });
+  await switchingMembership.createRecharge();
+  assert.equal(rechargeRequests.length, 0, "切馆期间不能向旧馆创建充值");
+  finishSwitch();
+  await switching;
+  assert.equal(switchingMembership.data.current.venueId, 8);
+  assert.equal(switchingMembership.data.selectedPlanId, null, "切馆后必须重新选择本馆档位");
+  switchingMembership.selectPlan({ currentTarget: { dataset: { id: 9 } } });
+  await switchingMembership.createRecharge();
+  assert.equal(rechargeRequests[0].data.venueId, 8);
+  assert.equal(rechargeRequests[0].data.planId, 9);
+  assert.notEqual(rechargeRequests[0].data.idempotencyKey, "old-venue-key");
+
+  switchingMembership.data.rechargeIdempotencyKey = "retry-current-venue";
+  requestHandler = async () => { throw new Error("切馆失败"); };
+  await switchingMembership.selectMembership({ detail: { value: 0 } });
+  assert.equal(switchingMembership.data.selectedIndex, 1, "切馆失败后选中项必须对应仍在显示的场馆");
+  assert.equal(switchingMembership.data.current.venueId, 8);
+  assert.equal(switchingMembership.data.rechargeIdempotencyKey, "retry-current-venue", "切馆失败不能丢失原场馆的重试幂等键");
 
   const reopened = loadPage("membership");
   let storedRecharge = { id: 7, venueId: 5, status: "PENDING", planName: "本地 Mock 档位", paidAmountFen: 50000, giftAmountFen: 0 };

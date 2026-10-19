@@ -130,6 +130,33 @@ try:
     conflict('/venue-admin/sessions/create', body=slot_body('11:00', '12:00', future))
     assert time.monotonic() - started >= 1, '未覆盖等待场地锁期间的旧查询视图'
     assert blocker.wait(timeout=10) == 0
+
+    # 关闭整日等待同一场地锁后，必须看到等待期间提交的预约并拒绝关闭。
+    closing_day = DAY + dt.timedelta(days=40)
+    closing_slot = legacy_slot('11:00', '12:00', day=closing_day)
+    statement = (f'START TRANSACTION; SELECT id FROM s_court WHERE id={court} FOR UPDATE; SELECT SLEEP(2); '
+                 f"INSERT INTO s_booking(booking_no,venue_id,court_id,sport_type_id,session_slot_id,source,contact_name,"
+                 f"contact_phone,venue_name,court_name,sport_name,start_at,end_at,amount_fen,status,payment_status) "
+                 f"VALUES('{PREFIX}-CLOSE',1,{court},{sport},{closing_slot},'OFFLINE','{PREFIX}','MOCK_PHONE',"
+                 f"'本地Mock','本地Mock','测试运动','{utc(closing_day,'11:00')}','{utc(closing_day,'12:00')}',"
+                 f"1000,'CONFIRMED','PAID'); UPDATE s_session_slot SET status='BOOKED',"
+                 f"hold_booking_id=LAST_INSERT_ID() WHERE id={closing_slot}; COMMIT;")
+    blocker = subprocess.Popen(MYSQL, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    blocker.stdin.write(statement)
+    blocker.stdin.close()
+    blocker.stdin = None
+    assert blocker.stdout.readline().strip() == str(court), '未取得封场并发测试的场地锁'
+    started = time.monotonic()
+    conflict('/venue-admin/sessions/close-day', body={'date': str(closing_day)}, method='POST')
+    assert time.monotonic() - started >= 1, '关闭整日没有等待创建预约持有的场地锁'
+    assert blocker.wait(timeout=10) == 0
+    assert sql(f'SELECT status FROM s_session_slot WHERE id={closing_slot}') == 'BOOKED'
+
+    empty_day = closing_day + dt.timedelta(days=1)
+    closed_slot = legacy_slot('11:00', '12:00', day=empty_day)
+    ok('/venue-admin/sessions/close-day', body={'date': str(empty_day)}, method='POST')
+    conflict('/venue-admin/bookings/offline', body=offline(closed_slot))
+    assert sql(f'SELECT status FROM s_session_slot WHERE id={closed_slot}') == 'CLOSED'
 finally:
     if blocker is not None and blocker.poll() is None:
         blocker.wait(timeout=10)
@@ -145,4 +172,4 @@ finally:
     if admin:
         http('/auth/admin/logout', method='POST')
 
-print('PASS F03: snapshots, adjacent intervals, different-slot concurrency, occupied weekly occurrence, RR current read; fixtures cleaned')
+print('PASS F03: snapshots, adjacent intervals, different-slot concurrency, occupied weekly occurrence, RR current read, close-day concurrency; fixtures cleaned')

@@ -28,7 +28,7 @@ test("小程序表单指出具体字段并阻止无效请求和媒体上传", as
     ["staff-bind/index", {}, "bind", "error", /绑定码/],
     ["staff-recharge/index", {}, "submit", "error", /充值档位/],
     ["staff-web-login/index", {}, "confirm", "error", /工作场馆/],
-    ["membership/index", {}, "createRecharge", "actionError", /充值场馆/],
+    ["membership/index", { loading: false }, "createRecharge", "actionError", /充值场馆/],
     ["reminders/index", {}, "save", "error", /场馆/],
     ["reminders/index", { venues: [{ id: 1 }], sports: [{ id: 2 }], startTime: "21:00", endTime: "19:00" }, "save", "error", /结束时间.*开始时间/],
     ["posts/index", { body: "测试动态" }, "publish", "error", /运动类型/],

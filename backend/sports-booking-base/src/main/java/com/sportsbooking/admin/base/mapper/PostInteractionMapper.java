@@ -52,5 +52,15 @@ public interface PostInteractionMapper {
     Integer hasActiveRecruitment(@Param("postId") long postId);
     int detachBlockedMembers(@Param("userId") long userId, @Param("blockedUserId") long blockedUserId);
 
+    /**
+     * 拉黑移除成员后，批量按实际通过人数刷新双方相关的有效招募状态。
+     *
+     * @param userId 发起拉黑的用户 ID
+     * @param blockedUserId 被拉黑的用户 ID
+     * @return 更新的招募数量
+     * @author gjm
+     */
+    int refreshBlockedRecruitmentCapacity(@Param("userId") long userId, @Param("blockedUserId") long blockedUserId);
+
     boolean isCommentOwner(@Param("commentId") long commentId, @Param("userId") long userId);
 }

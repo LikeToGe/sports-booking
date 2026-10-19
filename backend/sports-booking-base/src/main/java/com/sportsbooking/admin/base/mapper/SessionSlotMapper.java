@@ -110,7 +110,7 @@ public interface SessionSlotMapper extends BaseMapper<SessionSlot> {
     int closeOpenForTemplate(@Param("weeklySlotId") long weeklySlotId, @Param("now") Instant now);
 
     /**
-     * 功能描述: 统计指定日期已有占位或预约的具体场次。
+     * 功能描述: 以锁定当前读统计指定日期已有占位或预约的具体场次，调用前先锁定本馆场地。
      * 创建时间: 2026/08/28 16:29
      *
      * @param venueId 场馆 ID

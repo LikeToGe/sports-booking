@@ -196,6 +196,24 @@ expect_visible(first_token, local_date.isoformat(), post_id, False)
 late = api("POST", f"/mini/posts/recruitments/{recruitment_id}/apply", late_token)
 assert late["code"] != 0, late
 
+# 拉黑任一方向的已通过成员后，名额应立即重新出现在第三人的发现列表。
+approved_id = int(sql(f"SELECT user_id FROM s_post_recruitment_member WHERE recruitment_id={recruitment_id} AND status='APPROVED'"))
+approved_token = first_token if approved_id == first_id else second_token
+for blocker_token, blocked_id in [(author_token, approved_id), (approved_token, author_id)]:
+    blocked = api("POST", f"/mini/posts/blocks/{blocked_id}", blocker_token)
+    assert blocked["code"] == 0, blocked
+    reopened = expect_visible(late_token, local_date.isoformat(), post_id, True)[0]
+    assert reopened["remainingCount"] == 1, reopened
+    assert sql(f"SELECT status FROM s_post_recruitment_member WHERE recruitment_id={recruitment_id} AND user_id={approved_id}") == "REMOVED"
+    repeated = api("POST", f"/mini/posts/blocks/{blocked_id}", blocker_token)
+    assert repeated["code"] == 0, repeated
+    unblocked = api("DELETE", f"/mini/posts/blocks/{blocked_id}", blocker_token)
+    assert unblocked["code"] == 0, unblocked
+    reapplied = api("POST", f"/mini/posts/recruitments/{recruitment_id}/apply", approved_token)
+    assert reapplied["code"] == 0, reapplied
+    assert approve(approved_id)["code"] == 0
+    expect_visible(late_token, local_date.isoformat(), post_id, False)
+
 # 失效分享只保留状态，不能回传成员。
 sql(f"UPDATE s_booking SET status='CANCELLED' WHERE id={booking_id}")
 detail = api("GET", f"/mini/posts/{post_id}/recruitment", first_token)

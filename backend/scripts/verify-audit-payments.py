@@ -247,6 +247,26 @@ try:
     assert sql(f"SELECT status,COALESCE(hold_booking_id,'NULL') FROM s_session_slot WHERE id={slot_id}") == 'OPEN\tNULL'
     print('C02 venue passed: blank reason and cross-venue calls have no side effects; actor/reason preserved', flush=True)
     assert repeated_status == 200 and repeated_result['data']['status'] == 'CANCELLED', '本人重复取消应返回已取消事实'
+
+    # 退款发生在赠送到期后、日结前时，原批次未消费的余额也必须完整到期并留痕。
+    gift_owner = login('mini', 'gift-owner')
+    gift_plan = ok('/venue-admin/recharge-plans', venue,
+        {'name': RUN, 'paidAmountFen': 1, 'giftAmountFen': 2000, 'giftValidDays': 1})
+    plans.append(gift_plan['id'])
+    gift_recharge = ok('/mini/recharges/create', gift_owner,
+        {'venueId': venue_id, 'planId': gift_plan['id'], 'idempotencyKey': RUN + '-gift'})
+    ok(f"/mini/recharges/{gift_recharge['id']}/mock-pay", gift_owner, method='POST')
+    gift_booking = ok('/mini/bookings/create', gift_owner, {'sessionSlotId': slot(17),
+        'contactName': '本地Mock验收', 'contactPhone': '00000000000',
+        'idempotencyKey': RUN + '-gift-booking', 'expectedPriceFen': 1000})
+    assert gift_booking['status'] == 'CONFIRMED'
+    gift_lot = int(sql(f"SELECT id FROM s_member_balance_lot WHERE source_recharge_id={gift_recharge['id']} AND type='GIFT'"))
+    sql(f"UPDATE s_member_balance_lot SET expires_at=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 MINUTE) WHERE id={gift_lot}")
+    for _ in range(2):
+        ok(f"/mini/bookings/{gift_booking['id']}/cancel", gift_owner, method='POST')
+    assert sql(f"SELECT available_amount_fen,frozen_amount_fen,status FROM s_member_balance_lot WHERE id={gift_lot}") == '0\t0\tEXPIRED'
+    assert sql(f"SELECT COUNT(*),SUM(amount_fen) FROM s_member_balance_flow WHERE lot_id={gift_lot} AND business_type='EXPIRE'") == '2\t2000'
+    print('Expired gift refund passed: unused and refunded portions expire once, batch closes at zero', flush=True)
 finally:
     cleanup()
 print('PASS: F02/F04/F05/C02 HTTP regression and fixture cleanup completed', flush=True)

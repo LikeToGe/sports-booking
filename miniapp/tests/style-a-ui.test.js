@@ -55,6 +55,7 @@ async function main() {
   assert.equal(mine.data.error, "保存未完成");
 
   const membership = load("membership");
+  membership.data.loading = false;
   membership.data.memberships = [{ venueId: 1 }, { venueId: 2 }];
   membership.toggleMemberCode();
   assert.equal(membership.data.showMemberCode, true);
