@@ -127,7 +127,7 @@ const error = ref("");
 const loading = ref(false);
 const selected = ref<VenueCustomer>();
 const selectedOperation = ref<CustomerOperation>();
-const drawer = ref<HTMLDialogElement>();
+const detailDialog = ref<HTMLDialogElement>();
 const balance = ref<BalanceAccount>();
 const recharges = ref<MemberRecharge[]>([]);
 const plans = ref<RechargePlan[]>([]);
@@ -345,7 +345,7 @@ async function open(customer: VenueCustomer) {
   rechargeError.value = "";
   rechargePlanId.value = "";
   rechargeIdempotencyKey = "";
-  drawer.value?.showModal();
+  detailDialog.value?.showModal();
   await loadDetail();
 }
 
@@ -505,9 +505,9 @@ onMounted(() => Promise.all([load(), loadTags(), loadFollowups(), canRecharge ? 
     </section>
 
 
-    <dialog ref="drawer" class="drawer" aria-labelledby="customersview-drawer-title">
-      <form method="dialog" class="modal-head"><h2 id="customersview-drawer-title">顾客详情</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
-      <div v-if="selected" class="drawer-body customer-detail">
+    <dialog ref="detailDialog" class="modal wide" aria-labelledby="customersview-detailDialog-title">
+      <form method="dialog" class="modal-head"><h2 id="customersview-detailDialog-title">顾客详情</h2><button class="icon-button" aria-label="关闭"><X :size="18" aria-hidden="true" /></button></form>
+      <div v-if="selected" class="modal-body customer-detail">
         <p v-if="detailError" class="error-banner" role="alert">{{ detailError }} <button class="inline-command" type="button" @click="loadDetail">重新加载</button></p>
         <p v-if="detailMessage" class="saved-message" aria-live="polite"><CircleCheck :size="17" aria-hidden="true" />{{ detailMessage }}</p>
         <div v-if="detailLoading" class="empty-state" aria-live="polite"><RefreshCw class="spin" :size="26" aria-hidden="true" /><strong>正在加载顾客详情</strong></div>

@@ -143,21 +143,21 @@ onUnmounted(stopPolling);
 </template>
 
 <style scoped>
-.login-page { display: grid; min-height: 100dvh; background: var(--color-surface); }
-.login-copy { position: relative; display: grid; align-content: end; gap: 16px; min-height: 300px; margin: 20px; padding: 36px; overflow: hidden; border-radius: 16px; isolation: isolate; background: var(--color-ink) url("/venue-1.jpg") center / cover no-repeat; color: var(--color-on-dark); }
-.login-copy::before { position: absolute; inset: 0; z-index: -1; content: ""; background: linear-gradient(180deg, rgb(14 43 46 / 45%), rgb(14 43 46 / 88%)); }
+.login-page { display: grid; min-height: 100dvh; background: var(--color-paper); }
+.login-copy { position: relative; display: grid; align-content: end; gap: 16px; min-height: 300px; margin: 20px; padding: 36px; overflow: hidden; border-radius: var(--radius-card); isolation: isolate; background: var(--color-ink) url("/venue-1.jpg") center / cover no-repeat; color: var(--color-on-dark); }
+.login-copy::before { position: absolute; inset: 0; z-index: -1; content: ""; background: linear-gradient(180deg, rgb(7 11 26 / 45%), rgb(7 11 26 / 92%)); backdrop-filter: grayscale(1); }
 .login-brand { position: absolute; top: 36px; left: 36px; display: flex; align-items: center; gap: 12px; }
 .login-brand > div { display: grid; gap: 5px; }
 .login-brand > div > span:last-child { font-size: 12px; }
-.login-copy h1 { font-size: 36px; line-height: 1.4; font-weight: 600; }
+.login-copy h1 { font-size: 40px; line-height: 1.25; font-weight: 700; letter-spacing: -.03em; }
 .login-copy p { font-size: 13px; }
 .login-form { display: grid; align-content: center; gap: 24px; width: min(100%, 408px); margin: 0 auto; padding: 36px 24px; }
-.login-form h2 { font-size: 24px; }
+.login-form h2 { padding-bottom: 16px; border-bottom: 2px solid var(--color-ink); font-size: 26px; letter-spacing: -.02em; }
 .login-form > div:first-child p { margin-top: 12px; font-size: 13px; line-height: 1.8; }
 .login-fields, .scan-login { display: grid; gap: 20px; }
 .login-modes { display: flex; gap: 28px; border-bottom: 1px solid var(--color-rule); }
 .login-modes button { min-height: 44px; padding: 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--color-muted); font-size: 13px; }
-.login-modes button[aria-selected="true"] { border-bottom-color: var(--color-primary); color: var(--color-primary); }
+.login-modes button[aria-selected="true"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 .scan-login { justify-items: center; min-height: 18rem; align-content: center; text-align: center; }
 .scan-login code { width: 100%; max-height: 6rem; padding: 12px; overflow: auto; border: 1px solid var(--color-rule); border-radius: var(--radius-control); background: var(--color-paper); overflow-wrap: anywhere; white-space: pre-wrap; user-select: all; font-size: 12px; }
 .scan-qr { width: 180px; aspect-ratio: 1; object-fit: contain; }

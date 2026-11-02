@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   Building2,
@@ -34,6 +34,40 @@ import { operationFeedback } from "./feedback";
 const route = useRoute();
 const router = useRouter();
 const menuOpen = ref(false);
+const desktop = ref(true);
+const menuButton = ref<HTMLButtonElement>();
+const sidebar = ref<HTMLElement>();
+
+function menuKeydown(event: KeyboardEvent) {
+  if (!menuOpen.value || desktop.value) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    menuOpen.value = false;
+  }
+  if (event.key !== "Tab") return;
+  const controls = Array.from(sidebar.value?.querySelectorAll<HTMLElement>("a, button") || []);
+  const index = controls.indexOf(document.activeElement as HTMLElement);
+  if ((event.shiftKey && index <= 0) || (!event.shiftKey && index === controls.length - 1)) {
+    event.preventDefault();
+    controls[event.shiftKey ? controls.length - 1 : 0]?.focus();
+  }
+}
+
+watch(menuOpen, async open => {
+  await nextTick();
+  if (open) sidebar.value?.querySelector<HTMLElement>("a")?.focus();
+  else if (!desktop.value) menuButton.value?.focus();
+});
+watch(() => route.path, () => { menuOpen.value = false; });
+function updateViewport() {
+  desktop.value = window.matchMedia("(min-width: 60rem)").matches;
+  if (desktop.value) menuOpen.value = false;
+}
+onMounted(() => {
+  updateViewport();
+  window.addEventListener("resize", updateViewport);
+});
+onUnmounted(() => window.removeEventListener("resize", updateViewport));
 
 const isPublic = computed(() => Boolean(route.meta.public));
 const platformGroups = [
@@ -103,15 +137,15 @@ async function logout() {
     <a class="skip-link" href="#main">跳到主要内容</a>
     <header class="mobile-header">
       <div><span class="wordmark">约场</span><span class="mobile-page-name">{{ currentLabel }}</span></div>
-      <button class="icon-button" type="button" :aria-label="menuOpen ? '关闭导航' : '打开导航'" :aria-expanded="menuOpen" aria-controls="primary-navigation" @click="menuOpen = !menuOpen">
+      <button ref="menuButton" class="icon-button" type="button" :aria-label="menuOpen ? '关闭导航' : '打开导航'" :aria-expanded="menuOpen" aria-controls="primary-navigation" @click="menuOpen = !menuOpen">
         <X v-if="menuOpen" :size="20" aria-hidden="true" />
         <Menu v-else :size="20" aria-hidden="true" />
       </button>
     </header>
 
-    <aside class="sidebar" :class="{ 'is-open': menuOpen }">
+    <aside ref="sidebar" class="sidebar" :class="{ 'is-open': menuOpen }" :inert="!desktop && !menuOpen" @keydown="menuKeydown">
       <div class="brand-block">
-        <span class="brand-mark"><PanelsTopLeft :size="26" aria-hidden="true" /></span>
+        <span class="brand-mark"><PanelsTopLeft :size="18" aria-hidden="true" /></span>
         <div><span class="wordmark">约场</span><span class="brand-caption">场馆运营管理</span></div>
       </div>
       <nav id="primary-navigation" class="primary-nav" aria-label="主导航">
@@ -134,14 +168,14 @@ async function logout() {
         </button>
       </div>
     </aside>
-    <button v-if="menuOpen" class="nav-backdrop" type="button" aria-label="关闭导航" @click="menuOpen = false" />
+    <Transition name="scrim"><button v-if="menuOpen" class="nav-backdrop" type="button" aria-label="关闭导航" @click="menuOpen = false" /></Transition>
 
-    <div class="workspace" :inert="menuOpen">
+    <div class="workspace" :inert="!desktop && menuOpen">
       <header class="workspace-bar">
         <div class="breadcrumb"><strong>{{ auth.principal?.role === "PLATFORM_ADMIN" ? "约场平台" : "场馆工作台" }}</strong><ChevronRight :size="14" aria-hidden="true" /><span>{{ currentLabel }}</span></div>
         <div class="workspace-context"><div class="workspace-account"><CircleUserRound :size="18" aria-hidden="true" /><span>{{ auth.principal?.displayName }}</span></div><span class="workspace-role">{{ auth.principal?.role === "PLATFORM_ADMIN" ? "平台端" : "场馆端" }}</span></div>
       </header>
-      <main id="main" class="main-content"><RouterView /></main>
+      <main id="main" class="main-content"><RouterView v-slot="{ Component }"><Transition name="page" mode="out-in"><component :is="Component" :key="route.path" /></Transition></RouterView></main>
     </div>
   </div>
 </template>
