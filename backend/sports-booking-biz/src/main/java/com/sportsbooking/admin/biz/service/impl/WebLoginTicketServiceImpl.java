@@ -31,11 +31,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class WebLoginTicketServiceImpl implements WebLoginTicketService {
     private static final Duration TTL = Duration.ofMinutes(2);
+    // 按读取到的原值比较后写入，避免 Lua 重新编码 JSON 改变发起端密钥摘要或数字精度。
     private static final DefaultRedisScript<Long> CONFIRM_SCRIPT = new DefaultRedisScript<>("""
             local value = redis.call('GET', KEYS[1])
             if not value then return -1 end
-            local data = cjson.decode(value)
-            if data.status ~= 'PENDING' then return 0 end
+            if value ~= ARGV[2] then return 0 end
             redis.call('SET', KEYS[1], ARGV[1], 'KEEPTTL')
             return 1
             """, Long.class);
@@ -43,6 +43,7 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
             local value = redis.call('GET', KEYS[1])
             if not value then return nil end
             local data = cjson.decode(value)
+            if data.secretHash ~= ARGV[1] then return 'INVALID:SECRET' end
             if data.status ~= 'CONFIRMED' then return 'INVALID:' .. data.status end
             redis.call('SET', KEYS[1], '{"status":"CONSUMED"}', 'KEEPTTL')
             return value
@@ -69,11 +70,14 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
     @Override
     public ScanTicketVO create() {
         String ticket = tokenService.generate();
+        // 二维码只承载票据；发起端密钥只返回给创建页面，拍到二维码的人无法轮询或换取会话。
+        String clientSecret = tokenService.generate();
         Instant expiresAt = Instant.now().plus(TTL);
         try {
-            redisTemplate.opsForValue().set(key(ticket), json(Map.of("status", "PENDING")), TTL);
+            redisTemplate.opsForValue().set(key(ticket), json(Map.of("status", "PENDING",
+                    "secretHash", tokenService.hash(clientSecret))), TTL);
             String qrContent = qrContent(ticket);
-            return new ScanTicketVO(ticket, qrContent, credentialService.createQrDataUrl(qrContent),
+            return new ScanTicketVO(ticket, clientSecret, qrContent, credentialService.createQrDataUrl(qrContent),
                     WebLoginTicketStatus.PENDING, expiresAt);
         } catch (DataAccessException exception) {
             throw unavailable();
@@ -81,16 +85,21 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
     }
 
     @Override
-    public ScanTicketVO get(String ticket) {
+    public ScanTicketVO get(String ticket, String clientSecret) {
         try {
             String value = redisTemplate.opsForValue().get(key(ticket));
             if (value == null) {
                 throw invalid();
             }
+            JsonNode data = read(value);
+            // 密钥不匹配与票据不存在返回相同结果，不向持有二维码的人暴露确认状态。
+            if (!secretHash(clientSecret).equals(data.path("secretHash").asText())) {
+                throw invalid();
+            }
             long ttlMillis = redisTemplate.getExpire(key(ticket), TimeUnit.MILLISECONDS);
-            WebLoginTicketStatus status = WebLoginTicketStatus.valueOf(read(value).get("status").asText());
+            WebLoginTicketStatus status = WebLoginTicketStatus.valueOf(data.get("status").asText());
             String qrContent = qrContent(ticket);
-            return new ScanTicketVO(ticket, qrContent, credentialService.createQrDataUrl(qrContent),
+            return new ScanTicketVO(ticket, null, qrContent, credentialService.createQrDataUrl(qrContent),
                     status, Instant.now().plusMillis(Math.max(ttlMillis, 0)));
         } catch (ApiException exception) {
             throw exception;
@@ -104,8 +113,18 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
         StaffVenueVO staffVenue = permissionService.listStaffVenues(userId).stream()
                 .filter(item -> item.getVenueId() == venueId).findFirst().orElseThrow(this::forbidden);
         try {
+            String pending = redisTemplate.opsForValue().get(key(ticket));
+            if (pending == null) {
+                throw invalid();
+            }
+            JsonNode data = read(pending);
+            if (!"PENDING".equals(data.path("status").asText()) || !data.hasNonNull("secretHash")) {
+                throw invalid();
+            }
+            // 确认结果保留发起端密钥摘要，消费时仍只认创建票据的 Web 页面。
             Long result = redisTemplate.execute(CONFIRM_SCRIPT, List.of(key(ticket)), json(Map.of(
-                    "status", "CONFIRMED", "employeeId", staffVenue.getEmployeeId(), "venueId", venueId, "userId", userId)));
+                    "status", "CONFIRMED", "employeeId", staffVenue.getEmployeeId(), "venueId", venueId,
+                    "userId", userId, "secretHash", data.get("secretHash").asText())), pending);
             if (result == null || result != 1) {
                 throw invalid();
             }
@@ -117,9 +136,9 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
     }
 
     @Override
-    public AdminLoginVO consume(String ticket) {
+    public AdminLoginVO consume(String ticket, String clientSecret) {
         try {
-            String value = redisTemplate.execute(CONSUME_SCRIPT, List.of(key(ticket)));
+            String value = redisTemplate.execute(CONSUME_SCRIPT, List.of(key(ticket)), secretHash(clientSecret));
             if (value == null || value.startsWith("INVALID:")) {
                 throw invalid();
             }
@@ -143,6 +162,20 @@ public class WebLoginTicketServiceImpl implements WebLoginTicketService {
             throw invalid();
         }
         return AuthConstants.WEB_LOGIN_TICKET_KEY_PREFIX + tokenService.hash(ticket);
+    }
+
+    /**
+     * 计算发起端密钥摘要；缺少密钥时按无效票据处理。
+     *
+     * @param clientSecret 发起端密钥
+     * @return 密钥摘要
+     * @author gjm
+     */
+    private String secretHash(String clientSecret) {
+        if (clientSecret == null || clientSecret.isBlank()) {
+            throw invalid();
+        }
+        return tokenService.hash(clientSecret);
     }
 
     private String qrContent(String ticket) {

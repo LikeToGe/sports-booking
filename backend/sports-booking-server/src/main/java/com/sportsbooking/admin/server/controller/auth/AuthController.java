@@ -59,13 +59,17 @@ public class AuthController {
     }
 
     @GetMapping("/admin/web-login-tickets/{ticket}")
-    public ApiResponse<ScanTicketVO> getWebLoginTicket(@PathVariable String ticket) {
-        return ApiResponse.success(webLoginTicketService.get(ticket));
+    public ApiResponse<ScanTicketVO> getWebLoginTicket(
+            @PathVariable String ticket,
+            @RequestHeader(value = AuthConstants.WEB_LOGIN_SECRET_HEADER, required = false) String clientSecret) {
+        return ApiResponse.success(webLoginTicketService.get(ticket, clientSecret));
     }
 
     @PostMapping("/admin/web-login-tickets/{ticket}/consume")
-    public ApiResponse<AdminLoginVO> consumeWebLoginTicket(@PathVariable String ticket) {
-        return ApiResponse.success(webLoginTicketService.consume(ticket));
+    public ApiResponse<AdminLoginVO> consumeWebLoginTicket(
+            @PathVariable String ticket,
+            @RequestHeader(value = AuthConstants.WEB_LOGIN_SECRET_HEADER, required = false) String clientSecret) {
+        return ApiResponse.success(webLoginTicketService.consume(ticket, clientSecret));
     }
 
 

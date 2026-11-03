@@ -17,6 +17,10 @@ public class ScanTicketVO {
     @Schema(description = "一次性票据")
     @ApiModelProperty(value = "一次性票据")
     private String ticket;
+    /** 发起端密钥，只在创建时返回且不进入二维码；轮询和消费必须通过请求头回传。 */
+    @Schema(description = "发起端密钥，仅创建时返回，轮询和消费通过 X-Web-Login-Secret 请求头回传")
+    @ApiModelProperty(value = "发起端密钥，仅创建时返回，轮询和消费通过 X-Web-Login-Secret 请求头回传")
+    private String clientSecret;
     /** 小程序扫码后解析出的原始内容。 */
     @Schema(description = "二维码内容")
     @ApiModelProperty(value = "二维码内容")

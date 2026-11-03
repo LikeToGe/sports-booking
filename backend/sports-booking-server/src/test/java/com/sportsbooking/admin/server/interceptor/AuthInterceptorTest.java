@@ -44,7 +44,7 @@ class AuthInterceptorTest {
         }
 
         @Override
-        public String createAdminSession(AdminPrincipal principal) {
+        public String createAdminSession(com.sportsbooking.admin.base.po.AdminAccount account) {
             throw new UnsupportedOperationException();
         }
 

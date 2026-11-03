@@ -2,6 +2,7 @@ package com.sportsbooking.admin.biz.service;
 
 import com.sportsbooking.admin.base.model.AdminPrincipal;
 import com.sportsbooking.admin.base.model.MiniPrincipal;
+import com.sportsbooking.admin.base.po.AdminAccount;
 
 /**
  * 功能描述: 管理后台与小程序的随机令牌会话。
@@ -11,12 +12,14 @@ import com.sportsbooking.admin.base.model.MiniPrincipal;
  */
 public interface SessionService {
     /**
-     * 功能描述: 创建后台会话。
+     * 功能描述: 创建只保存账号标识和凭据戳的密码管理员会话。
      * 创建时间: 2026/08/28 16:29
      *
+     * @param account 已通过密码校验的后台账号
+     * @return 后台会话令牌
      * @author gjm
      */
-    String createAdminSession(AdminPrincipal principal);
+    String createAdminSession(AdminAccount account);
     /** 创建保存员工、场馆及原绑定用户标识的后台会话。 */
     default String createEmployeeAdminSession(long employeeId, long venueId, long userId) {
         throw new UnsupportedOperationException();

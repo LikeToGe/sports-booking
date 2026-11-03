@@ -2567,6 +2567,12 @@ paths:
         required: true
         schema:
           type: string
+      - name: X-Web-Login-Secret
+        in: header
+        description: 创建票据时返回的发起端密钥
+        required: false
+        schema:
+          type: string
       responses:
         "200":
           description: OK
@@ -4547,6 +4553,12 @@ paths:
       - name: ticket
         in: path
         required: true
+        schema:
+          type: string
+      - name: X-Web-Login-Secret
+        in: header
+        description: 创建票据时返回的发起端密钥
+        required: false
         schema:
           type: string
       responses:
@@ -6823,6 +6835,9 @@ components:
         ticket:
           type: string
           description: 一次性票据
+        clientSecret:
+          type: string
+          description: 发起端密钥，仅创建时返回，轮询和消费通过 X-Web-Login-Secret 请求头回传
         qrContent:
           type: string
           description: 二维码内容

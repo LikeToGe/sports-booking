@@ -12,6 +12,7 @@ public final class AuthConstants {
     public static final String SESSION_KEY_PREFIX = "session:";
     public static final String BOOKING_LIMIT_KEY_PREFIX = "limit:booking:create:";
     public static final String WEB_LOGIN_TICKET_KEY_PREFIX = "web-login-ticket:";
+    public static final String WEB_LOGIN_SECRET_HEADER = "X-Web-Login-Secret";
 
     private AuthConstants() {
     }

@@ -9,6 +9,7 @@ import type { AdminPrincipal } from "../types";
 
 interface ScanTicket {
   ticket: string;
+  clientSecret?: string | null;
   qrContent: string;
   qrDataUrl?: string;
   expiresAt: string;
@@ -23,6 +24,12 @@ const error = ref("");
 const loading = ref(false);
 const scanTicket = ref<ScanTicket>();
 let pollTimer: number | undefined;
+// 发起端密钥只在创建时返回且不进入二维码，轮询和换取会话都靠它证明是本页面发起的票据。
+let scanSecret = "";
+
+function scanSecretHeaders() {
+  return { "X-Web-Login-Secret": scanSecret };
+}
 
 async function login() {
   error.value = "";
@@ -53,7 +60,9 @@ async function createScanTicket() {
   error.value = "";
   loading.value = true;
   try {
-    scanTicket.value = await api<ScanTicket>("/auth/admin/web-login-tickets", { method: "POST" });
+    const created = await api<ScanTicket>("/auth/admin/web-login-tickets", { method: "POST" });
+    scanSecret = created.clientSecret || "";
+    scanTicket.value = created;
     pollTimer = window.setInterval(pollScanTicket, 1500);
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "登录票据创建失败";
@@ -65,7 +74,7 @@ async function createScanTicket() {
 async function pollScanTicket() {
   if (!scanTicket.value || loading.value) return;
   try {
-    const current = await api<ScanTicket>(`/auth/admin/web-login-tickets/${scanTicket.value.ticket}`);
+    const current = await api<ScanTicket>(`/auth/admin/web-login-tickets/${scanTicket.value.ticket}`, { headers: scanSecretHeaders() });
     scanTicket.value = current;
     if (current.status === "CONFIRMED") await consumeScanTicket();
     else if (["EXPIRED", "CONSUMED"].includes(current.status)) stopPolling();
@@ -81,7 +90,7 @@ async function consumeScanTicket() {
   stopPolling();
   loading.value = true;
   try {
-    const result = await api<{ token: string; principal: AdminPrincipal }>(`/auth/admin/web-login-tickets/${scanTicket.value.ticket}/consume`, { method: "POST" });
+    const result = await api<{ token: string; principal: AdminPrincipal }>(`/auth/admin/web-login-tickets/${scanTicket.value.ticket}/consume`, { method: "POST", headers: scanSecretHeaders() });
     setSession(result.token, result.principal);
     await router.replace(defaultRoute());
   } catch (reason) {

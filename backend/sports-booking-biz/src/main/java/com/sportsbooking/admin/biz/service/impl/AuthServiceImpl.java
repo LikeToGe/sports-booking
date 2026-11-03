@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
             throw new ApiException(HttpStatus.UNAUTHORIZED, ErrorCode.LOGIN_FAILED);
         }
         AdminPrincipal principal = new AdminPrincipal(account.id, account.role, account.venueId, account.displayName);
-        return new AdminLoginVO(sessionService.createAdminSession(principal), principal);
+        return new AdminLoginVO(sessionService.createAdminSession(account), principal);
     }
 
     /**

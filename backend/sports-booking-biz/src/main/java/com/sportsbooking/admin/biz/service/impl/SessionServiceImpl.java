@@ -9,7 +9,9 @@ import com.sportsbooking.admin.biz.service.SessionService;
 import com.sportsbooking.admin.biz.service.PermissionService;
 import com.sportsbooking.admin.biz.service.TokenService;
 import com.sportsbooking.admin.biz.constants.AuthConstants;
+import com.sportsbooking.admin.base.mapper.AdminAccountMapper;
 import com.sportsbooking.admin.base.mapper.UserAccountMapper;
+import com.sportsbooking.admin.base.po.AdminAccount;
 import com.sportsbooking.admin.base.enums.EnableStatus;
 import com.sportsbooking.admin.base.enums.ErrorCode;
 import java.time.Duration;
@@ -37,16 +39,18 @@ public class SessionServiceImpl implements SessionService {
     private final PermissionService permissionService;
     private final Duration ttl;
     private final UserAccountMapper userAccountMapper;
+    private final AdminAccountMapper adminAccountMapper;
 
     public SessionServiceImpl(StringRedisTemplate redisTemplate, ObjectMapper objectMapper,
                               TokenService tokenService, PermissionService permissionService,
-                              UserAccountMapper userAccountMapper,
+                              UserAccountMapper userAccountMapper, AdminAccountMapper adminAccountMapper,
                               @Value("${app.session.ttl-hours}") long ttlHours) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.tokenService = tokenService;
         this.permissionService = permissionService;
         this.userAccountMapper = userAccountMapper;
+        this.adminAccountMapper = adminAccountMapper;
         this.ttl = Duration.ofHours(ttlHours);
     }
 
@@ -57,8 +61,10 @@ public class SessionServiceImpl implements SessionService {
      * @author gjm
      */
     @Override
-    public String createAdminSession(AdminPrincipal principal) {
-        return create(ADMIN_SESSION_KIND, principal);
+    public String createAdminSession(AdminAccount account) {
+        // 会话只保存账号标识和凭据戳，角色、场馆和名称每次请求都按账号现状重建。
+        return create(ADMIN_SESSION_KIND, Map.of("accountId", account.id,
+                "credentialStamp", credentialStamp(account)));
     }
 
     /** 员工会话保存原绑定身份，避免员工档案换绑后旧用户沿用令牌。 */
@@ -95,7 +101,9 @@ public class SessionServiceImpl implements SessionService {
                 return permissionService.resolveEmployee(root.get("employeeId").asLong(),
                         root.get("venueId").asLong(), root.get("userId").asLong());
             }
-            return objectMapper.readValue(sessionJson, AdminPrincipal.class);
+            // 旧格式密码管理员会话缺少凭据戳，无法判断密码是否已重置，统一要求重新登录。
+            if (!root.has("accountId") || !root.has("credentialStamp")) throw unauthorized();
+            return resolvePasswordAdmin(root.get("accountId").asLong(), root.get("credentialStamp").asText());
         } catch (ApiException exception) {
             throw exception;
         } catch (JsonProcessingException exception) {
@@ -145,6 +153,34 @@ public class SessionServiceImpl implements SessionService {
      *
      * @author gjm
      */
+    /**
+     * 按账号现状校验密码管理员会话；停用账号或重置密码后旧令牌在下一次请求失效。
+     *
+     * @param accountId 后台账号 ID
+     * @param stamp 创建会话时的凭据戳
+     * @return 按当前账号资料重建的后台身份
+     * @author gjm
+     */
+    private AdminPrincipal resolvePasswordAdmin(long accountId, String stamp) {
+        AdminAccount account = adminAccountMapper.selectById(accountId);
+        if (account == null || account.status != EnableStatus.ACTIVE
+                || !credentialStamp(account).equals(stamp)) {
+            throw unauthorized();
+        }
+        return new AdminPrincipal(account.id, account.role, account.venueId, account.displayName);
+    }
+
+    /**
+     * 由当前密码摘要派生凭据戳；BCrypt 每次重置都会生成新摘要，即使设置相同密码也会让旧会话失效。
+     *
+     * @param account 后台账号
+     * @return 凭据戳
+     * @author gjm
+     */
+    private String credentialStamp(AdminAccount account) {
+        return tokenService.hash(account.passwordHash);
+    }
+
     private String create(String kind, Object principal) {
         String token = tokenService.generate();
         try {

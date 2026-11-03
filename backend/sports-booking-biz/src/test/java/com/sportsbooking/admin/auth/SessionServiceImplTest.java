@@ -10,7 +10,9 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportsbooking.admin.base.enums.AdminRole;
 import com.sportsbooking.admin.base.model.AdminPrincipal;
+import com.sportsbooking.admin.base.mapper.AdminAccountMapper;
 import com.sportsbooking.admin.base.mapper.UserAccountMapper;
+import com.sportsbooking.admin.base.po.AdminAccount;
 import com.sportsbooking.admin.base.po.UserAccount;
 import com.sportsbooking.admin.base.model.MiniPrincipal;
 import com.sportsbooking.admin.base.enums.EnableStatus;
@@ -32,14 +34,16 @@ class SessionServiceImplTest {
     private final TokenService tokenService = mock(TokenService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final UserAccountMapper users = mock(UserAccountMapper.class);
+    private final AdminAccountMapper admins = mock(AdminAccountMapper.class);
     private SessionServiceImpl service;
 
     @BeforeEach
     void setUp() {
         when(redisTemplate.opsForValue()).thenReturn(values);
         when(tokenService.generate()).thenReturn("token");
-        when(tokenService.hash(any())).thenReturn("hash");
-        service = new SessionServiceImpl(redisTemplate, objectMapper, tokenService, permissionService, users, 12);
+        when(tokenService.hash(any())).thenAnswer(invocation -> "hash:" + invocation.getArgument(0));
+        service = new SessionServiceImpl(redisTemplate, objectMapper, tokenService, permissionService, users,
+                admins, 12);
     }
 
     @Test
@@ -83,15 +87,68 @@ class SessionServiceImplTest {
     }
 
     @Test
-    void keepsPasswordAdministratorSessionCompatible() throws Exception {
-        AdminPrincipal expected = new AdminPrincipal(3L, AdminRole.VENUE_ADMIN, 4L, "管理员");
-        when(values.get(any())).thenReturn(objectMapper.writeValueAsString(expected));
+    void resolvesPasswordAdministratorFromCurrentAccount() {
+        AdminAccount account = venueAdmin("bcrypt-1");
+        when(admins.selectById(3L)).thenReturn(account);
 
-        AdminPrincipal actual = service.requireAdmin("token");
+        AdminPrincipal actual = service.requireAdmin(storedAdminSession(account));
 
         assertThat(actual.getAccountId()).isEqualTo(3L);
         assertThat(actual.getRole()).isEqualTo(AdminRole.VENUE_ADMIN);
         assertThat(actual.getVenueId()).isEqualTo(4L);
+    }
+
+    @Test
+    void rejectsExistingAdminTokenAfterPasswordReset() {
+        AdminAccount account = venueAdmin("bcrypt-1");
+        when(admins.selectById(3L)).thenReturn(account);
+        String token = storedAdminSession(account);
+        assertThat(service.requireAdmin(token).getAccountId()).isEqualTo(3L);
+
+        // 平台重置密码会生成新摘要，已签发令牌必须在下一次请求失效。
+        account.passwordHash = "bcrypt-2";
+        assertThatThrownBy(() -> service.requireAdmin(token))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
+    }
+
+    @Test
+    void rejectsExistingAdminTokenAfterAccountDisabled() {
+        AdminAccount account = venueAdmin("bcrypt-1");
+        when(admins.selectById(3L)).thenReturn(account);
+        String token = storedAdminSession(account);
+
+        account.status = EnableStatus.DISABLED;
+        assertThatThrownBy(() -> service.requireAdmin(token))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
+    }
+
+    @Test
+    void rejectsLegacyPasswordAdministratorSessionWithoutCredentialStamp() throws Exception {
+        AdminPrincipal legacy = new AdminPrincipal(3L, AdminRole.VENUE_ADMIN, 4L, "管理员");
+        when(values.get(any())).thenReturn(objectMapper.writeValueAsString(legacy));
+
+        assertThatThrownBy(() -> service.requireAdmin("token"))
+                .isInstanceOf(com.sportsbooking.admin.biz.exception.ApiException.class);
+    }
+
+    private AdminAccount venueAdmin(String passwordHash) {
+        AdminAccount account = new AdminAccount();
+        account.id = 3L;
+        account.role = AdminRole.VENUE_ADMIN;
+        account.venueId = 4L;
+        account.displayName = "管理员";
+        account.passwordHash = passwordHash;
+        account.status = EnableStatus.ACTIVE;
+        return account;
+    }
+
+    /** 创建会话并让 Redis 读取返回刚写入的内容。 */
+    private String storedAdminSession(AdminAccount account) {
+        String token = service.createAdminSession(account);
+        ArgumentCaptor<String> json = ArgumentCaptor.forClass(String.class);
+        verify(values).set(any(), json.capture(), any(Duration.class));
+        when(values.get(any())).thenReturn(json.getValue());
+        return token;
     }
 
     @Test
