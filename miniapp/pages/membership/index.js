@@ -20,7 +20,7 @@ Page({
   data: {
     memberships: [], selectedIndex: 0, current: null, plans: [], flows: [], selectedPlanId: null, rechargeIdempotencyKey: "",
     recharge: null, pendingRecharges: [], cancellingRecharge: false, loading: true, switching: false, creatingRecharge: false, payingRecharge: false,
-    error: "", actionError: "", actionMessage: "", actionMessageTone: "info", showMemberCode: false,
+    error: "", actionError: "", actionMessage: "", actionMessageTone: "info", showMemberCode: false, rechargeCreated: false,
   },
 
   async onShow() {
@@ -54,7 +54,8 @@ Page({
     if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
     const previousIndex = this.data.selectedIndex;
     const selectedIndex = Number(event.detail.value);
-    this.setData({ selectedIndex, switching: true, showMemberCode: false, error: "", actionError: "", actionMessage: "", recharge: null });
+    this.setData({ selectedIndex, switching: true, showMemberCode: false, rechargeCreated: false,
+      error: "", actionError: "", actionMessage: "", recharge: null });
     try {
       await this.loadVenue(this.data.memberships[selectedIndex].venueId);
       this.setData({ selectedPlanId: null, rechargeIdempotencyKey: "" });
@@ -111,7 +112,7 @@ Page({
   },
 
   async createRecharge() {
-    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
+    if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge || this.data.rechargeCreated) return;
     if (!this.data.current) { this.setData({ actionError: "请选择充值场馆" }); return; }
     if (!this.data.selectedPlanId) { this.setData({ actionError: "请选择充值档位" }); return; }
     const idempotencyKey = this.data.rechargeIdempotencyKey
@@ -126,13 +127,14 @@ Page({
           idempotencyKey,
         },
       });
-      this.setData({ recharge: this.presentRecharge(recharge), pendingRecharges: [...this.data.pendingRecharges.filter(row => row.id !== recharge.id), ...(recharge.status === "PENDING" ? [this.presentRecharge(recharge)] : [])], rechargeIdempotencyKey: "", actionMessage: "充值单已创建，请继续完成 Mock 支付。", actionMessageTone: "info" });
+      this.setData({ rechargeCreated: true, recharge: this.presentRecharge(recharge), pendingRecharges: [...this.data.pendingRecharges.filter(row => row.id !== recharge.id), ...(recharge.status === "PENDING" ? [this.presentRecharge(recharge)] : [])], rechargeIdempotencyKey: "", actionMessage: "充值单已创建，请继续完成 Mock 支付。", actionMessageTone: "info" });
     } catch (error) {
       this.setData({ actionError: error.message });
     } finally {
       this.setData({ creatingRecharge: false });
     }
   },
+  finishCreateRecharge() { this.setData({ rechargeCreated: false }); },
 
   async payRecharge() {
     if (this.data.loading || this.data.switching) return;
@@ -191,7 +193,7 @@ Page({
 
   resetRecharge() {
     if (this.data.loading || this.data.switching || this.data.creatingRecharge || this.data.payingRecharge || this.data.cancellingRecharge) return;
-    this.setData({ recharge: null, selectedPlanId: null, actionError: "", actionMessage: "" });
+    this.setData({ recharge: null, rechargeCreated: false, selectedPlanId: null, actionError: "", actionMessage: "" });
   },
 
   presentRecharge(recharge) {

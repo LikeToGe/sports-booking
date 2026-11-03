@@ -1,0 +1,7 @@
+@import "../../tokens.wxss";
+:host { display: inline-flex; flex-shrink: 0; }
+.selection-mark { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 22px; height: 22px; border: 1px solid var(--color-rule-strong); border-radius: 6px; background: var(--color-surface); transition: background-color 180ms var(--ease-out), border-color 180ms var(--ease-out); }
+.selection-tick { box-sizing: border-box; width: 11px; height: 6px; margin-top: -3px; border-left: 2px solid var(--color-primary-ink); border-bottom: 2px solid var(--color-primary-ink); opacity: 0; transform: rotate(-45deg) scale(.7); transition: transform 180ms var(--ease-out), opacity 180ms var(--ease-out); }
+.is-checked { border-color: var(--color-primary); background: var(--color-primary); }
+.is-checked .selection-tick { opacity: 1; transform: rotate(-45deg) scale(1); }
+@media (prefers-reduced-motion: reduce) { .selection-mark, .selection-tick { transition: none; } }

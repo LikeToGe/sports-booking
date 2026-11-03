@@ -19,13 +19,13 @@
     <view class="recharge-section">
       <view class="section-head"><text class="section-title">充值档位</text><text class="muted">{{plans.length}} 个可选</text></view>
       <view class="plan-list">
-        <button wx:for="{{plans}}" wx:key="id" class="plan-row surface {{selectedPlanId === item.id ? 'is-selected' : ''}}" data-id="{{item.id}}" disabled="{{loading || switching || creatingRecharge || payingRecharge || cancellingRecharge}}" bindtap="selectPlan">
+        <button wx:for="{{plans}}" wx:key="id" class="plan-row surface {{selectedPlanId === item.id ? 'is-selected' : ''}}" data-id="{{item.id}}" disabled="{{loading || switching || creatingRecharge || payingRecharge || cancellingRecharge}}" bindtap="selectPlan" aria-pressed="{{selectedPlanId === item.id}}"><selection-mark checked="{{selectedPlanId === item.id}}" />
           <view><text class="plan-name">{{item.name}}</text><text class="muted plan-validity">{{item.validityLabel}}</text></view>
           <view class="plan-money"><strong>{{item.paidAmount}}</strong><text class="plan-gift">{{item.giftLabel}}</text></view>
         </button>
       </view>
       <view wx:if="{{!plans.length}}" class="empty surface"><text class="empty-title">暂无可用充值档位</text><text>场馆启用档位后可在此充值。</text></view>
-      <button wx:if="{{plans.length && !recharge}}" class="button-primary" disabled="{{loading || switching || creatingRecharge}}" bindtap="createRecharge">{{creatingRecharge ? '正在创建充值单' : '创建充值单'}}</button>
+      <button wx:if="{{plans.length && (!recharge || rechargeCreated)}}" class="button-primary {{creatingRecharge ? 'is-busy' : ''}} {{rechargeCreated ? 'is-complete' : ''}}" disabled="{{loading || switching || creatingRecharge || rechargeCreated || !selectedPlanId}}" bindtap="createRecharge"><action-feedback busy="{{creatingRecharge}}" done="{{rechargeCreated}}" label="创建充值单" busy-label="正在创建充值单" done-label="充值单已创建" bindcomplete="finishCreateRecharge" /></button>
     </view>
 
     <view wx:if="{{pendingRecharges.length}}" class="recharge-result surface">
@@ -35,7 +35,7 @@
     <view wx:if="{{recharge}}" class="recharge-result surface">
       <view class="section-head"><text class="section-title">本次充值</text><text class="status status-{{recharge.statusTone}}">{{recharge.statusLabel}}</text></view>
       <view class="recharge-facts"><text>实付 {{recharge.paidAmount}}</text><text>赠送 {{recharge.giftAmount}}</text><text class="muted">{{recharge.createdAtLabel}}</text></view>
-      <view class="recharge-actions"><button wx:if="{{recharge.status === 'PENDING'}}" class="button-primary" disabled="{{loading || switching || payingRecharge || cancellingRecharge}}" bindtap="payRecharge">{{payingRecharge ? '正在确认支付' : '完成 Mock 支付'}}</button><button wx:if="{{recharge.status === 'PENDING'}}" class="button-secondary" disabled="{{loading || switching || payingRecharge || cancellingRecharge}}" bindtap="refreshRecharge">刷新状态</button><button wx:if="{{recharge.status === 'PENDING'}}" class="button-secondary" disabled="{{loading || switching || payingRecharge || cancellingRecharge}}" bindtap="cancelRecharge">{{cancellingRecharge ? '正在关闭充值' : '取消未支付充值'}}</button><button wx:else class="button-secondary" disabled="{{loading || switching || creatingRecharge || payingRecharge || cancellingRecharge}}" bindtap="resetRecharge">继续充值</button></view>
+      <view class="recharge-actions"><button wx:if="{{recharge.status === 'PENDING' || recharge.status === 'SUCCESS'}}" class="button-primary {{payingRecharge ? 'is-busy' : ''}} {{recharge.status === 'SUCCESS' ? 'is-complete' : ''}}" disabled="{{loading || switching || payingRecharge || cancellingRecharge || recharge.status === 'SUCCESS'}}" bindtap="payRecharge"><action-feedback busy="{{payingRecharge}}" done="{{recharge.status === 'SUCCESS'}}" label="完成 Mock 支付" busy-label="正在确认支付" done-label="充值成功" /></button><button wx:if="{{recharge.status === 'PENDING'}}" class="button-secondary" disabled="{{loading || switching || payingRecharge || cancellingRecharge}}" bindtap="refreshRecharge">刷新状态</button><button wx:if="{{recharge.status === 'PENDING' || recharge.status === 'CLOSED'}}" class="button-secondary {{cancellingRecharge ? 'is-busy' : ''}} {{recharge.status === 'CLOSED' ? 'is-complete' : ''}}" disabled="{{loading || switching || payingRecharge || cancellingRecharge || recharge.status === 'CLOSED'}}" bindtap="cancelRecharge"><action-feedback busy="{{cancellingRecharge}}" done="{{recharge.status === 'CLOSED'}}" label="取消未支付充值" busy-label="正在关闭充值" done-label="充值已关闭" /></button><button wx:if="{{recharge.status !== 'PENDING'}}" class="button-secondary" disabled="{{loading || switching || creatingRecharge || payingRecharge || cancellingRecharge}}" bindtap="resetRecharge">继续充值</button></view>
     </view>
     <view wx:if="{{actionError}}" class="error" role="alert">{{actionError}}</view>
     <view wx:if="{{actionMessage}}" class="action-message message-{{actionMessageTone}}" aria-live="polite">{{actionMessage}}</view>

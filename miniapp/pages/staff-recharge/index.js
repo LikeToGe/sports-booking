@@ -15,9 +15,10 @@ Page({
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ loading: false }); }
   },
-  selectPlan(event) { this.setData({ selectedPlanId: Number(event.currentTarget.dataset.id), result: null, error: "" }); },
-  selectChannel(event) { this.setData({ channelIndex: Number(event.detail.value), result: null, error: "" }); },
+  selectPlan(event) { this.setData({ selectedPlanId: Number(event.currentTarget.dataset.id), error: "" }); },
+  selectChannel(event) { this.setData({ channelIndex: Number(event.detail.value), error: "" }); },
   async submit() {
+    if (this.data.submitting || this.data.result) return;
     if (!this.data.selectedPlanId) { this.setData({ error: "请选择充值档位" }); return; }
     const clientIdempotencyKey = this.data.clientIdempotencyKey || `staff-recharge-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     this.setData({ submitting: true, error: "", clientIdempotencyKey });

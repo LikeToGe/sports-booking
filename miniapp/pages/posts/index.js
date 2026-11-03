@@ -8,7 +8,7 @@ Page({
     filterSportIndex: 0, filterVenueIndex: 0, filterSportId: null, filterVenueId: null,
     loading: true, saving: false, enabled: false, editingId: null, selectedMedia: [], existingMediaCount: 0,
     recruitmentDate: "", recruitmentLevel: "", recruitmentLevelLabel: "不限水平", recruitmentLevelIndex: 0, recruitmentMinRemaining: "",
-    mediaCleared: false, error: "", message: "", showEditor: false },
+    mediaCleared: false, error: "", message: "", showEditor: false, published: false },
 
   onLoad() { this.ready = this.loadOptions(); },
   async loadOptions() {
@@ -110,7 +110,7 @@ Page({
     wx.navigateTo({ url: `/pages/posts/detail?id=${postId}` });
   },
 
-  toggleEditor() { this.setData({ showEditor: !this.data.showEditor }); },
+  toggleEditor() { if (!this.data.saving && !this.data.published) this.setData({ showEditor: !this.data.showEditor }); },
   editBody(event) { this.setData({ body: event.detail.value }); },
   async chooseMedia() {
     try {
@@ -167,6 +167,7 @@ Page({
 
   openDetail(event) { wx.navigateTo({ url: `/pages/posts/detail?id=${event.currentTarget.dataset.id}` }); },
   edit(event) {
+    if (this.data.saving || this.data.published) return;
     const post = this.data.posts.find(item => item.id === Number(event.currentTarget.dataset.id));
     if (post) this.applyEdit(post);
   },
@@ -180,7 +181,7 @@ Page({
   },
 
   async publish() {
-    if (this.data.saving || !this.data.body.trim()) {
+    if (this.data.saving || this.data.published || !this.data.body.trim()) {
       if (!this.data.body.trim()) this.setData({ error: "请填写动态内容" });
       return;
     }
@@ -200,9 +201,7 @@ Page({
         uploadIds: selectedMedia.length ? selectedMedia.map(item => item.uploadId)
           : this.data.mediaCleared ? [] : undefined,
       } });
-      this.setData({ showEditor: false, body: "", editingId: null, selectedMedia: [], existingMediaCount: 0,
-        bookingId: null,bookingIndex: 0,
-        mediaCleared: false, message: editingId ? "动态已提交" : "动态已提交审核" });
+      this.setData({ published: true, message: editingId ? "动态已提交" : "动态已提交审核" });
       await this.load();
     } catch (error) {
       this.setData({ error: error.message });
@@ -210,6 +209,11 @@ Page({
         wx.navigateTo({ url: "/pages/content-agreement/index" });
       }
     } finally { this.setData({ saving: false }); }
+  },
+  finishPublish() {
+    if (!this.data.published) return;
+    this.setData({ published: false, showEditor: false, body: "", editingId: null, selectedMedia: [], existingMediaCount: 0,
+      bookingId: null, bookingIndex: 0, mediaCleared: false });
   },
 
   async remove(event) {

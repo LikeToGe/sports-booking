@@ -1,5 +1,5 @@
 /* 场边工作台 · 与根 tokens.css 同名映射；组件根显式消费，避免原生 Tab 根不继承 page。 */
-page, .tab-bar, .operation-toast {
+page, .tab-bar, .tab-transition, .operation-toast, .action-feedback, .selection-mark, .time-wheel {
   --color-paper: #F5F8F7;
   --color-rule-2: #ECF1ED;
   --color-highlight: #E9F4EE;

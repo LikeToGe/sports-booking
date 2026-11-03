@@ -18,7 +18,7 @@ Page({
   data: {
     id: 0, detail: null, booking: null, composition: null, amount: "", seconds: null,
     countdown: "--:--", paymentLabel: "", paymentTone: "warning", canPay: false,
-    canQuery: false, canCancel: false, loading: true, paying: false, querying: false, cancelling: false, error: "", message: "",
+    canQuery: false, canCancel: false, loading: true, paying: false, querying: false, cancelling: false, paymentDone: false, cancelled: false, error: "", message: "",
   },
 
   async onLoad(options) {
@@ -34,6 +34,10 @@ Page({
     try {
       const detail = await request(`/mini/bookings/${this.data.id}`);
       if (detail.booking.status === "CONFIRMED") {
+        if (this.data.paying || this.data.querying || this.data.paymentDone) {
+          this.setData({ detail, booking: detail.booking, paymentDone: true, paymentLabel: "支付成功", paymentTone: "active", canPay: false, canQuery: false, canCancel: false, seconds: null, message: "" });
+          return;
+        }
         return wx.redirectTo({ url: `/pages/booking/index?id=${this.data.id}` });
       }
       const composition = detail.composition;
@@ -118,7 +122,7 @@ Page({
     this.setData({ cancelling: true, error: "", message: "" });
     try {
       const booking = await request(`/mini/bookings/${this.data.id}/cancel`, { method: "POST" });
-      if (booking.status === "CANCELLED") wx.redirectTo({ url: `/pages/booking/index?id=${this.data.id}` });
+      if (booking.status === "CANCELLED") this.setData({ cancelled: true, canPay: false, canQuery: false, canCancel: false });
       else await this.load();
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ cancelling: false }); }

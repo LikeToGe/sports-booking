@@ -24,10 +24,10 @@ Page({
     wx.setStorageSync("yuechangStaffVenueId", current?.venueId || "");
     this.setData({ venues, selectedIndex, current, canVerify, canIdentify, canRecharge: permissions.includes("MEMBER_RECHARGE"), mode: canVerify ? "booking" : "member", result: null, memberResult: null, error: "" });
   },
-  selectVenue(event) { this.applyVenue(this.data.venues, Number(event.detail.value)); },
-  selectMode(event) { this.setData({ mode: event.currentTarget.dataset.mode, result: null, memberResult: null, error: "" }); },
-  onCode(event) { this.setData({ code: event.detail.value }); },
-  onMemberIdentifier(event) { this.setData({ memberIdentifier: event.detail.value }); },
+  selectVenue(event) { if (!this.data.loading) this.applyVenue(this.data.venues, Number(event.detail.value)); },
+  selectMode(event) { if (!this.data.loading) this.setData({ mode: event.currentTarget.dataset.mode, result: null, memberResult: null, error: "" }); },
+  onCode(event) { this.setData({ code: event.detail.value, result: null }); },
+  onMemberIdentifier(event) { this.setData({ memberIdentifier: event.detail.value, memberResult: null }); },
   scan() {
     wx.scanCode({
       onlyFromCamera: true, scanType: ["qrCode"],
@@ -38,6 +38,7 @@ Page({
   submitCode() { this.verify(this.data.code, "SHORT_CODE"); },
   submitMember() { this.identifyMember(this.data.memberIdentifier); },
   async verify(credential, method) {
+    if (this.data.loading) return;
     if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "", result: null });
     try {
@@ -51,6 +52,7 @@ Page({
     finally { this.setData({ loading: false }); }
   },
   async identifyMember(identifier) {
+    if (this.data.loading) return;
     if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "", memberResult: null });
     try {

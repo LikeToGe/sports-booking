@@ -62,6 +62,9 @@
   },
   "sitemapLocation": "sitemap.json",
   "usingComponents": {
-    "operation-toast": "/components/operation-toast/index"
+    "operation-toast": "/components/operation-toast/index",
+    "action-feedback": "/components/action-feedback/index",
+    "selection-mark": "/components/selection-mark/index",
+    "time-wheel": "/components/time-wheel/index"
   }
 }

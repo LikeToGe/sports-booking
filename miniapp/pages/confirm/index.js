@@ -2,7 +2,7 @@ const { request, money, date, time } = require("../../utils/api");
 const { validateContact } = require("../../utils/validation");
 
 Page({
-  data: { slot: null, contactName: "", contactPhone: "", idempotencyKey: "", loading: true, error: "" },
+  data: { slot: null, contactName: "", contactPhone: "", idempotencyKey: "", loading: true, created: false, nextUrl: "", error: "" },
   async onLoad() {
     const slot = wx.getStorageSync("yuechangPendingSlot");
     if (!slot) return wx.navigateBack();
@@ -19,6 +19,7 @@ Page({
   onName(event) { this.setData({ contactName: event.detail.value }); },
   onPhone(event) { this.setData({ contactPhone: event.detail.value }); },
   async submit() {
+    if (this.data.loading || this.data.created) return;
     this.setData({ loading: true, error: "" });
     try {
       validateContact(this.data.contactName, this.data.contactPhone);
@@ -32,7 +33,8 @@ Page({
       } catch (_) {
         // 创建已成功时仍以创建结果继续，详情页会再次读取服务端终态。
       }
-      wx.redirectTo({ url: status === "CONFIRMED" ? `/pages/booking/index?id=${booking.id}` : `/pages/payment/index?id=${booking.id}` });
+      this.setData({ created: true, loading: false, nextUrl: status === "CONFIRMED" ? `/pages/booking/index?id=${booking.id}` : `/pages/payment/index?id=${booking.id}` });
     } catch (error) { this.setData({ error: error.message, loading: false }); }
   },
+  openCreatedBooking() { if (this.data.created) wx.redirectTo({ url: this.data.nextUrl }); },
 });

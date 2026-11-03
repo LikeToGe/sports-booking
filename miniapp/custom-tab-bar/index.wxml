@@ -4,3 +4,4 @@
     <text class="tab-label">{{item.label}}</text>
   </button>
 </view>
+<view wx:if="{{transitionVisible}}" class="tab-transition {{expanded ? 'is-expanded' : ''}} {{fading ? 'is-fading' : ''}}" catchtouchmove="stopTouch" catchtap="stopTouch" aria-hidden="true"><view class="tab-transition-circle" style="{{circleStyle}}"></view></view>

@@ -27,8 +27,8 @@
 
     <text class="section-title">我有空的时间</text>
     <view class="filter-row">
-      <picker mode="time" value="{{startTime}}" data-field="startTime" bindchange="onFilter" aria-label="可用开始时间"><view class="filter-control"><text>开始</text><text>{{startTime || '不限'}}</text></view></picker>
-      <picker mode="time" value="{{endTime}}" data-field="endTime" bindchange="onFilter" aria-label="可用结束时间"><view class="filter-control"><text>结束</text><text>{{endTime || '不限'}}</text></view></picker>
+      <time-wheel label="开始" value="{{startTime}}" data-field="startTime" bindchange="onFilter" />
+      <time-wheel label="结束" value="{{endTime}}" data-field="endTime" bindchange="onFilter" />
     </view>
     <view class="filter-row">
       <view class="price-filter"><text>最低单场价（元）</text><input type="digit" value="{{minPrice}}" placeholder="不限" data-field="minPrice" bindinput="onFilter" aria-label="最低单场次总价，元" /></view>

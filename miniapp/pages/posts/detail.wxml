@@ -19,7 +19,7 @@
       <button wx:if="{{post.authorType === 'USER' && !post.isMine}}" class="button-secondary" bindtap="blockAuthor">拉黑</button>
     </view>
     <button wx:if="{{post.venueId}}" class="button-secondary" bindtap="openVenue">{{post.venueName || '查看场馆'}}</button>
-    <view wx:if="{{post.isMine}}" class="comments-toggle"><text>允许评论</text><switch color="#087F72" checked="{{post.commentsEnabled}}" bindchange="toggleComments" /></view>
+    <view wx:if="{{post.isMine}}" class="comments-toggle {{post.commentsEnabled ? 'is-selected' : ''}}"><text>{{commentsSaving ? '正在更新评论设置' : post.commentsEnabled ? '允许评论' : '已关闭评论'}}</text><switch color="#087F72" checked="{{post.commentsEnabled}}" disabled="{{commentsSaving}}" bindchange="toggleComments" aria-label="允许评论" /></view>
   </view>
   <view wx:if="{{recruitment}}" class="recruitment-section">
     <text class="section-title">找搭子 · {{recruitment.statusLabel}}</text>
@@ -45,10 +45,10 @@
     <text class="section-title">发起找搭子</text>
     <label class="field"><text>水平</text><picker mode="selector" range="{{levelOptions}}" value="{{levelIndex}}" bindchange="selectLevel"><view class="field-control">{{level ? levelOptions[levelIndex] : "请选择水平"}}</view></picker></label>
     <label class="field"><text>需要人数</text><input class="field-control" type="number" value="{{maxMembers}}" data-field="maxMembers" bindinput="onRecruitmentField" /></label>
-    <radio-group bindchange="selectFee"><label><radio value="FREE" checked="{{feeMode === 'FREE'}}" />免费</label><label><radio value="AA" checked="{{feeMode === 'AA'}}" />预计 AA</label></radio-group>
+    <radio-group class="fee-options" bindchange="selectFee"><label class="fee-option {{feeMode === 'FREE' ? 'is-selected' : ''}}"><radio value="FREE" color="#087F72" disabled="{{saving}}" checked="{{feeMode === 'FREE'}}" />免费</label><label class="fee-option {{feeMode === 'AA' ? 'is-selected' : ''}}"><radio value="AA" color="#087F72" disabled="{{saving}}" checked="{{feeMode === 'AA'}}" />预计 AA</label></radio-group>
     <label wx:if="{{feeMode === 'AA'}}" class="field"><text>预计金额（元）</text><input class="field-control" type="digit" value="{{aaAmount}}" data-field="aaAmount" bindinput="onRecruitmentField" /></label>
     <label class="field"><text>说明</text><textarea value="{{recruitmentDescription}}" maxlength="500" data-field="recruitmentDescription" bindinput="onRecruitmentField" /></label>
-    <button class="button-primary" disabled="{{saving}}" bindtap="openRecruitment">开启招募</button>
+    <button class="button-primary {{saving ? 'is-busy' : ''}}" disabled="{{saving}}" bindtap="openRecruitment"><action-feedback busy="{{saving}}" label="开启招募" busy-label="正在开启招募" /></button>
   </view>
   <view wx:if="{{post}}" class="comments-section">
     <text class="section-title">评论</text>
@@ -66,7 +66,7 @@
     <block wx:if="{{post.commentsEnabled || editingCommentId}}">
       <view wx:if="{{draftLabel}}" class="detail-actions"><text>{{draftLabel}}</text><button class="inline-action" bindtap="cancelDraft">取消</button></view>
       <text class="field-label">评论内容</text><textarea class="comment-input" value="{{body}}" maxlength="1000" placeholder="说点什么" bindinput="editBody" />
-      <button class="button-primary" disabled="{{saving}}" bindtap="submitComment">{{saving ? '提交中' : editingCommentId ? '提交修改' : '发表评论'}}</button>
+      <button class="button-primary {{saving ? 'is-busy' : ''}} {{commentSubmitted ? 'is-complete' : ''}}" disabled="{{saving || commentSubmitted}}" bindtap="submitComment"><action-feedback busy="{{saving}}" done="{{commentSubmitted}}" label="{{editingCommentId ? '提交修改' : '发表评论'}}" busy-label="正在提交" done-label="评论已提交" /></button>
     </block>
     <text wx:else class="muted">评论已关闭</text>
   </view>

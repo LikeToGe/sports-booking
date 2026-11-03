@@ -39,13 +39,14 @@ test("小程序表单指出具体字段并阻止无效请求和媒体上传", as
   ];
   for (const [name, data, action, error, expected] of cases) {
     const instance = page(name);
-    Object.assign(instance.data, data);
+    Object.assign(instance.data, { loading: false }, data);
     requests = 0;
     await instance[action]();
     assert.match(instance.data[error], expected, name);
     assert.equal(requests, 0, name);
   }
   const verifier = page("staff-verify/index");
+  verifier.data.loading = false;
   verifier.data.current = { venueId: 1 };
   await verifier.verify("123", "SHORT_CODE");
   assert.match(verifier.data.error, /6 位数字/);

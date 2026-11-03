@@ -10,3 +10,7 @@
 .recharge-customer > view { display: flex; justify-content: space-between; gap: 16px; }
 .plan-section { padding: 20px; }
 .plan-row { grid-template-columns: minmax(0, 1fr); white-space: normal; border-radius: var(--radius-control); }
+
+.plan-row { grid-template-columns: 22px minmax(0, 1fr); }
+.plan-row > selection-mark { grid-row: 1 / 3; }
+.plan-row strong { grid-column: 2; }

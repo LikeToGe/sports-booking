@@ -88,6 +88,8 @@ async function main() {
   assert.equal(payment.data.error, "操作处理中");
   requestHandler = async url => url.endsWith("/cancel") ? { status: "CANCELLED" } : pendingPayment;
   await payment.cancel();
+  assert.equal(payment.data.cancelled, true);
+  payment.openBooking();
   assert.equal(redirects.pop(), "/pages/booking/index?id=1", "服务器取消成功后进入真实预约详情");
 
   requestHandler = async () => ({ booking: { id: 2, status: "CONFIRMED" } });
@@ -106,6 +108,8 @@ async function main() {
     return { booking: { id: 3, status: "CONFIRMED" } };
   };
   await confirm.submit();
+  assert.equal(confirm.data.created, true);
+  confirm.openCreatedBooking();
   assert.equal(createBody.idempotencyKey, "booking-key");
   assert.equal(redirects.pop(), "/pages/booking/index?id=3");
 
@@ -150,6 +154,7 @@ async function main() {
   assert.equal(rechargeRequests[0].data.planId, 9);
   assert.notEqual(rechargeRequests[0].data.idempotencyKey, "old-venue-key");
 
+  switchingMembership.data.rechargeCreated = false;
   switchingMembership.data.rechargeIdempotencyKey = "retry-current-venue";
   requestHandler = async () => { throw new Error("切馆失败"); };
   await switchingMembership.selectMembership({ detail: { value: 0 } });

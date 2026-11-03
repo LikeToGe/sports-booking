@@ -53,3 +53,5 @@
 .plan-money { flex: 0 1 45%; }
 .expiry-notice { display: flex; flex-wrap: wrap; font-size: 12px; }
 .member-wallet .balance-value { font-size: 25px; }
+
+.plan-row > selection-mark { flex: 0 0 22px; }

@@ -46,6 +46,9 @@ async function main() {
   mine.toggleProfileForm();
   assert.equal(mine.data.showProfileForm, true);
   await mine.save();
+  assert.equal(mine.data.saved, true);
+  assert.equal(mine.data.showProfileForm, true, "成功反馈先保留表单");
+  mine.finishSave();
   assert.equal(mine.data.showProfileForm, false);
   assert.equal(mine.data.profile.contactName, "新联系人", "保存后摘要必须同步");
   mine.toggleProfileForm();

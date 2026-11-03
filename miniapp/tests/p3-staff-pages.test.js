@@ -30,6 +30,7 @@ function loadPage(relativePath) {
 
 async function main() {
   const verify = loadPage("staff-verify");
+  verify.data.loading = false;
   verify.applyVenue([{
     venueId: 8, venueName: "二号馆", permissions: ["BOOKING_VERIFY", "CUSTOMER_VIEW", "MEMBER_RECHARGE"],
   }], 0);
@@ -45,6 +46,7 @@ async function main() {
   assert.match(navigations.pop(), /venueId=8&customerId=3/);
 
   const webLogin = loadPage("staff-web-login");
+  webLogin.data.loading = false;
   webLogin.data.current = { venueId: 8 };
   webLogin.data.ticket = webLogin.ticketFromContent("sports-booking://staff/web-login?ticket=ticket-1");
   requestHandler = async (url, options) => { called = { url, options }; return {}; };

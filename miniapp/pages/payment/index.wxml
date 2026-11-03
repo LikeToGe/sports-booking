@@ -20,9 +20,9 @@
 
     <view wx:if="{{message}}" class="info-message" aria-live="polite">{{message}}</view>
     <view class="payment-actions">
-      <button wx:if="{{canPay}}" class="button-primary" disabled="{{paying || querying || cancelling}}" bindtap="pay">{{paying ? '正在确认支付' : '完成 Mock 支付'}}</button>
-      <button wx:if="{{canQuery}}" class="button-secondary" disabled="{{paying || querying || cancelling}}" bindtap="queryPayment">{{querying ? '正在查询' : '查询支付结果'}}</button>
-      <button wx:if="{{canCancel}}" class="button-danger" disabled="{{paying || querying || cancelling}}" bindtap="cancel">{{cancelling ? '正在确认关闭' : '取消待支付预约'}}</button>
+      <button wx:if="{{canPay || paymentDone}}" class="button-primary {{paying ? 'is-busy' : ''}} {{paymentDone ? 'is-complete' : ''}}" disabled="{{paying || querying || cancelling || paymentDone}}" bindtap="pay"><action-feedback busy="{{paying}}" done="{{paymentDone}}" label="完成 Mock 支付" busy-label="正在确认支付" done-label="支付成功" bindcomplete="openBooking" /></button>
+      <button wx:if="{{canQuery}}" class="button-secondary {{querying ? 'is-busy' : ''}}" disabled="{{paying || querying || cancelling}}" bindtap="queryPayment"><action-feedback busy="{{querying}}" label="查询支付结果" busy-label="正在查询" /></button>
+      <button wx:if="{{canCancel || cancelled}}" class="button-danger {{cancelling ? 'is-busy' : ''}} {{cancelled ? 'is-complete' : ''}}" disabled="{{paying || querying || cancelling || cancelled}}" bindtap="cancel"><action-feedback busy="{{cancelling}}" done="{{cancelled}}" label="取消待支付预约" busy-label="正在确认关闭" done-label="预约已取消" bindcomplete="openBooking" /></button>
       <button class="button-secondary" disabled="{{paying || querying || cancelling}}" bindtap="openBooking">查看预约详情</button>
     </view>
   </block>

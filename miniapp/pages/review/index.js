@@ -6,7 +6,7 @@ Page({
     bookingId: 0, review: null, body: "", overallScore: 5, courtScore: 5,
     environmentScore: 5, serviceScore: 5, anonymous: false,
     tags: [], selectedImages: [], existingImages: [], imagesCleared: false,
-    loading: true, saving: false, error: "", message: "",
+    loading: true, saving: false, saved: false, error: "", message: "",
   },
   async onLoad(options) {
     this.setData({ bookingId: Number(options.bookingId) });
@@ -37,7 +37,7 @@ Page({
     } catch (error) { this.setData({ error: error.message }); }
     finally { this.setData({ loading: false }); }
   },
-  editBody(event) { this.setData({ body: event.detail.value }); },
+  editBody(event) { this.setData({ body: event.detail.value, saved: false }); },
   async chooseImages() {
     try {
       const result = await new Promise((resolve, reject) => wx.chooseMedia({
@@ -49,22 +49,22 @@ Page({
         this.setData({ error: "最多选择 3 张图片，每张不超过 5 MB" });
         return;
       }
-      this.setData({ selectedImages: files.map(file => ({ path: file.tempFilePath })),
+      this.setData({ saved: false, selectedImages: files.map(file => ({ path: file.tempFilePath })),
         existingImages: [], imagesCleared: true, error: "" });
     } catch (_) { }
   },
-  clearImages() { this.setData({ selectedImages: [], existingImages: [], imagesCleared: true }); },
-  toggleAnonymous(event) { this.setData({ anonymous: event.detail.value }); },
+  clearImages() { this.setData({ saved: false, selectedImages: [], existingImages: [], imagesCleared: true }); },
+  toggleAnonymous(event) { this.setData({ anonymous: event.detail.value, saved: false }); },
   toggleTag(event) {
     const id = Number(event.currentTarget.dataset.id);
     const tags = this.data.tags.map(tag => tag.id === id ? { ...tag, selected: !tag.selected } : tag);
     if (tags.filter(tag => tag.selected).length > 3) return;
-    this.setData({ tags });
+    this.setData({ tags, saved: false });
   },
   adjustScore(event) {
     const field = event.currentTarget.dataset.field;
     const delta = Number(event.currentTarget.dataset.delta);
-    this.setData({ [field]: Math.min(5, Math.max(1, this.data[field] + delta)) });
+    this.setData({ [field]: Math.min(5, Math.max(1, this.data[field] + delta)), saved: false });
   },
   async save() {
     if (this.data.saving) return;
@@ -72,7 +72,7 @@ Page({
       this.setData({ error: "请填写评价内容" });
       return;
     }
-    this.setData({ saving: true, error: "", message: "" });
+    this.setData({ saving: true, saved: false, error: "", message: "" });
     try {
       requireText(this.data.body, "评价内容", 2000);
       const selectedImages = await Promise.all(this.data.selectedImages.map(async item => ({
@@ -91,7 +91,7 @@ Page({
             : this.data.imagesCleared ? [] : undefined,
         },
       });
-      this.setData({ review, selectedImages: [], imagesCleared: false,
+      this.setData({ review, selectedImages: [], imagesCleared: false, saved: true,
         message: review.moderationStatus === "PENDING" ? "评价已提交，审核通过后公开" : "评价已发布" });
     } catch (error) {
       this.setData({ error: error.message });

@@ -1,0 +1,5 @@
+<view class="action-feedback {{done && !busy ? 'is-done' : ''}}" aria-live="polite">
+  <view wx:if="{{busy}}" class="action-spinner" aria-hidden="true"></view>
+  <view wx:elif="{{done}}" class="action-check" aria-hidden="true"></view>
+  <text>{{busy ? busyLabel : done ? doneLabel : label}}</text>
+</view>

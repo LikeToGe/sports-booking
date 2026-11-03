@@ -23,7 +23,7 @@ Page({
     today: dateInZhengzhou(), dateMax: "", ruleText: "", targetDate: dateInZhengzhou(),
     startTime: "19:00", endTime: "21:00", focusId: 0, focusSlotId: 0,
     focus: null, supply: [], supplyNotice: "", loading: true, checking: false, saving: false,
-    error: "", message: "",
+    error: "", message: "", saved: false,
   },
   onLoad(options) {
     this.setData({ focusId: Number(options.subscriptionId) || 0, focusSlotId: Number(options.slotId) || 0 });
@@ -70,17 +70,17 @@ Page({
           + `开场前 ${detail.venue.minBookingMinutes} 分钟截止，实际以查询为准。` });
     } catch (error) { this.setData({ ruleText: "当前规则加载失败，请重试；登记仍由服务端校验。" }); }
   },
-  async selectVenue(event) { this.setData({ venueIndex: Number(event.detail.value) }); await this.loadVenueRule(); },
-  selectSport(event) { this.setData({ sportIndex: Number(event.detail.value) }); },
-  selectType(event) { this.setData({ typeIndex: Number(event.detail.value) }); },
-  selectDate(event) { this.setData({ targetDate: event.detail.value }); },
-  selectStart(event) { this.setData({ startTime: event.detail.value }); },
-  selectEnd(event) { this.setData({ endTime: event.detail.value }); },
+  async selectVenue(event) { this.setData({ saved: false, venueIndex: Number(event.detail.value) }); await this.loadVenueRule(); },
+  selectSport(event) { this.setData({ saved: false, sportIndex: Number(event.detail.value) }); },
+  selectType(event) { this.setData({ saved: false, typeIndex: Number(event.detail.value) }); },
+  selectDate(event) { this.setData({ saved: false, targetDate: event.detail.value }); },
+  selectStart(event) { this.setData({ saved: false, startTime: event.detail.value }); },
+  selectEnd(event) { this.setData({ saved: false, endTime: event.detail.value }); },
   async save() {
     if (this.data.saving) return;
     const venue = this.data.venues[this.data.venueIndex];
     const sport = this.data.sports[this.data.sportIndex];
-    this.setData({ saving: true, error: "", message: "" });
+    this.setData({ saving: true, saved: false, error: "", message: "" });
     try {
       if (!venue) throw new Error("请选择可预约场馆");
       if (!sport) throw new Error("请选择运动类型");
@@ -92,7 +92,7 @@ Page({
         venueId: venue.id, sportTypeId: sport.id, targetDate: this.data.targetDate,
         startTime: this.data.startTime, endTime: this.data.endTime, type: typeOptions[this.data.typeIndex].value,
       } });
-      this.setData({ focusId: row.id, focusSlotId: 0,
+      this.setData({ focusId: row.id, focusSlotId: 0, saved: true,
         message: row.availableNow ? "当前已有可预约场次，请直接查看；不会补发旧开放事件。" : "提醒登记已保存" });
       await this.load();
     } catch (error) { this.setData({ error: error.message }); }
@@ -107,7 +107,7 @@ Page({
     } catch (error) { this.setData({ error: error.message }); }
   },
   view(event) {
-    this.setData({ focusId: Number(event.currentTarget.dataset.id), focusSlotId: 0 });
+    this.setData({ saved: false, focusId: Number(event.currentTarget.dataset.id), focusSlotId: 0 });
     this.load();
   },
   async checkSupply() {

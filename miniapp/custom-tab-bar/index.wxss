@@ -12,3 +12,8 @@
 .tab.is-selected .tab-label { font-weight: var(--font-weight-semibold); }
 .tab:active, .tab-pressed { opacity: .7; transform: none; }
 .tab:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: calc(-1 * var(--focus-width)); }
+.tab-transition { position: fixed; inset: 0; z-index: 1100; overflow: hidden; opacity: 1; transition: opacity 160ms var(--ease-out); }
+.tab-transition-circle { position: absolute; border-radius: 50%; background: var(--color-primary); transform: scale(.006); transition: transform 280ms cubic-bezier(.22,.8,.25,1); }
+.tab-transition.is-expanded .tab-transition-circle { transform: scale(1); }
+.tab-transition.is-fading { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .tab-transition-circle { transition: none; transform: scale(1); } .tab-transition { transition: none; } }

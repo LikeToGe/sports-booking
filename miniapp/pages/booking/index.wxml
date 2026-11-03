@@ -22,7 +22,7 @@
   <button wx:if="{{canRebook}}" class="button-secondary" bindtap="rebook">再次预约</button>
   <button wx:if="{{canPay}}" class="button-primary" bindtap="pay">继续支付</button>
   <button wx:if="{{canReview}}" class="button-secondary" bindtap="review">场地评价</button>
-  <button wx:if="{{booking.status === 'CONFIRMED' || booking.status === 'PENDING_PAYMENT'}}" class="button-danger" disabled="{{cancelling}}" bindtap="cancel">{{cancelling ? '正在取消预约' : '取消预约'}}</button>
+  <button wx:if="{{booking.status === 'CONFIRMED' || booking.status === 'PENDING_PAYMENT'}}" class="button-danger {{cancelling ? 'is-busy' : ''}}" disabled="{{cancelling}}" bindtap="cancel"><action-feedback busy="{{cancelling}}" label="取消预约" busy-label="正在取消预约" /></button>
 </view>
 <view wx:elif="{{loading}}" class="page empty" aria-live="polite"><text>正在加载预约详情...</text></view>
 <view wx:elif="{{error}}" class="page"><view class="error" role="alert">{{error}}</view><button class="button-secondary retry-button" bindtap="load">重新加载</button></view>

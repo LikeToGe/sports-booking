@@ -9,7 +9,7 @@ const memberLabels = { APPLIED: "申请中", APPROVED: "已加入", REJECTED: "�
 Page({
   data: { id: null, post: null, comments: [], body: "", parentId: null, editingCommentId: null,
     draftLabel: "", levelOptions: ["新手友好", "休闲", "进阶"], levelValues: ["BEGINNER_FRIENDLY", "CASUAL", "ADVANCED"], levelIndex: 0, recruitment: null, level: "", maxMembers: 1, feeMode: "FREE", aaAmount: "",
-    recruitmentDescription: "", loading: true, saving: false, error: "", message: "" },
+    recruitmentDescription: "", loading: true, saving: false, commentSubmitted: false, commentsSaving: false, error: "", message: "" },
   onLoad(options) {
     this.setData({ id: Number(options.id) });
     if (options.shared) request("/mini/content/events?eventType=SHARE_OPEN&targetType=POST&targetId=" + options.id,
@@ -43,18 +43,18 @@ Page({
         error: error.message === "数据不存在" ? "动态已失效或当前不可见" : error.message });
     } finally { this.setData({ loading: false }); }
   },
-  editBody(event) { this.setData({ body: event.detail.value }); },
+  editBody(event) { this.setData({ body: event.detail.value, commentSubmitted: false }); },
   reply(event) {
-    this.setData({ parentId: Number(event.currentTarget.dataset.id),editingCommentId: null,body: "",draftLabel: "回复评论" });
+    this.setData({ commentSubmitted: false, parentId: Number(event.currentTarget.dataset.id),editingCommentId: null,body: "",draftLabel: "回复评论" });
   },
   editComment(event) {
     const comment = this.data.comments.find(item => item.id === Number(event.currentTarget.dataset.id));
-    if (comment) this.setData({ editingCommentId: comment.id,parentId: null,body: comment.body,draftLabel: "编辑评论" });
+    if (comment) this.setData({ commentSubmitted: false, editingCommentId: comment.id,parentId: null,body: comment.body,draftLabel: "编辑评论" });
   },
   cancelDraft() { this.setData({ body: "",parentId: null,editingCommentId: null,draftLabel: "" }); },
   async submitComment() {
     if (this.data.saving) return;
-    this.setData({ saving: true, error: "" });
+    this.setData({ saving: true, commentSubmitted: false, error: "" });
     try {
       requireText(this.data.body, "评论内容", 1000);
       const editingId = this.data.editingCommentId;
@@ -63,7 +63,7 @@ Page({
           body: this.data.body.trim(),parentCommentId: editingId ? undefined : this.data.parentId,
         } });
       this.cancelDraft();
-      this.setData({ message: comment.moderationStatus === "PENDING" ? "评论已提交审核" : "评论已发布" });
+      this.setData({ commentSubmitted: true, message: comment.moderationStatus === "PENDING" ? "评论已提交审核" : "评论已发布" });
       await this.load();
     } catch (error) {
       this.setData({ error: error.message });
@@ -88,10 +88,15 @@ Page({
     finally { this.setData({ saving: false }); }
   },
   async toggleComments(event) {
+    if (this.data.commentsSaving) return;
+    const previous = this.data.post.commentsEnabled;
+    this.setData({ commentsSaving: true, error: "" });
     try {
       await request(`/mini/posts/${this.data.id}/comments-enabled?enabled=${event.detail.value}`,{ method: "PUT" });
+      this.setData({ post: { ...this.data.post, commentsEnabled: event.detail.value } });
       await this.load();
-    } catch (error) { this.setData({ error: error.message }); }
+    } catch (error) { this.setData({ "post.commentsEnabled": previous, error: error.message }); }
+    finally { this.setData({ commentsSaving: false }); }
   },
   async report(event) {
     const targetId = Number(event.currentTarget.dataset.id || this.data.id);

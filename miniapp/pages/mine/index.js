@@ -13,7 +13,7 @@ Page({
   onReady() { this.getTabBar?.()?.refresh(); },
   data: {
     profile: null, contactName: "", phone: "", staffVenues: [], staffActive: false,
-    canVerify: false, canIdentifyMember: false, error: "", saved: false,
+    canVerify: false, canIdentifyMember: false, error: "", saved: false, saving: false,
     showLocalDebug: false, apiBase: "", reconnecting: false, connectionMessage: "",
     ugcEnabled: false,closing: false,showProfileForm: false,
   },
@@ -39,7 +39,7 @@ Page({
       });
     } catch (error) { this.setData({ error: error.message }); }
   },
-  toggleProfileForm() { this.setData({ showProfileForm: !this.data.showProfileForm }); },
+  toggleProfileForm() { if (!this.data.saving) this.setData({ showProfileForm: !this.data.showProfileForm, saved: false }); },
   openBookings() { wx.switchTab({ url: "/pages/bookings/index" }); },
   openFavourites() { wx.navigateTo({ url: "/pages/favourites/index" }); },
   openReminders() { wx.navigateTo({ url: "/pages/reminders/index" }); },
@@ -47,9 +47,13 @@ Page({
   onName(event) { this.setData({ contactName: event.detail.value, saved: false }); },
   onPhone(event) { this.setData({ phone: event.detail.value, saved: false }); },
   async save() {
-    try { validateContact(this.data.contactName, this.data.phone); await request("/auth/mini/profile/update", { method: "PUT", data: { contactName: this.data.contactName, phone: this.data.phone } }); this.setData({ saved: true, error: "", showProfileForm: false, profile: { ...this.data.profile, contactName: this.data.contactName, phone: this.data.phone } }); }
+    if (this.data.saving || this.data.saved) return;
+    this.setData({ saving: true, error: "", saved: false });
+    try { validateContact(this.data.contactName, this.data.phone); await request("/auth/mini/profile/update", { method: "PUT", data: { contactName: this.data.contactName, phone: this.data.phone } }); this.setData({ saved: true, error: "", profile: { ...this.data.profile, contactName: this.data.contactName, phone: this.data.phone } }); }
     catch (error) { this.setData({ error: error.message }); }
+    finally { this.setData({ saving: false }); }
   },
+  finishSave() { if (this.data.saved) this.setData({ showProfileForm: false }); },
   bindStaff() { wx.navigateTo({ url: "/pages/staff-bind/index" }); },
   verify() { wx.navigateTo({ url: "/pages/staff-verify/index" }); },
   records() { wx.navigateTo({ url: "/pages/staff-records/index" }); },

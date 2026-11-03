@@ -1,0 +1,8 @@
+@import "../../tokens.wxss";
+:host { display: block; min-width: 0; }
+.action-feedback { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; color: inherit; line-height: 1.35; }
+.action-spinner { width: 16px; height: 16px; flex-shrink: 0; box-sizing: border-box; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: action-spin 700ms linear infinite; }
+.action-check { width: 14px; height: 8px; flex-shrink: 0; box-sizing: border-box; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(-45deg); animation: action-check-in 180ms var(--ease-out) both; }
+@keyframes action-spin { to { transform: rotate(360deg); } }
+@keyframes action-check-in { from { opacity: 0; transform: translateY(-2px) rotate(-45deg) scale(.75); } to { opacity: 1; transform: translateY(-2px) rotate(-45deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .action-spinner, .action-check { animation: none; } }

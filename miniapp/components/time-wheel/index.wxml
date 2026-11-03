@@ -1,0 +1,14 @@
+<view class="time-wheel">
+  <button class="time-trigger" bindtap="open" disabled="{{disabled}}" aria-label="{{label}} {{value || placeholder}}" aria-expanded="{{opened}}"><text class="time-label">{{label}}</text><text class="time-value {{!value ? 'is-empty' : ''}}">{{value || placeholder}}</text><image src="/assets/icons/chevron-down.svg" aria-hidden="true" /></button>
+  <view wx:if="{{opened}}" class="wheel-overlay" catchtouchmove="stopScroll">
+    <view class="wheel-backdrop" bindtap="cancel"></view>
+    <view class="wheel-sheet" role="dialog" aria-modal="true" aria-label="{{label}}">
+      <view class="wheel-toolbar"><button class="wheel-cancel" bindtap="cancel">取消</button><text class="wheel-title">{{label}}</text><button class="wheel-confirm" disabled="{{spinning}}" bindtap="confirm">确定</button></view>
+      <view class="wheel-caption"><text>{{hours[draft[0]]}} : {{minutes[draft[1]]}}</text><text>轻划选择，停稳后确认</text></view>
+      <picker-view class="wheel-picker" value="{{draft}}" indicator-class="wheel-indicator" mask-class="wheel-mask" immediate-change="{{false}}" bindchange="change" bindpickstart="start" bindpickend="end" aria-label="小时和分钟">
+        <picker-view-column><view wx:for="{{hours}}" wx:key="*this" class="wheel-option">{{item}}<text>时</text></view></picker-view-column>
+        <picker-view-column><view wx:for="{{minutes}}" wx:key="*this" class="wheel-option">{{item}}<text>分</text></view></picker-view-column>
+      </picker-view>
+    </view>
+  </view>
+</view>

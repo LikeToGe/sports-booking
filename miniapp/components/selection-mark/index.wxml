@@ -1,0 +1,1 @@
+<view class="selection-mark {{checked ? 'is-checked' : ''}}" aria-hidden="true"><view class="selection-tick"></view></view>

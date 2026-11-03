@@ -17,7 +17,7 @@ Page({
     if (current) wx.setStorageSync("yuechangStaffVenueId", current.venueId);
     this.setData({ venues, selectedIndex, current, confirmed: false, error: "" });
   },
-  selectVenue(event) { this.applyVenue(this.data.venues, Number(event.detail.value)); },
+  selectVenue(event) { if (!this.data.loading) this.applyVenue(this.data.venues, Number(event.detail.value)); },
   ticketFromContent(value) {
     const content = String(value || "").trim();
     const matched = content.match(/[?&]ticket=([^&#]+)/);
@@ -33,6 +33,7 @@ Page({
     });
   },
   async confirm() {
+    if (this.data.loading || this.data.confirmed) return;
     if (!this.data.current) { this.setData({ error: "请选择工作场馆" }); return; }
     this.setData({ loading: true, error: "" });
     try {

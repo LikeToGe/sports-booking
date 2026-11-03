@@ -21,3 +21,8 @@
 
 .review-page { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
 .tag-section, .anonymous-row { padding: 18px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); }
+
+.tag-button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.anonymous-row { padding: 12px; border: 1px solid var(--rule); border-radius: var(--radius-control); transition: border-color 180ms var(--ease-out), background-color 180ms var(--ease-out); }
+.anonymous-row.is-selected { background: var(--color-primary-soft); border-color: var(--color-primary); }
+.anonymous-hint { display: block; margin-top: 4px; font-size: 12px; }

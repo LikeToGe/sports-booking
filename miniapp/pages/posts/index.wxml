@@ -3,10 +3,10 @@
   <view class="section-head"><view class="screen-head"><text class="screen-title">运动动态</text><text class="muted">分享运动现场和约球想法</text></view><button wx:if="{{enabled}}" class="button-primary editor-toggle" bindtap="toggleEditor" aria-expanded="{{showEditor}}">{{showEditor ? '收起发布器' : '发布动态'}}</button></view>
   <view wx:if="{{enabled}}" class="mode-tabs"><button class="{{mode === 'posts' ? 'button-primary' : 'button-secondary'}}" data-mode="posts" bindtap="switchMode">动态</button><button class="{{mode === 'recruitments' ? 'button-primary' : 'button-secondary'}}" data-mode="recruitments" bindtap="switchMode">找搭子</button></view>
   <view wx:if="{{enabled && showEditor}}" class="post-editor surface">
-    <text class="field-label">动态正文</text><textarea class="post-body" maxlength="2000" value="{{body}}" placeholder="说说今天的运动体验" bindinput="editBody" />
-    <picker wx:if="{{sports.length}}" disabled="{{bookingId}}" range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="sport-picker">运动类型：{{sports[sportIndex].name}}</view></picker>
-    <picker wx:if="{{venues.length}}" disabled="{{bookingId}}" range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="sport-picker">场馆：{{venues[venueIndex].name}}</view></picker>
-    <picker wx:if="{{bookings.length}}" range="{{bookings}}" range-key="label" value="{{bookingIndex}}" bindchange="selectBooking"><view class="sport-picker">{{bookings[bookingIndex].label}}</view></picker>
+    <text class="field-label">动态正文</text><textarea class="post-body" maxlength="2000" value="{{body}}" placeholder="说说今天的运动体验" disabled="{{saving || published}}" bindinput="editBody" />
+    <picker wx:if="{{sports.length}}" disabled="{{bookingId || saving || published}}" range="{{sports}}" range-key="name" value="{{sportIndex}}" bindchange="selectSport"><view class="sport-picker">运动类型：{{sports[sportIndex].name}}</view></picker>
+    <picker wx:if="{{venues.length}}" disabled="{{bookingId || saving || published}}" range="{{venues}}" range-key="name" value="{{venueIndex}}" bindchange="selectVenue"><view class="sport-picker">场馆：{{venues[venueIndex].name}}</view></picker>
+    <picker wx:if="{{bookings.length}}" range="{{bookings}}" range-key="label" value="{{bookingIndex}}" disabled="{{saving || published}}" bindchange="selectBooking"><view class="sport-picker">{{bookings[bookingIndex].label}}</view></picker>
     <view wx:if="{{selectedMedia.length}}" class="media-preview">
       <block wx:for="{{selectedMedia}}" wx:key="path">
         <image wx:if="{{item.type === 'image'}}" src="{{item.path}}" mode="aspectFill" />
@@ -14,8 +14,8 @@
       </block>
     </view>
     <view wx:if="{{existingMediaCount && !selectedMedia.length}}" class="muted">已保留 {{existingMediaCount}} 项媒体</view>
-    <view class="media-actions"><button class="button-secondary" disabled="{{saving}}" bindtap="chooseMedia">选择图片或视频</button><button wx:if="{{selectedMedia.length || existingMediaCount}}" class="button-secondary" disabled="{{saving}}" bindtap="clearMedia">移除媒体</button></view>
-    <view class="editor-actions"><text class="muted">{{editingId ? "修改动态" : "发布动态"}}</text><button class="button-primary" disabled="{{saving}}" bindtap="publish">{{saving ? "提交中" : editingId ? "提交修改" : "发布"}}</button></view>
+    <view class="media-actions"><button class="button-secondary" disabled="{{saving || published}}" bindtap="chooseMedia">选择图片或视频</button><button wx:if="{{selectedMedia.length || existingMediaCount}}" class="button-secondary" disabled="{{saving || published}}" bindtap="clearMedia">移除媒体</button></view>
+    <view class="editor-actions"><text class="muted">{{editingId ? "修改动态" : "发布动态"}}</text><button class="button-primary {{saving ? 'is-busy' : ''}} {{published ? 'is-complete' : ''}}" disabled="{{saving || published}}" bindtap="publish"><action-feedback busy="{{saving}}" done="{{published}}" label="{{editingId ? '提交修改' : '发布'}}" busy-label="正在提交" done-label="已提交审核" bindcomplete="finishPublish" /></button></view>
   </view>
   <view wx:if="{{enabled && mode === 'posts'}}" class="filters surface">
     <picker range="{{filterSports}}" range-key="name" value="{{filterSportIndex}}" bindchange="selectFilterSport"><view>{{filterSports[filterSportIndex].name}}</view></picker>

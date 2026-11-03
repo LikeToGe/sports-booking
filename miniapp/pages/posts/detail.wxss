@@ -16,3 +16,9 @@
 .recruitment-section { display: grid; gap: 20rpx; padding: 20px; border: 1px solid var(--rule); border-radius: var(--radius-card); background: var(--surface); }
 .member-row { display: grid; gap: 12rpx; }
 .comments-toggle { display: flex; align-items: center; justify-content: space-between; }
+
+.comments-toggle { padding: 12px; border: 1px solid var(--rule); border-radius: var(--radius-control); }
+.comments-toggle.is-selected { background: var(--color-primary-soft); border-color: var(--color-primary); }
+.fee-options { display: flex; flex-wrap: wrap; gap: 12px; }
+.fee-option { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--radius-control); }
+.fee-option.is-selected { background: var(--color-primary-soft); border-color: var(--color-primary); }
