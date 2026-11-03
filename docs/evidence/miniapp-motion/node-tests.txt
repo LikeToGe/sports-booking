@@ -1,0 +1,46 @@
+✔ 收起首页筛选保留条件、结果和待提交标记 (4.526709ms)
+✔ 动态图片失败保留正文，旧图片下载不覆盖较新筛选 (3.028083ms)
+✔ 五个 Tab 页面在原生组件就绪后刷新稳定路径选中态 (2.1465ms)
+✔ 小程序表单指出具体字段并阻止无效请求和媒体上传 (7.520834ms)
+✔ 合法手机号、人数和分钟时段继续通过，不截断遗留秒数 (0.266583ms)
+✔ 滚轮惯性未停止不能提交，取消和页面隐藏不改变原条件 (1.349791ms)
+✔ 只有完成态通知跳转；离开页面停止计时，返回后恢复反馈 (0.789792ms)
+✔ 触点圆覆盖四角，扩散结束再切页；目标页接罩并解除连续点击锁 (3.788709ms)
+✔ 切页失败、超时或扩散中离开都可清除遮罩并重试 (1.726083ms)
+✔ 预约创建只提交一次，成功反馈完成前保持原页；失败不显示完成 (1.189167ms)
+✔ 支付请求成功但仍待确认时不显示勾号；服务端确认后才完成 (0.594459ms)
+✔ 协议取消勾选阻止提交；评论开关失败回到原状态且可重试 (0.84875ms)
+local API configuration checks passed
+✔ miniapp/tests/local-api-config.test.js (40.678584ms)
+p2 miniapp behavior checks passed
+✔ miniapp/tests/p2-pages.test.js (45.739667ms)
+p3 staff page behavior checks passed
+✔ miniapp/tests/p3-staff-pages.test.js (41.672209ms)
+p4 community page behavior checks passed
+✔ miniapp/tests/p4-community-pages.test.js (48.498917ms)
+P5 favourites page add, reload and suspended display checks passed
+✔ miniapp/tests/p5-favourites.test.js (42.016958ms)
+P5 monetary display preserves cents passed
+✔ miniapp/tests/p5-money.test.js (48.181083ms)
+P5 rebook: explicit date, owned history, current slot flow and error recovery passed
+✔ miniapp/tests/p5-rebook.test.js (51.866458ms)
+P5 recruitment refresh, failure and retry checks passed
+✔ miniapp/tests/p5-recruitment-discovery.test.js (42.621791ms)
+P5 complete slot comparison, public states, filters, preferences and retry passed
+✔ miniapp/tests/p5-slot-comparison.test.js (43.723459ms)
+P5 time search, condition preservation, price and entry checks passed
+✔ miniapp/tests/p5-time-search.test.js (46.972416ms)
+P6 owned booking navigation and current entry notice preserve booking snapshot passed
+✔ miniapp/tests/p6-booking-arrival.test.js (29.799417ms)
+P6 reminder registration, current supply and message landing checks passed
+✔ miniapp/tests/p6-reminders.test.js (30.11775ms)
+style A date, profile, member-code and editor UI checks passed
+✔ miniapp/tests/style-a-ui.test.js (30.961542ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.157875

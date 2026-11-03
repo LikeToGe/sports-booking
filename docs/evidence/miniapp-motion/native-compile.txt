@@ -1,0 +1,1 @@
+WeChat native compile: 28 WXML files and 30 WXSS files passed

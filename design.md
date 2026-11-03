@@ -1,6 +1,6 @@
 # 约场生产设计系统：场边工作台
 
-2026-11-02。管理端改用用户从八个主题样例中选定的“运动科技”深色主题（样例 `/tmp/临时确认项/管理端主题对比-v4.html#neon` 与 `/tmp/临时确认项/主题样例图/06-neon.png`，临时文件不入库），取代 2026-10-31 的“赛场计分台”、2026-10-30 的“计分牌”与 2026-10-16 的深绿基线（`docs/ui-admin-motion-sample/today-refined-sport.html` 仅保留为历史）；小程序延续 `docs/ui-design-courtside/` 的既有视觉。业务字段、接口、权限及状态以当前实现、CONTEXT.md、PRD.md 为准。
+2026-11-02。管理端改用用户从八个主题样例中选定的“运动科技”深色主题（样例 `/tmp/临时确认项/管理端主题对比-v4.html#neon` 与 `/tmp/临时确认项/主题样例图/06-neon.png`，临时文件不入库），取代 2026-10-31 的“赛场计分台”、2026-10-30 的“计分牌”与 2026-10-16 的深绿基线（其设计稿 `docs/ui-admin-motion-sample/` 已于 2026-11-03 删除）；小程序延续 `docs/ui-design-courtside/` 的既有视觉。业务字段、接口、权限及状态以当前实现、CONTEXT.md、PRD.md 为准。
 
 ## 颜色与排版
 
@@ -33,4 +33,4 @@
 
 主按钮、输入和选择器保留 disabled、loading、focus、active 与错误状态；加载和错误不删除已有事实与恢复入口。操作反馈长文可换行，错误仍在页面保留。动效统一为 120ms 按压反馈、180ms 局部切换、280ms 面板进入；优先 transform／opacity。页面、统计指示条、Tab、菜单、原生 dialog 和反馈沿用同一节奏。原生 dialog 通过 CSS 离散过渡退出，不拦截 Escape、close() 或焦点返回；不支持离散过渡的浏览器仍使用原生开关。reduced-motion 下短反馈缩至 1ms，原生浮层立即开关，并去除按压位移。
 
-不复制图册姓名、金额、二维码或统计，不改变取消截止、金额单位、赠送口径、占位/履约状态、权限、社区开关或 API。排场颜色和图标跟随实际展示状态，历史收款状态不得覆盖已取消等履约结果。图册未绘制的真实功能延展本系统并保留全部入口。管理端本次验证见 `docs/evidence/admin-sport-motion/`；此前管理端精修记录见 `docs/evidence/admin-ui-refinement/`；此前双端证据保留在 `docs/evidence/ui-courtside/`。图册 verification.json 仅证明设计稿渲染。
+不复制图册姓名、金额、二维码或统计，不改变取消截止、金额单位、赠送口径、占位/履约状态、权限、社区开关或 API。排场颜色和图标跟随实际展示状态，历史收款状态不得覆盖已取消等履约结果。图册未绘制的真实功能延展本系统并保留全部入口。管理端本次验证记录见 `docs/项目交接.md` 2026-11-02 一节；此前管理端精修记录见 `docs/evidence/admin-ui-refinement/`；此前双端证据保留在 `docs/evidence/ui-courtside/`。图册 verification.json 仅证明设计稿渲染。

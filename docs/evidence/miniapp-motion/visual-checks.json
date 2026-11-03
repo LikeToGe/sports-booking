@@ -1,0 +1,70 @@
+{
+  "kind": "source-style-fixtures",
+  "nativeGesturesVerified": false,
+  "results": [
+    {
+      "width": 320,
+      "overflow": false,
+      "buttonHeights": [
+        44,
+        44,
+        44
+      ],
+      "selected": "rgb(8, 127, 114)",
+      "sheet": {
+        "x": 0,
+        "y": 507,
+        "width": 320,
+        "height": 337
+      }
+    },
+    {
+      "width": 375,
+      "overflow": false,
+      "buttonHeights": [
+        44,
+        44,
+        44
+      ],
+      "selected": "rgb(8, 127, 114)",
+      "sheet": {
+        "x": 0,
+        "y": 507,
+        "width": 375,
+        "height": 337
+      }
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "buttonHeights": [
+        44,
+        44,
+        44
+      ],
+      "selected": "rgb(8, 127, 114)",
+      "sheet": {
+        "x": 0,
+        "y": 507,
+        "width": 390,
+        "height": 337
+      }
+    },
+    {
+      "width": 414,
+      "overflow": false,
+      "buttonHeights": [
+        44,
+        44,
+        44
+      ],
+      "selected": "rgb(8, 127, 114)",
+      "sheet": {
+        "x": 0,
+        "y": 507,
+        "width": 414,
+        "height": 337
+      }
+    }
+  ]
+}
